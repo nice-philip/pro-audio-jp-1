@@ -232,11 +232,14 @@
             const isAdmin = document.getElementById('memberKey').value.trim() === 'admin25';
 
             reservations.forEach(reservation => {
+                const date = new Date(reservation.date);
+                const formattedDate = `${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}日`;
+                
                 const row = document.createElement('tr');
                 row.innerHTML = `
                     <td>${reservation.reservationCode}</td>
                     <td>${reservation.name}</td>
-                    <td>${new Date(reservation.date).toLocaleDateString()}</td>
+                    <td>${formattedDate}</td>
                     <td>${reservation.albumLength}</td>
                     <td>${reservation.status || '处理中'}</td>
                     <td>
