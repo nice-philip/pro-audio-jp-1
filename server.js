@@ -55,9 +55,7 @@ const s3Client = new S3Client({
         secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY
     },
     maxAttempts: 3,
-    retryMode: 'adaptive',
-    requestTimeout: 3000,
-    customUserAgent: 'pro-audio-app/1.0.0'
+    retryMode: 'adaptive'
 });
 
 // Multer 설정
@@ -95,29 +93,57 @@ app.get('/api/reservations', async(req, res) => {
     }
 });
 
-// 예약 생성 API
+// 전역 에러 핸들러 추가
+app.use((err, req, res, next) => {
+    console.error('Server Error:', err);
+    res.status(500).json({
+        message: '서버 오류가 발생했습니다',
+        error: process.env.NODE_ENV === 'development' ? err.message : '알 수 없는 오류'
+    });
+});
+
+// 파일 업로드 에러 처리 미들웨어
+const handleUploadErrors = (err, req, res, next) => {
+    if (err instanceof multer.MulterError) {
+        if (err.code === 'LIMIT_FILE_SIZE') {
+            return res.status(400).json({
+                message: '파일 크기가 너무 큽니다.',
+                code: 'FILE_TOO_LARGE'
+            });
+        }
+        return res.status(400).json({
+            message: '파일 업로드 중 오류가 발생했습니다.',
+            code: 'UPLOAD_ERROR'
+        });
+    }
+    next(err);
+};
+
+app.use(handleUploadErrors);
+
+// 예약 생성 API 개선
 app.post('/api/reservations', upload.single('audio'), async(req, res) => {
     try {
+        // 필수 필드 검증
+        const requiredFields = ['name', 'age', 'gender', 'email', 'date', 'time', 'memberKey'];
+        const missingFields = requiredFields.filter(field => !req.body[field]);
+        
+        if (missingFields.length > 0) {
+            return res.status(400).json({
+                message: '필수 항목이 누락되었습니다',
+                fields: missingFields,
+                code: 'MISSING_FIELDS'
+            });
+        }
+
         if (!req.file) {
-            return res.status(400).json({ message: '오디오 파일이 필요합니다.' });
+            return res.status(400).json({
+                message: '오디오 파일이 필요합니다',
+                code: 'FILE_REQUIRED'
+            });
         }
 
-        const {
-            name,
-            age,
-            gender,
-            email,
-            date,
-            time,
-            mainRequest,
-            note,
-            memberKey
-        } = req.body;
-
-        if (!name || !age || !gender || !email || !date || !time || !memberKey) {
-            return res.status(400).json({ message: '모든 필수 항목을 입력해주세요.' });
-        }
-
+        // S3 업로드 시도
         const filename = `${Date.now()}_${req.file.originalname}`;
         const uploadParams = {
             Bucket: process.env.AWS_BUCKET_NAME,
@@ -126,34 +152,65 @@ app.post('/api/reservations', upload.single('audio'), async(req, res) => {
             ContentType: req.file.mimetype
         };
 
-        await s3Client.send(new PutObjectCommand(uploadParams));
+        try {
+            await s3Client.send(new PutObjectCommand(uploadParams));
+        } catch (s3Error) {
+            console.error('S3 Upload Error:', s3Error);
+            return res.status(500).json({
+                message: 'S3 업로드 실패',
+                code: 'S3_UPLOAD_ERROR'
+            });
+        }
 
-        // ✅ S3 URL 직접 구성
         const audioUrl = `https://${process.env.AWS_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/audio/${filename}`;
 
+        // MongoDB 저장 시도
         const newAlbum = new Album({
-            name,
-            age: Number(age),
-            gender,
-            email,
-            date: new Date(date),
-            albumLength: time,
-            albumDescription: mainRequest,
-            note,
-            reservationCode: memberKey,
+            name: req.body.name,
+            age: Number(req.body.age),
+            gender: req.body.gender,
+            email: req.body.email,
+            date: new Date(req.body.date),
+            albumLength: req.body.time,
+            albumDescription: req.body.mainRequest || '',
+            note: req.body.note || '',
+            reservationCode: req.body.memberKey,
             audioUrl,
-            status: '처리중'
+            status: '处理中'
         });
 
-        await newAlbum.save();
+        try {
+            await newAlbum.save();
+        } catch (dbError) {
+            console.error('MongoDB Save Error:', dbError);
+            // S3에 업로드된 파일 삭제 시도
+            try {
+                await s3Client.send(new DeleteObjectCommand({
+                    Bucket: process.env.AWS_BUCKET_NAME,
+                    Key: `audio/${filename}`
+                }));
+            } catch (deleteError) {
+                console.error('S3 Delete Error:', deleteError);
+            }
+            return res.status(500).json({
+                message: 'DB 저장 실패',
+                code: 'DB_SAVE_ERROR'
+            });
+        }
+
         res.status(200).json({
-            message: '예약이 완료되었습니다.',
-            reservationCode: memberKey,
+            message: '예약이 완료되었습니다',
+            reservationCode: req.body.memberKey,
             audioUrl
         });
+
     } catch (err) {
-        console.error('❌ 예약 생성 실패:', err);
-        res.status(500).json({ message: '예약 생성 실패', error: err.message });
+        console.error('예약 생성 실패:', err);
+        res.status(500).json({
+            message: '예약 생성 실패',
+            error: process.env.NODE_ENV === 'development' ? err.message : '알 수 없는 오류',
+            code: 'RESERVATION_ERROR'
+        });
     }
 });
 

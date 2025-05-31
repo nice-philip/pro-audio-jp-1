@@ -405,41 +405,75 @@
             event.preventDefault();
 
             const form = document.getElementById('albumForm');
+            const submitButton = form.querySelector('button[type="submit"]');
             const formData = new FormData(form);
+
+            // 버튼 비활성화 및 로딩 표시
+            submitButton.disabled = true;
+            submitButton.textContent = '提交中...';
 
             // 업로드 시작 알림
             console.log('📤 파일 업로드 시작');
 
             fetch("https://pro-audio.onrender.com/api/upload", {
-                    method: "POST",
-                    body: formData,
-                    mode: 'cors',
-                    credentials: 'omit',
-                    headers: {
-                        'Accept': 'application/json'
-                    }
-                })
-                .then(async response => {
-                    const contentType = response.headers.get('content-type');
-                    const isJson = contentType && contentType.includes('application/json');
+                method: "POST",
+                body: formData,
+                mode: 'cors',
+                credentials: 'omit',
+                headers: {
+                    'Accept': 'application/json'
+                }
+            })
+            .then(async response => {
+                const contentType = response.headers.get('content-type');
+                const isJson = contentType && contentType.includes('application/json');
+                const data = isJson ? await response.json() : await response.text();
 
-                    if (!response.ok) {
-                        const errorData = isJson ? await response.json() : await response.text();
-                        throw new Error(isJson ? errorData.message || errorData.error : errorData || `HTTP error! status: ${response.status}`);
+                if (!response.ok) {
+                    let errorMessage = '上传失败: ';
+                    if (isJson && data.code) {
+                        switch(data.code) {
+                            case 'MISSING_FIELDS':
+                                errorMessage += `必填项缺失: ${data.fields.join(', ')}`;
+                                break;
+                            case 'FILE_REQUIRED':
+                                errorMessage += '请选择音频文件';
+                                break;
+                            case 'FILE_TOO_LARGE':
+                                errorMessage += '文件太大';
+                                break;
+                            case 'S3_UPLOAD_ERROR':
+                                errorMessage += '文件上传失败，请稍后重试';
+                                break;
+                            case 'DB_SAVE_ERROR':
+                                errorMessage += '保存失败，请稍后重试';
+                                break;
+                            default:
+                                errorMessage += data.message || '请稍后重试';
+                        }
+                    } else {
+                        errorMessage += '服务器错误，请稍后重试';
                     }
+                    throw new Error(errorMessage);
+                }
 
-                    return isJson ? response.json() : response.text();
-                })
-                .then(data => {
-                    console.log('✅ 업로드 성공:', data);
-                    alert("🎉 申请已完成！");
-                    form.reset();
-                    document.getElementById('accordionContent').style.maxHeight = '0px';
-                })
-                .catch(error => {
-                    console.error("❌ 上传失败:", error);
-                    alert(`上传失败: ${error.message || '请稍后重试'}`);
-                });
+                return data;
+            })
+            .then(data => {
+                console.log('✅ 업로드 성공:', data);
+                alert("🎉 申请已完成！");
+                form.reset();
+                document.getElementById('accordionContent').style.maxHeight = '0px';
+            })
+            .catch(error => {
+                console.error("❌ 上传失败:", error);
+                alert(error.message || '上传失败，请稍后重试');
+            })
+            .finally(() => {
+                // 버튼 상태 복구
+                submitButton.disabled = false;
+                submitButton.textContent = '申请完成';
+            });
         }
 
         async function checkReservation() {
