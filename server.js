@@ -11,26 +11,29 @@ const Album = require('./models/Album');
 const app = express();
 const port = process.env.PORT || 8080;
 
-// CORS 미들웨어를 가장 먼저 적용
-app.use(cors({
-    origin: 'https://cheery-bienenstitch-8bad49.netlify.app',
+// CORS 설정을 가장 먼저 적용
+const corsOptions = {
+    origin: ['https://cheery-bienenstitch-8bad49.netlify.app'],
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
-    exposedHeaders: ['Content-Range', 'X-Content-Range'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
     credentials: false,
-    maxAge: 86400
-}));
+    preflightContinue: false,
+    optionsSuccessStatus: 204,
+    maxAge: 3600
+};
+
+app.use(cors(corsOptions));
+
+// preflight 요청을 위한 OPTIONS 처리
+app.options('*', cors(corsOptions));
 
 // 기본 미들웨어
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
-// OPTIONS 요청 처리
-app.options('*', cors());
-
-// 정적 파일 제공
-app.use(express.static(__dirname));
 app.use(express.static('public'));
+
+// 업로드 라우트에도 동일한 CORS 설정 적용
+app.use('/api/upload', cors(corsOptions), uploadRoutes);
 
 // AWS S3 설정
 const s3Client = new S3Client({
@@ -50,9 +53,6 @@ const upload = multer({
         files: 1 // 단일 파일만 허용
     }
 });
-
-// 업로드 라우터 연결
-app.use('/api/upload', uploadRoutes);
 
 // 예약 조회 API
 app.get('/api/reservations', async(req, res) => {

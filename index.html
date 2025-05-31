@@ -402,6 +402,9 @@
 			const form = document.getElementById('albumForm');
 			const formData = new FormData(form);
 
+			// 업로드 시작 알림
+			console.log('📤 파일 업로드 시작');
+
 			fetch("https://recording-2-eqha.onrender.com/api/upload", {
 				method: "POST",
 				body: formData,
@@ -411,21 +414,25 @@
 					'Accept': 'application/json'
 				}
 			})
-			.then(response => {
+			.then(async response => {
+				const contentType = response.headers.get('content-type');
+				const isJson = contentType && contentType.includes('application/json');
+				
 				if (!response.ok) {
-					return response.text().then(text => {
-						throw new Error(text || `HTTP error! status: ${response.status}`);
-					});
+					const errorData = isJson ? await response.json() : await response.text();
+					throw new Error(isJson ? errorData.message || errorData.error : errorData || `HTTP error! status: ${response.status}`);
 				}
-				return response.json();
+
+				return isJson ? response.json() : response.text();
 			})
 			.then(data => {
+				console.log('✅ 업로드 성공:', data);
 				alert("🎉 申请已完成！");
 				form.reset();
 				document.getElementById('accordionContent').style.maxHeight = '0px';
 			})
 			.catch(error => {
-				console.error("上传失败:", error);
+				console.error("❌ 上传失败:", error);
 				alert(`上传失败: ${error.message || '请稍后重试'}`);
 			});
 		}

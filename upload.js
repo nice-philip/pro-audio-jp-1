@@ -1,20 +1,11 @@
 const express = require('express');
 const multer = require('multer');
-const cors = require('cors');
 const { S3Client, PutObjectCommand, DeleteObjectCommand, GetObjectCommand } = require('@aws-sdk/client-s3');
 const { getSignedUrl } = require('@aws-sdk/s3-request-presigner');
 const { v4: uuidv4 } = require('uuid');
 const Album = require('./models/Album');
 
 const router = express.Router();
-
-// CORS 설정 추가
-router.use(cors({
-    origin: 'https://cheery-bienenstitch-8bad49.netlify.app',
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
-    credentials: false
-}));
 
 // S3 설정
 const s3Client = new S3Client({
@@ -30,18 +21,26 @@ const storage = multer.memoryStorage();
 const upload = multer({ 
     storage,
     limits: {
-        fileSize: 10 * 1024 * 1024, // 10MB 제한
-        files: 1 // 단일 파일만 허용
+        fileSize: 10 * 1024 * 1024,
+        files: 1
     }
 });
 
 // 오디오 업로드 및 예약 생성
 router.post('/', upload.single('audio'), async(req, res) => {
     try {
+        console.log('📝 업로드 요청 받음');
+        
         if (!req.file) {
             console.log('❌ 오디오 파일이 없습니다.');
             return res.status(400).json({ message: '오디오 파일이 필요합니다.' });
         }
+
+        console.log('📁 파일 정보:', {
+            originalname: req.file.originalname,
+            mimetype: req.file.mimetype,
+            size: req.file.size
+        });
 
         const {
             name,
@@ -54,6 +53,8 @@ router.post('/', upload.single('audio'), async(req, res) => {
             note,
             memberKey
         } = req.body;
+
+        console.log('📋 폼 데이터:', { name, age, gender, email, date, time, memberKey });
 
         // 필수 필드 검증
         if (!name || !age || !gender || !email || !date || !time || !memberKey) {
@@ -69,8 +70,12 @@ router.post('/', upload.single('audio'), async(req, res) => {
             ContentType: req.file.mimetype,
         };
 
+        console.log('🚀 S3 업로드 시작');
+
         // S3에 파일 업로드
         const s3Upload = await s3Client.send(new PutObjectCommand(s3Params));
+        
+        console.log('✅ S3 업로드 완료');
 
         // 예약 정보 생성
         const newAlbum = new Album({
@@ -89,6 +94,7 @@ router.post('/', upload.single('audio'), async(req, res) => {
         });
 
         await newAlbum.save();
+        console.log('✅ DB 저장 완료');
 
         res.status(200).json({ 
             message: '예약이 완료되었습니다.',
@@ -96,8 +102,12 @@ router.post('/', upload.single('audio'), async(req, res) => {
             audioUrl: s3Upload.Location 
         });
     } catch (err) {
-        console.error('❌ 예약 생성 실패:', JSON.stringify(err, null, 2));
-        res.status(500).json({ message: '예약 생성 실패', error: err.message });
+        console.error('❌ 예약 생성 실패:', err);
+        res.status(500).json({ 
+            message: '예약 생성 실패', 
+            error: err.message,
+            stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
+        });
     }
 });
 
