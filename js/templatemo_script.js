@@ -88,39 +88,20 @@ var map = '';
 var center;
 
 function initialize() {
-    var mapOptions = {
-      zoom: 15,
-      center: new google.maps.LatLng(16.8496189,96.1288854),
-      scrollwheel: false
-    };
-  
-    map = new google.maps.Map(document.getElementById('map-canvas'),  mapOptions);
-
-    google.maps.event.addDomListener(map, 'idle', function() {
-        calculateCenter();
-    });
-  
-    google.maps.event.addDomListener(window, 'resize', function() {
-        map.setCenter(center);
-    });
+    const mapCanvas = document.getElementById('map-canvas');
+    if (mapCanvas) {
+        mapCanvas.innerHTML = '<div style="text-align: center; padding: 20px;">Google Maps is temporarily disabled</div>';
+        mapCanvas.style.backgroundColor = '#f5f5f5';
+        mapCanvas.style.border = '1px solid #ddd';
+    }
 }
 
 function calculateCenter() {
   center = map.getCenter();
 }
 
-function loadGoogleMap(){
-    // Maps 기능 임시 비활성화
-    const mapCanvas = document.getElementById('map-canvas');
-    if (mapCanvas) {
-        mapCanvas.style.display = 'none';
-    }
-    /* 실제 Maps API를 사용하려면 아래 코드를 사용하세요
-    var script = document.createElement('script');
-    script.type = 'text/javascript';
-    script.src = 'https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&callback=initialize';
-    document.body.appendChild(script);
-    */
+function loadGoogleMap() {
+    initialize();
 }
 
 function scrollToTop() {

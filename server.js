@@ -21,22 +21,10 @@ const s3Client = new S3Client({
 });
 
 // CORS 설정
-const allowedOrigins = [
-    'http://localhost:8080',
-    'http://127.0.0.1:8080',
-    'https://recording-2-eqha.onrender.com',
-    'https://cheery-bienenstitch-8bad49.netlify.app'
-];
-
 app.use(cors({
-    origin: function(origin, callback) {
-        if (!origin || allowedOrigins.includes(origin)) {
-            callback(null, true);
-        } else {
-            console.error(`❌ CORS 차단됨: ${origin}`);
-            callback(new Error('CORS 차단: 허용되지 않은 출처'));
-        }
-    },
+    origin: '*',  // 모든 출처 허용
+    methods: ['GET', 'POST', 'DELETE', 'UPDATE', 'PUT', 'PATCH'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: true
 }));
 
