@@ -2,7 +2,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const multer = require('multer');
-const aws = require('aws-sdk');
+const { S3Client, PutObjectCommand, DeleteObjectCommand } = require('@aws-sdk/client-s3');
 require('dotenv').config();
 
 const uploadRoutes = require('./upload');
@@ -12,17 +12,20 @@ const app = express();
 const port = process.env.PORT || 8080;
 
 // AWS S3 설정
-const s3 = new aws.S3({
-    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-    region: process.env.AWS_REGION
+const s3Client = new S3Client({
+    region: process.env.AWS_REGION,
+    credentials: {
+        accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY
+    }
 });
 
 // CORS 설정
 const allowedOrigins = [
     'http://localhost:8080',
     'http://127.0.0.1:8080',
-    'https://recording-2-eqha.onrender.com'
+    'https://recording-2-eqha.onrender.com',
+    'https://cheery-bienenstitch-8bad49.netlify.app'
 ];
 
 app.use(cors({
@@ -116,7 +119,7 @@ app.post('/api/reservations', upload.single('audio'), async(req, res) => {
             ContentType: req.file.mimetype
         };
 
-        const uploadResult = await s3.upload(uploadParams).promise();
+        const uploadResult = await s3Client.send(new PutObjectCommand(uploadParams));
 
         // DB에 예약 정보 저장
         const newAlbum = new Album({
@@ -161,7 +164,7 @@ app.delete('/api/reservations/:id', async(req, res) => {
                 Key: `audio/${key}`
             };
 
-            await s3.deleteObject(deleteParams).promise();
+            await s3Client.send(new DeleteObjectCommand(deleteParams));
         }
 
         await Album.findByIdAndDelete(req.params.id);

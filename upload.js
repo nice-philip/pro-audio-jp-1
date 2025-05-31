@@ -1,16 +1,19 @@
 const express = require('express');
 const multer = require('multer');
-const aws = require('aws-sdk');
+const { S3Client, PutObjectCommand, DeleteObjectCommand, GetObjectCommand } = require('@aws-sdk/client-s3');
+const { getSignedUrl } = require('@aws-sdk/s3-request-presigner');
 const { v4: uuidv4 } = require('uuid');
 const Album = require('./models/Album');
 
 const router = express.Router();
 
 // S3 설정
-const s3 = new aws.S3({
-    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+const s3Client = new S3Client({
     region: process.env.AWS_REGION,
+    credentials: {
+        accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY
+    }
 });
 
 // Multer 메모리 저장소
@@ -58,7 +61,7 @@ router.post('/', upload.single('audio'), async(req, res) => {
         };
 
         // S3에 파일 업로드
-        const s3Upload = await s3.upload(s3Params).promise();
+        const s3Upload = await s3Client.send(new PutObjectCommand(s3Params));
 
         // 예약 정보 생성
         const newAlbum = new Album({
@@ -105,7 +108,7 @@ router.delete('/:id', async(req, res) => {
                 Key: `audio/${key}`
             };
 
-            await s3.deleteObject(s3Params).promise();
+            await s3Client.send(new DeleteObjectCommand(s3Params));
         }
 
         await Album.findByIdAndDelete(req.params.id);
@@ -133,7 +136,7 @@ router.get('/download/:id', async(req, res) => {
         };
 
         // S3에서 파일 스트리밍
-        const s3Stream = s3.getObject(s3Params).createReadStream();
+        const s3Stream = await s3Client.send(new GetObjectCommand(s3Params)).then(data => data.Body);
         
         // 응답 헤더 설정
         res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);

@@ -110,10 +110,17 @@ function calculateCenter() {
 }
 
 function loadGoogleMap(){
+    // Maps 기능 임시 비활성화
+    const mapCanvas = document.getElementById('map-canvas');
+    if (mapCanvas) {
+        mapCanvas.style.display = 'none';
+    }
+    /* 실제 Maps API를 사용하려면 아래 코드를 사용하세요
     var script = document.createElement('script');
     script.type = 'text/javascript';
     script.src = 'https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&callback=initialize';
     document.body.appendChild(script);
+    */
 }
 
 function scrollToTop() {
