@@ -7,7 +7,7 @@ const Album = require('./models/Album');
 
 const router = express.Router();
 
-// S3 설정
+// ✅ S3 클라이언트 설정
 const s3Client = new S3Client({
     region: process.env.AWS_REGION,
     credentials: {
@@ -16,21 +16,21 @@ const s3Client = new S3Client({
     }
 });
 
-// Multer 메모리 저장소
+// ✅ Multer 메모리 저장소 설정
 const storage = multer.memoryStorage();
-const upload = multer({ 
+const upload = multer({
     storage,
     limits: {
-        fileSize: 10 * 1024 * 1024,
+        fileSize: 10 * 1024 * 1024, // 10MB 제한
         files: 1
     }
 });
 
-// 오디오 업로드 및 예약 생성
+// ✅ 오디오 업로드 및 예약 생성
 router.post('/', upload.single('audio'), async(req, res) => {
     try {
         console.log('📝 업로드 요청 받음');
-        
+
         if (!req.file) {
             console.log('❌ 오디오 파일이 없습니다.');
             return res.status(400).json({ message: '오디오 파일이 필요합니다.' });
@@ -56,12 +56,11 @@ router.post('/', upload.single('audio'), async(req, res) => {
 
         console.log('📋 폼 데이터:', { name, age, gender, email, date, time, memberKey });
 
-        // 필수 필드 검증
         if (!name || !age || !gender || !email || !date || !time || !memberKey) {
             return res.status(400).json({ message: '모든 필수 항목을 입력해주세요.' });
         }
 
-        // 파일 이름 생성
+        // ✅ 파일명 생성
         const filename = `${uuidv4()}_${req.file.originalname}`;
         const s3Params = {
             Bucket: process.env.AWS_BUCKET_NAME,
@@ -72,12 +71,13 @@ router.post('/', upload.single('audio'), async(req, res) => {
 
         console.log('🚀 S3 업로드 시작');
 
-        // S3에 파일 업로드
-        const s3Upload = await s3Client.send(new PutObjectCommand(s3Params));
-        
+        await s3Client.send(new PutObjectCommand(s3Params));
+
         console.log('✅ S3 업로드 완료');
 
-        // 예약 정보 생성
+        // ✅ 직접 URL 생성
+        const audioUrl = `https://${process.env.AWS_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/audio/${filename}`;
+
         const newAlbum = new Album({
             name,
             age: Number(age),
@@ -88,30 +88,29 @@ router.post('/', upload.single('audio'), async(req, res) => {
             albumDescription: mainRequest,
             note,
             reservationCode: memberKey,
-            audioUrl: s3Upload.Location,
-            status: '처리중',
-            createdAt: new Date()
+            audioUrl,
+            status: '처리중'
         });
 
         await newAlbum.save();
         console.log('✅ DB 저장 완료');
 
-        res.status(200).json({ 
+        res.status(200).json({
             message: '예약이 완료되었습니다.',
             reservationCode: memberKey,
-            audioUrl: s3Upload.Location 
+            audioUrl
         });
     } catch (err) {
         console.error('❌ 예약 생성 실패:', err);
-        res.status(500).json({ 
-            message: '예약 생성 실패', 
+        res.status(500).json({
+            message: '예약 생성 실패',
             error: err.message,
             stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
         });
     }
 });
 
-// 예약 삭제
+// ✅ 예약 삭제
 router.delete('/:id', async(req, res) => {
     try {
         const album = await Album.findById(req.params.id);
@@ -119,7 +118,6 @@ router.delete('/:id', async(req, res) => {
             return res.status(404).json({ message: '예약을 찾을 수 없습니다.' });
         }
 
-        // S3에서 파일 삭제
         if (album.audioUrl) {
             const key = album.audioUrl.split('/').pop();
             const s3Params = {
@@ -138,7 +136,7 @@ router.delete('/:id', async(req, res) => {
     }
 });
 
-// 오디오 파일 다운로드
+// ✅ 오디오 다운로드
 router.get('/download/:id', async(req, res) => {
     try {
         const album = await Album.findById(req.params.id);
@@ -154,17 +152,13 @@ router.get('/download/:id', async(req, res) => {
             Key: `audio/${key}`,
         };
 
-        // S3에서 파일 스트리밍
         const s3Stream = await s3Client.send(new GetObjectCommand(s3Params)).then(data => data.Body);
-        
-        // 응답 헤더 설정
+
         res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
-        res.setHeader('Content-Type', 'audio/mpeg');
-        
-        // 파일 스트리밍
+        res.setHeader('Content-Type', album.audioUrl.endsWith('.wav') ? 'audio/wav' : 'audio/mpeg');
+
         s3Stream.pipe(res);
-        
-        // 에러 처리
+
         s3Stream.on('error', (err) => {
             console.error('❌ 스트리밍 오류:', err);
             if (!res.headersSent) {
@@ -177,4 +171,4 @@ router.get('/download/:id', async(req, res) => {
     }
 });
 
-module.exports = router; 
+module.exports = router;

@@ -11,9 +11,21 @@ const Album = require('./models/Album');
 const app = express();
 const port = process.env.PORT || 8080;
 
-// CORS 설정을 가장 먼저 적용
+// ✅ 여러 도메인을 허용하도록 설정
+const allowedOrigins = [
+    'https://cheery-bienenstitch-8bad49.netlify.app',
+    'http://localhost:3000',
+    'https://pro-audio.netlify.app'
+];
+
 const corsOptions = {
-    origin: ['https://cheery-bienenstitch-8bad49.netlify.app'],
+    origin: function(origin, callback) {
+        if (!origin || allowedOrigins.includes(origin)) {
+            callback(null, true);
+        } else {
+            callback(new Error('CORS 차단: 허용되지 않은 origin'));
+        }
+    },
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
     credentials: false,
@@ -23,16 +35,14 @@ const corsOptions = {
 };
 
 app.use(cors(corsOptions));
+app.options('*', cors(corsOptions)); // Preflight 지원
 
-// preflight 요청을 위한 OPTIONS 처리
-app.options('*', cors(corsOptions));
-
-// 기본 미들웨어
+// 미들웨어 설정
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static('public'));
 
-// 업로드 라우트에도 동일한 CORS 설정 적용
+// 업로드 라우트에 CORS 별도 적용
 app.use('/api/upload', cors(corsOptions), uploadRoutes);
 
 // AWS S3 설정
@@ -46,11 +56,11 @@ const s3Client = new S3Client({
 
 // Multer 설정
 const storage = multer.memoryStorage();
-const upload = multer({ 
+const upload = multer({
     storage: storage,
     limits: {
-        fileSize: 10 * 1024 * 1024, // 10MB 제한
-        files: 1 // 단일 파일만 허용
+        fileSize: 10 * 1024 * 1024, // 10MB
+        files: 1
     }
 });
 
@@ -98,12 +108,10 @@ app.post('/api/reservations', upload.single('audio'), async(req, res) => {
             memberKey
         } = req.body;
 
-        // 필수 필드 검증
         if (!name || !age || !gender || !email || !date || !time || !memberKey) {
             return res.status(400).json({ message: '모든 필수 항목을 입력해주세요.' });
         }
 
-        // S3에 파일 업로드
         const filename = `${Date.now()}_${req.file.originalname}`;
         const uploadParams = {
             Bucket: process.env.AWS_BUCKET_NAME,
@@ -112,9 +120,11 @@ app.post('/api/reservations', upload.single('audio'), async(req, res) => {
             ContentType: req.file.mimetype
         };
 
-        const uploadResult = await s3Client.send(new PutObjectCommand(uploadParams));
+        await s3Client.send(new PutObjectCommand(uploadParams));
 
-        // DB에 예약 정보 저장
+        // ✅ S3 URL 직접 구성
+        const audioUrl = `https://${process.env.AWS_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/audio/${filename}`;
+
         const newAlbum = new Album({
             name,
             age: Number(age),
@@ -125,15 +135,15 @@ app.post('/api/reservations', upload.single('audio'), async(req, res) => {
             albumDescription: mainRequest,
             note,
             reservationCode: memberKey,
-            audioUrl: uploadResult.Location,
+            audioUrl,
             status: '처리중'
         });
 
         await newAlbum.save();
-        res.status(200).json({ 
+        res.status(200).json({
             message: '예약이 완료되었습니다.',
             reservationCode: memberKey,
-            audioUrl: uploadResult.Location 
+            audioUrl
         });
     } catch (err) {
         console.error('❌ 예약 생성 실패:', err);
@@ -149,7 +159,6 @@ app.delete('/api/reservations/:id', async(req, res) => {
             return res.status(404).json({ message: '예약을 찾을 수 없습니다.' });
         }
 
-        // S3에서 파일 삭제
         if (album.audioUrl) {
             const key = album.audioUrl.split('/').pop();
             const deleteParams = {

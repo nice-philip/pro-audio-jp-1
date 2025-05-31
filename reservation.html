@@ -1,17 +1,19 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <title>预约查询 - AI音频</title>
     <meta name="keywords" content="" />
     <meta name="description" content="" />
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href='http://fonts.googleapis.com/css?family=Oswald' rel='stylesheet' type='text/css'>
-    <link href='http://fonts.googleapis.com/css?family=Open+Sans:400,600' rel='stylesheet' type='text/css'>
+    <link href="https://fonts.googleapis.com/css?family=Oswald" rel="stylesheet" type="text/css">
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans:400,600" rel="stylesheet" type="text/css">
     <link href="css/font-awesome.min.css" rel="stylesheet">
     <link href="css/bootstrap.min.css" rel="stylesheet" type="text/css">
     <link href="css/templatemo_style.css" rel="stylesheet" type="text/css">
 </head>
+
 <body>
     <nav id="responsive-menu">
         <ul class="menu-holder">
@@ -19,9 +21,9 @@
             <li><a href="reservation.html"><i class="fa fa-search"></i>预约查询</a></li>
         </ul>
     </nav>
-    <div class="templatemo-header">        
+    <div class="templatemo-header">
         <div class="templatemo-header-gradient-bg"></div>
-        <div class="container">            
+        <div class="container">
             <h1 class="text-center text-uppercase templatemo-site-name">预约<span class="blue">查询</span></h1>
             <nav class="hidden-xs text-center text-uppercase templatemo-nav">
                 <ul class="menu-holder">
@@ -40,7 +42,7 @@
             <h2 class="text-uppercase text-center">预约查询</h2>
             <div class="row margin-top-50">
                 <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12 col-lg-offset-3 col-md-offset-3 col-sm-offset-3">
-                    <form action="#" method="post" class="tm-reservation-form">
+                    <form class="tm-reservation-form">
                         <div class="form-group">
                             <input type="text" id="memberKey" class="form-control" placeholder="请输入预约号码..." />
                         </div>
@@ -76,20 +78,21 @@
     <script src="js/templatemo_script.js"></script>
     <script>
         async function checkReservation() {
-            const memberKey = document.getElementById('memberKey').value;
+            const memberKey = document.getElementById('memberKey').value.trim();
             if (!memberKey) {
                 alert('请输入预约号码');
                 return;
             }
 
             try {
-                const response = await fetch(`/api/reservations?key=${memberKey}`);
+                const response = await fetch(`https://pro-audio.onrender.com/api/reservations?key=${memberKey}`);
                 const result = await response.json();
-                
+
                 if (response.ok) {
                     displayReservations(result);
                 } else {
                     alert('查询失败：' + result.message);
+                    document.getElementById('reservationResults').style.display = 'none';
                 }
             } catch (error) {
                 console.error('Error:', error);
@@ -100,9 +103,15 @@
         function displayReservations(reservations) {
             const tableBody = document.getElementById('reservationTableBody');
             const resultsDiv = document.getElementById('reservationResults');
-            
+
             tableBody.innerHTML = '';
-            
+
+            if (!reservations || reservations.length === 0) {
+                tableBody.innerHTML = `<tr><td colspan="5" class="text-center">没有找到匹配的预约记录。</td></tr>`;
+                resultsDiv.style.display = 'block';
+                return;
+            }
+
             reservations.forEach(reservation => {
                 const row = document.createElement('tr');
                 row.innerHTML = `
@@ -110,13 +119,14 @@
                     <td>${reservation.name}</td>
                     <td>${new Date(reservation.date).toLocaleDateString()}</td>
                     <td>${reservation.albumLength}</td>
-                    <td>处理中</td>
+                    <td>${reservation.status || '处理中'}</td>
                 `;
                 tableBody.appendChild(row);
             });
-            
+
             resultsDiv.style.display = 'block';
         }
     </script>
 </body>
+
 </html>

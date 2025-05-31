@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-const albumSchema = new mongoose.Schema({
+const AlbumSchema = new mongoose.Schema({
     name: {
         type: String,
         required: true
@@ -11,6 +11,7 @@ const albumSchema = new mongoose.Schema({
     },
     gender: {
         type: String,
+        enum: ['남', '여', '기타'],
         required: true
     },
     email: {
@@ -22,14 +23,19 @@ const albumSchema = new mongoose.Schema({
         required: true
     },
     albumLength: {
-        type: String,
+        type: String, // e.g. '00:45' 형식 (string 처리)
         required: true
     },
-    albumDescription: String,
-    note: String,
+    albumDescription: {
+        type: String
+    },
+    note: {
+        type: String
+    },
     reservationCode: {
         type: String,
-        required: true
+        required: true,
+        index: true
     },
     audioUrl: {
         type: String,
@@ -37,12 +43,11 @@ const albumSchema = new mongoose.Schema({
     },
     status: {
         type: String,
+        enum: ['처리중', '완료됨', '취소됨'],
         default: '처리중'
-    },
-    createdAt: {
-        type: Date,
-        default: Date.now
     }
+}, {
+    timestamps: true // ✅ createdAt, updatedAt 자동 관리
 });
 
-module.exports = mongoose.model('Album', albumSchema); 
+module.exports = mongoose.model('Album', AlbumSchema);
