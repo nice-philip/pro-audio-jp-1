@@ -1,11 +1,20 @@
 const express = require('express');
 const multer = require('multer');
+const cors = require('cors');
 const { S3Client, PutObjectCommand, DeleteObjectCommand, GetObjectCommand } = require('@aws-sdk/client-s3');
 const { getSignedUrl } = require('@aws-sdk/s3-request-presigner');
 const { v4: uuidv4 } = require('uuid');
 const Album = require('./models/Album');
 
 const router = express.Router();
+
+// CORS 설정 추가
+router.use(cors({
+    origin: 'https://cheery-bienenstitch-8bad49.netlify.app',
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    credentials: false
+}));
 
 // S3 설정
 const s3Client = new S3Client({

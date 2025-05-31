@@ -11,6 +11,27 @@ const Album = require('./models/Album');
 const app = express();
 const port = process.env.PORT || 8080;
 
+// CORS 미들웨어를 가장 먼저 적용
+app.use(cors({
+    origin: 'https://cheery-bienenstitch-8bad49.netlify.app',
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    exposedHeaders: ['Content-Range', 'X-Content-Range'],
+    credentials: false,
+    maxAge: 86400
+}));
+
+// 기본 미들웨어
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// OPTIONS 요청 처리
+app.options('*', cors());
+
+// 정적 파일 제공
+app.use(express.static(__dirname));
+app.use(express.static('public'));
+
 // AWS S3 설정
 const s3Client = new S3Client({
     region: process.env.AWS_REGION,
@@ -19,24 +40,6 @@ const s3Client = new S3Client({
         secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY
     }
 });
-
-// CORS 설정
-app.use(cors({
-    origin: 'https://cheery-bienenstitch-8bad49.netlify.app',
-    methods: ['GET', 'POST', 'DELETE', 'PUT', 'PATCH', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
-    credentials: true,
-    preflightContinue: false,
-    optionsSuccessStatus: 204
-}));
-
-// JSON 파싱 허용
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-
-// 정적 파일 제공
-app.use(express.static(__dirname));
-app.use(express.static('public'));
 
 // Multer 설정
 const storage = multer.memoryStorage();
