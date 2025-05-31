@@ -169,12 +169,22 @@ function parseChineseDate(dateStr) {
         const normalizedDateStr = String(dateStr).trim();
         console.log('[날짜 파싱] 정규화된 문자열:', normalizedDateStr);
 
+        // ISO 형식 확인 (예: "2024-03-21T00:00:00.000Z")
+        if (normalizedDateStr.match(/^\d{4}-\d{2}-\d{2}T/)) {
+            console.log('[날짜 파싱] ISO 형식 감지됨');
+            const date = new Date(normalizedDateStr);
+            if (isNaN(date.getTime())) {
+                throw new Error('Invalid ISO date format');
+            }
+            return date;
+        }
+
         // "YYYY年MM月DD日" 형식에서 숫자만 추출
         const matches = normalizedDateStr.match(/(\d{4})年(\d{1,2})月(\d{1,2})日/);
         if (!matches) {
-            console.error('[날짜 파싱] 형식이 맞지 않음. 예상 형식: YYYY年MM月DD日');
+            console.error('[날짜 파싱] 형식이 맞지 않음. 예상 형식: YYYY年MM月DD日 또는 ISO');
             console.error('[날짜 파싱] 받은 형식:', normalizedDateStr);
-            throw new Error(`Invalid date format. Expected: YYYY年MM月DD日, Received: ${normalizedDateStr}`);
+            throw new Error(`Invalid date format. Expected: YYYY年MM月DD日 or ISO, Received: ${normalizedDateStr}`);
         }
         
         const [_, yearStr, monthStr, dayStr] = matches;
@@ -198,20 +208,10 @@ function parseChineseDate(dateStr) {
         // 월별 일수 검사
         const daysInMonth = new Date(year, month, 0).getDate();
         if (day > daysInMonth) {
-            throw new Error(`Invalid day: ${day}. ${year}年${month}月 has ${daysInMonth} days`);
+            throw new Error(`Invalid day: ${day}. ${month} month has ${daysInMonth} days`);
         }
-        
-        // Date 객체 생성 (month는 0-based)
-        const date = new Date(Date.UTC(year, month - 1, day, 12)); // UTC 정오로 설정
-        
-        // 유효한 날짜인지 확인
-        if (isNaN(date.getTime())) {
-            console.error('[날짜 파싱] 유효하지 않은 날짜:', { year, month, day });
-            throw new Error(`Invalid date: ${year}-${month}-${day}`);
-        }
-        
-        console.log('[날짜 파싱] 생성된 Date 객체:', date.toISOString());
-        return date;
+
+        return new Date(year, month - 1, day);
     } catch (error) {
         console.error('[날짜 파싱] 오류:', error);
         throw error;

@@ -3,22 +3,22 @@ const mongoose = require('mongoose');
 const albumSchema = new mongoose.Schema({
     name: {
         type: String,
-        required: true
+        required: [true, '姓名是必填项']
     },
     age: {
         type: Number,
-        required: true,
+        required: [true, '年龄是必填项'],
         min: [1, '年龄必须大于0'],
         max: [150, '年龄超出范围']
     },
     gender: {
         type: String,
-        enum: ['男', '女', '其他'], // ✅ 중국어 값 허용
-        required: true
+        enum: ['男', '女', '其他'],
+        required: [true, '性别是必填项']
     },
     email: {
         type: String,
-        required: true,
+        required: [true, '邮箱是必填项'],
         match: [/^\S+@\S+\.\S+$/, '邮箱格式不正确']
     },
     date: {
@@ -26,26 +26,38 @@ const albumSchema = new mongoose.Schema({
         required: [true, '日期是必填项'],
         validate: {
             validator: function(value) {
-                return value && value.toString() !== 'Invalid Date';
+                // ISO 형식이나 Date 객체 모두 허용
+                const date = new Date(value);
+                if (isNaN(date.getTime())) {
+                    return false;
+                }
+                // 날짜 범위 검사 (1900년 ~ 2100년)
+                const year = date.getFullYear();
+                return year >= 1900 && year <= 2100;
             },
-            message: '日期格式无效'
+            message: '无效的日期格式或日期超出范围 (1900-2100)'
         },
         set: function(value) {
-            if (value instanceof Date) return value;
-            // 如果是字符串，尝试转换
-            const date = new Date(value);
-            if (date.toString() === 'Invalid Date') {
-                console.error('Invalid date value:', value);
-                throw new Error('Invalid date format');
+            if (typeof value === 'string' && value.match(/^\d{4}-\d{2}-\d{2}T/)) {
+                // ISO 형식인 경우 그대로 파싱
+                return new Date(value);
+            } else if (typeof value === 'string') {
+                // 다른 문자열 형식의 경우 Date 객체로 변환 시도
+                const date = new Date(value);
+                if (isNaN(date.getTime())) {
+                    throw new Error('无效的日期格式');
+                }
+                return date;
             }
-            return date;
+            return value; // Date 객체인 경우 그대로 반환
         }
     },
     albumLength: {
-        type: String, // ✅ "오후 04:01" 형식도 받을 수 있게 String으로
-        required: true,
+        type: String,
+        required: [true, '时间是必填项'],
         validate: {
             validator: function(v) {
+                // HH:mm:ss 형식 검사
                 return /^([01]?[0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]$/.test(v);
             },
             message: '时间格式必须为 HH:mm:ss'
@@ -61,16 +73,17 @@ const albumSchema = new mongoose.Schema({
     },
     reservationCode: {
         type: String,
-        required: true
+        required: [true, '预约编号是必填项']
+            // unique: true // ← 예약코드 중복 금지하고 싶다면 주석 해제
     },
     audioUrl: {
         type: String,
-        required: true
+        required: [true, '音频地址是必填项']
     },
     status: {
         type: String,
-        default: '处理中',
-        enum: ['处理中', '已完成', '已取消']
+        enum: ['处理中', '已完成', '已取消'],
+        default: '处理中'
     },
     createdAt: {
         type: Date,
@@ -78,15 +91,17 @@ const albumSchema = new mongoose.Schema({
     }
 });
 
-// 저장 전 날짜 유효성 검사
+// 저장 전 날짜 유효성 검사 (추가 안전장치)
 albumSchema.pre('save', function(next) {
-    if (this.isModified('date')) {
-        const date = this.date;
-        if (!date || date.toString() === 'Invalid Date') {
-            next(new Error('Invalid date'));
-            return;
-        }
+    if (!this.date || isNaN(this.date.getTime())) {
+        return next(new Error('保存失败：无效的日期'));
     }
+    
+    const year = this.date.getFullYear();
+    if (year < 1900 || year > 2100) {
+        return next(new Error('保存失败：日期超出范围 (1900-2100)'));
+    }
+    
     next();
 });
 

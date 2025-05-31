@@ -19,12 +19,53 @@ const s3Client = new S3Client({
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
 
+// ✅ 중국어 날짜 형식 처리 함수
+function parseChineseDate(dateStr) {
+    // ISO 형식 확인 (예: "2024-03-21T00:00:00.000Z")
+    if (dateStr.match(/^\d{4}-\d{2}-\d{2}T/)) {
+        const date = new Date(dateStr);
+        if (isNaN(date.getTime())) {
+            throw new Error('Invalid ISO date format');
+        }
+        return date;
+    }
+
+    // 중국어 형식 처리
+    const matches = dateStr.match(/(\d{4})年(\d{1,2})月(\d{1,2})日/);
+    if (!matches) {
+        throw new Error(`Invalid date format: ${dateStr}. Expected: YYYY年MM月DD日 or ISO format`);
+    }
+    const [, yearStr, monthStr, dayStr] = matches;
+    const year = parseInt(yearStr, 10);
+    const month = parseInt(monthStr, 10);
+    const day = parseInt(dayStr, 10);
+
+    // 날짜 유효성 검사
+    if (isNaN(year) || year < 1900 || year > 2100) {
+        throw new Error(`Invalid year: ${year}. Must be between 1900 and 2100`);
+    }
+    if (isNaN(month) || month < 1 || month > 12) {
+        throw new Error(`Invalid month: ${month}. Must be between 1 and 12`);
+    }
+    if (isNaN(day) || day < 1 || day > 31) {
+        throw new Error(`Invalid day: ${day}. Must be between 1 and 31`);
+    }
+
+    // 월별 일수 검사
+    const daysInMonth = new Date(year, month, 0).getDate();
+    if (day > daysInMonth) {
+        throw new Error(`Invalid day: ${day}. ${month} month has ${daysInMonth} days`);
+    }
+
+    return new Date(year, month - 1, day);
+}
+
 // ✅ 오디오 업로드 및 DB 저장 라우터
 router.post('/', upload.single('audio'), async(req, res) => {
     try {
         if (!req.file) {
             console.log('❌ 没有上传音频文件');
-            return res.status(400).json({ message: '没有文件' });
+            return res.status(400).json({ message: '没有文件', code: 'FILE_REQUIRED' });
         }
 
         const {
@@ -33,13 +74,33 @@ router.post('/', upload.single('audio'), async(req, res) => {
             gender,
             email,
             date,
-            time, // ← 사용자가 입력한 시간
-            mainRequest, // ← 사용자가 입력한 요청사항
+            time,
+            mainRequest,
             note,
             memberKey
         } = req.body;
 
-        // S3에 업로드할 파일 이름 설정
+        // 필수 항목 확인
+        const required = [name, age, gender, email, date, time, memberKey];
+        if (required.some(val => !val)) {
+            return res.status(400).json({ message: '缺少必填项', code: 'MISSING_FIELDS' });
+        }
+
+        // 날짜 파싱
+        let parsedDate;
+        try {
+            parsedDate = parseChineseDate(date);
+            console.log('✅ 날짜 파싱 성공:', parsedDate.toISOString());
+        } catch (e) {
+            console.error('[日期转换失败]', e.message);
+            return res.status(400).json({
+                message: '日期格式错误',
+                error: e.message,
+                code: 'DATE_PARSE_ERROR'
+            });
+        }
+
+        // S3 업로드
         const filename = `${uuidv4()}_${req.file.originalname}`;
         const uploadParams = {
             Bucket: process.env.AWS_BUCKET_NAME,
@@ -48,21 +109,20 @@ router.post('/', upload.single('audio'), async(req, res) => {
             ContentType: req.file.mimetype,
         };
 
-        // S3에 업로드
-        const s3Upload = await s3Client.send(new PutObjectCommand(uploadParams));
+        await s3Client.send(new PutObjectCommand(uploadParams));
         const audioUrl = `https://${process.env.AWS_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/audio/${filename}`;
         console.log('✅ S3上传成功:', audioUrl);
 
-        // MongoDB에 저장
+        // MongoDB 저장
         const newAlbum = new Album({
             name,
             age: Number(age),
             gender,
             email,
-            date: new Date(date),
+            date: parsedDate,
             albumLength: time,
-            albumDescription: mainRequest,
-            note,
+            albumDescription: mainRequest || '',
+            note: note || '',
             reservationCode: memberKey,
             audioUrl,
         });
@@ -71,17 +131,34 @@ router.post('/', upload.single('audio'), async(req, res) => {
         console.log('✅ MongoDB保存成功:', newAlbum._id);
 
         res.status(200).json({ message: '保存完成', url: audioUrl });
+
     } catch (err) {
-        console.error('❌ 上传处理错误:', JSON.stringify(err, null, 2));
+        console.error('❌ 上传处理错误:', err);
         res.status(500).json({ message: '预约创建失败', error: err.message });
     }
 });
 
-// ✅ 예약 삭제 라우터
+// ✅ 예약 삭제 라우터 (S3 파일도 함께 삭제)
 router.delete('/:id', async(req, res) => {
     try {
+        const album = await Album.findById(req.params.id);
+        if (!album) {
+            return res.status(404).json({ message: '未找到预约' });
+        }
+
+        // S3 오디오 파일 삭제
+        if (album.audioUrl) {
+            const key = album.audioUrl.split('/').pop();
+            const deleteParams = {
+                Bucket: process.env.AWS_BUCKET_NAME,
+                Key: `audio/${key}`
+            };
+            await s3Client.send(new DeleteObjectCommand(deleteParams));
+            console.log('✅ S3文件已删除:', key);
+        }
+
         await Album.findByIdAndDelete(req.params.id);
-        res.status(200).json({ message: '删除完成' });
+        res.status(200).json({ message: '预约已删除' });
     } catch (err) {
         console.error('❌ 删除失败:', err);
         res.status(500).json({ message: '删除失败', error: err.message });
@@ -105,10 +182,9 @@ router.get('/download/:id', async(req, res) => {
         };
 
         const { Body } = await s3Client.send(new GetObjectCommand(getObjectParams));
-        
+
         res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
         res.setHeader('Content-Type', 'audio/mpeg');
-        
         Body.pipe(res);
 
         Body.on('error', (err) => {

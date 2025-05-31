@@ -368,8 +368,8 @@
         .templatemo-album-date:hover {
             color: #ff6633;
         }
-
         /* 모바일 최적화 스타일 */
+        
         @media (max-width: 767px) {
             .upload-section {
                 display: flex;
@@ -377,62 +377,49 @@
                 align-items: center;
                 gap: 15px;
             }
-
             .upload-section .btn {
                 width: 100%;
                 max-width: 300px;
                 margin-left: 0 !important;
             }
-
             .templatemo-album {
                 margin-bottom: 30px;
             }
-
             .form-group {
                 margin-bottom: 15px;
             }
-
             #accordionContent .row {
                 margin: 0;
             }
-
             #albumForm {
                 padding: 0 15px;
             }
-
             .templatemo-header-image {
                 height: 200px;
             }
-
             .templatemo-site-name {
                 font-size: 24px;
                 padding: 10px 0;
             }
-
             #responsive-menu {
                 background: rgba(0, 0, 0, 0.9);
                 padding: 10px 0;
             }
-
             #responsive-menu .menu-holder {
                 padding: 0;
             }
-
             #responsive-menu .menu-holder li a {
                 padding: 10px 20px;
                 display: block;
                 color: white;
                 font-size: 16px;
             }
-
             #responsive-menu .menu-holder li a:hover {
                 background: rgba(255, 255, 255, 0.1);
             }
-
             .templatemo-nav {
                 display: none;
             }
-
             #mobile_menu {
                 display: block;
                 padding: 10px;
@@ -440,35 +427,40 @@
                 font-size: 20px;
             }
         }
-
         /* 시간 입력 스타일링 */
-        .time-input::-webkit-datetime-edit-ampm-field { 
-            display: none !important; 
-        }
-        .time-input::-webkit-clear-button { 
-            display: none !important;
-        }
-        .time-input::-webkit-inner-spin-button { 
-            display: none !important;
-        }
-        .time-input::-webkit-calendar-picker-indicator { 
+        
+        .time-input::-webkit-datetime-edit-ampm-field {
             display: none !important;
         }
         
+        .time-input::-webkit-clear-button {
+            display: none !important;
+        }
+        
+        .time-input::-webkit-inner-spin-button {
+            display: none !important;
+        }
+        
+        .time-input::-webkit-calendar-picker-indicator {
+            display: none !important;
+        }
         /* 날짜 선택 스타일링 */
+        
         #ui-datepicker-div {
             font-family: 'Open Sans', Arial, sans-serif !important;
         }
+        
         .ui-datepicker-title select {
             font-family: 'Open Sans', Arial, sans-serif !important;
         }
-        
         /* 파일 업로드 영역 스타일링 */
+        
         .file-upload-wrapper {
             position: relative;
             min-height: 38px;
             margin-bottom: 30px;
-            padding-top: 40px;  /* 파일 이름 표시 공간 확보 */
+            padding-top: 40px;
+            /* 파일 이름 표시 공간 확보 */
         }
         
         .file-select-button {
@@ -501,7 +493,8 @@
         .file-status-wrapper {
             position: absolute;
             top: 0;
-            left: 120px;  /* 버튼 너비 + 여백 */
+            left: 120px;
+            /* 버튼 너비 + 여백 */
             right: 0;
             padding: 8px 0;
         }
@@ -512,40 +505,47 @@
             word-break: break-all;
             line-height: 1.2;
         }
-
         /* 기본 달력 숨기기 */
+        
         input[type="date"]::-webkit-calendar-picker-indicator {
             display: none;
         }
+        
         input[type="date"]::-webkit-inner-spin-button {
             display: none;
         }
+        
         input[type="date"]::-webkit-clear-button {
             display: none;
         }
-        
         /* jQuery UI 달력 스타일 커스터마이징 */
+        
         .ui-datepicker {
             font-family: 'Open Sans', Arial, sans-serif;
             font-size: 14px;
             background: #fff;
             border: 1px solid #ddd;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
         }
+        
         .ui-datepicker-header {
             background: #f8f9fa;
             border: none;
             padding: 10px;
         }
+        
         .ui-datepicker-title {
             color: #333;
         }
+        
         .ui-datepicker-calendar th {
             color: #666;
         }
+        
         .ui-datepicker-calendar td {
             padding: 3px;
         }
+        
         .ui-datepicker-calendar td a {
             text-align: center;
         }
@@ -567,6 +567,12 @@
             const submitButton = form.querySelector('button[type="submit"]');
             const formData = new FormData(form);
 
+            // 날짜를 ISO 형식으로 변환
+            const dateValue = $("#date").datepicker("getDate");
+            if (dateValue) {
+                formData.set("date", new Date(dateValue).toISOString());
+            }
+
             // 버튼 비활성화 및 로딩 표시
             submitButton.disabled = true;
             submitButton.textContent = '提交中...';
@@ -575,64 +581,64 @@
             console.log('📤 文件上传开始');
 
             fetch("https://pro-audio.onrender.com/api/upload", {
-                method: "POST",
-                body: formData,
-                mode: 'cors',
-                credentials: 'omit',
-                headers: {
-                    'Accept': 'application/json'
-                }
-            })
-            .then(async response => {
-                const contentType = response.headers.get('content-type');
-                const isJson = contentType && contentType.includes('application/json');
-                const data = isJson ? await response.json() : await response.text();
-
-                if (!response.ok) {
-                    let errorMessage = '上传失败: ';
-                    if (isJson && data.code) {
-                        switch(data.code) {
-                            case 'MISSING_FIELDS':
-                                errorMessage += `必填项缺失: ${data.fields.join(', ')}`;
-                                break;
-                            case 'FILE_REQUIRED':
-                                errorMessage += '请选择音频文件';
-                                break;
-                            case 'FILE_TOO_LARGE':
-                                errorMessage += '文件太大';
-                                break;
-                            case 'S3_UPLOAD_ERROR':
-                                errorMessage += '文件上传失败，请稍后重试';
-                                break;
-                            case 'DB_SAVE_ERROR':
-                                errorMessage += '保存失败，请稍后重试';
-                                break;
-                            default:
-                                errorMessage += data.message || '请稍后重试';
-                        }
-                    } else {
-                        errorMessage += '服务器错误，请稍后重试';
+                    method: "POST",
+                    body: formData,
+                    mode: 'cors',
+                    credentials: 'omit',
+                    headers: {
+                        'Accept': 'application/json'
                     }
-                    throw new Error(errorMessage);
-                }
+                })
+                .then(async response => {
+                    const contentType = response.headers.get('content-type');
+                    const isJson = contentType && contentType.includes('application/json');
+                    const data = isJson ? await response.json() : await response.text();
 
-                return data;
-            })
-            .then(data => {
-                console.log('✅ 上传成功:', data);
-                alert("🎉 申请已完成！");
-                form.reset();
-                document.getElementById('accordionContent').style.maxHeight = '0px';
-            })
-            .catch(error => {
-                console.error("❌ 上传失败:", error);
-                alert(error.message || '上传失败，请稍后重试');
-            })
-            .finally(() => {
-                // 버튼 상태 복구
-                submitButton.disabled = false;
-                submitButton.textContent = '申请完成';
-            });
+                    if (!response.ok) {
+                        let errorMessage = '上传失败: ';
+                        if (isJson && data.code) {
+                            switch (data.code) {
+                                case 'MISSING_FIELDS':
+                                    errorMessage += '必填项缺失: ' + data.fields.join(', ');
+                                    break;
+                                case 'FILE_REQUIRED':
+                                    errorMessage += '请选择音频文件';
+                                    break;
+                                case 'FILE_TOO_LARGE':
+                                    errorMessage += '文件太大';
+                                    break;
+                                case 'S3_UPLOAD_ERROR':
+                                    errorMessage += '文件上传失败，请稍后重试';
+                                    break;
+                                case 'DB_SAVE_ERROR':
+                                    errorMessage += '保存失败，请稍后重试';
+                                    break;
+                                default:
+                                    errorMessage += data.message || '请稍后重试';
+                            }
+                        } else {
+                            errorMessage += '服务器错误，请稍后重试';
+                        }
+                        throw new Error(errorMessage);
+                    }
+
+                    return data;
+                })
+                .then(data => {
+                    console.log('✅ 上传成功:', data);
+                    alert("🎉 申请已完成！");
+                    form.reset();
+                    document.getElementById('accordionContent').style.maxHeight = '0px';
+                })
+                .catch(error => {
+                    console.error("❌ 上传失败:", error);
+                    alert(error.message || '上传失败，请稍后重试');
+                })
+                .finally(() => {
+                    // 버튼 상태 복구
+                    submitButton.disabled = false;
+                    submitButton.textContent = '申请完成';
+                });
         }
 
         // Contact Form Submission
@@ -757,11 +763,11 @@
             // 달력 설정
             $.datepicker.setDefaults({
                 dateFormat: 'yy年mm月dd日',
-                monthNames: ['一月','二月','三月','四月','五月','六月','七月','八月','九月','十月','十一月','十二月'],
-                monthNamesShort: ['一月','二月','三月','四月','五月','六月','七月','八月','九月','十月','十一月','十二月'],
-                dayNames: ['星期日','星期一','星期二','星期三','星期四','星期五','星期六'],
-                dayNamesShort: ['周日','周一','周二','周三','周四','周五','周六'],
-                dayNamesMin: ['日','一','二','三','四','五','六'],
+                monthNames: ['一月', '二月', '三月', '四月', '五月', '六月', '七月', '八月', '九月', '十月', '十一月', '十二月'],
+                monthNamesShort: ['一月', '二月', '三月', '四月', '五月', '六月', '七月', '八月', '九月', '十月', '十一月', '十二月'],
+                dayNames: ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'],
+                dayNamesShort: ['周日', '周一', '周二', '周三', '周四', '周五', '周六'],
+                dayNamesMin: ['日', '一', '二', '三', '四', '五', '六'],
                 showMonthAfterYear: true,
                 yearSuffix: '年',
                 changeMonth: true,
@@ -773,13 +779,13 @@
             });
 
             $("#date").datepicker();
-            
+
             // 시간 입력 설정
             const timeInput = document.getElementById('time');
             if (timeInput) {
                 $(timeInput).on('input', function(e) {
                     let value = e.target.value.replace(/\D/g, '');
-                    
+
                     // 시간, 분, 초 제한
                     if (value.length >= 2) {
                         let hours = value.substring(0, 2);
@@ -796,15 +802,15 @@
                         if (parseInt(seconds) > 59) seconds = '59';
                         value = value.substring(0, 4) + seconds;
                     }
-                    
+
                     // 형식 지정 (HH:mm:ss)
                     let formatted = '';
                     if (value.length > 0) formatted = value.substring(0, 2);
                     if (value.length > 2) formatted += ':' + value.substring(2, 4);
                     if (value.length > 4) formatted += ':' + value.substring(4, 6);
-                    
+
                     e.target.value = formatted;
-                    
+
                     // 중국어 형식으로 표시
                     if (value.length === 6) {
                         const [h, m, s] = [value.substring(0, 2), value.substring(2, 4), value.substring(4, 6)];
@@ -819,11 +825,11 @@
                     const value = e.target.value.replace(/\D/g, '');
                     if (value.length > 0 && value.length < 6) {
                         let padded = value.padEnd(6, '0');
-                        let formatted = padded.substring(0, 2) + ':' + 
-                                      padded.substring(2, 4) + ':' + 
-                                      padded.substring(4, 6);
+                        let formatted = padded.substring(0, 2) + ':' +
+                            padded.substring(2, 4) + ':' +
+                            padded.substring(4, 6);
                         e.target.value = formatted;
-                        
+
                         const [h, m, s] = [padded.substring(0, 2), padded.substring(2, 4), padded.substring(4, 6)];
                         document.querySelector('.time-display').textContent = `${h}时${m}分${s}秒`;
                     }
@@ -837,7 +843,7 @@
                     const fileName = e.target.files[0]?.name;
                     const statusElement = document.querySelector('.file-status');
                     statusElement.textContent = fileName || '未选择文件';
-                    
+
                     // 파일이 선택되면 버튼 텍스트 변경
                     const buttonElement = document.querySelector('.file-select-button');
                     buttonElement.textContent = fileName ? '更改文件' : '选择文件';
