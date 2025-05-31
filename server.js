@@ -11,6 +11,38 @@ const Album = require('./models/Album');
 const app = express();
 const port = process.env.PORT || 8080;
 
+// MongoDB 연결
+mongoose.connect(process.env.MONGODB_URI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+    serverSelectionTimeoutMS: 5000
+}).then(() => {
+    console.log('✅ MongoDB 连接成功');
+}).catch((err) => {
+    console.error('❌ MongoDB 连接失败:', err);
+});
+
+// MongoDB 연결 에러 처리
+mongoose.connection.on('error', (err) => {
+    console.error('MongoDB 错误:', err);
+});
+
+mongoose.connection.on('disconnected', () => {
+    console.log('MongoDB 断开连接，尝试重新连接...');
+    mongoose.connect(process.env.MONGODB_URI, {
+        useNewUrlParser: true,
+        useUnifiedTopology: true,
+        serverSelectionTimeoutMS: 5000
+    });
+});
+
+// AWS S3 설정 검증
+if (!process.env.AWS_REGION || !process.env.AWS_ACCESS_KEY_ID || 
+    !process.env.AWS_SECRET_ACCESS_KEY || !process.env.AWS_BUCKET_NAME) {
+    console.error('❌ AWS 配置缺失');
+    process.exit(1);
+}
+
 // ✅ 여러 도메인을 허용하도록 설정
 const allowedOrigins = [
     'https://cheery-bienenstitch-8bad49.netlify.app',
@@ -170,7 +202,7 @@ app.post('/api/reservations', upload.single('audio'), async(req, res) => {
             age: Number(req.body.age),
             gender: req.body.gender,
             email: req.body.email,
-            date: new Date(req.body.date),
+            date: parseChineseDate(req.body.date),
             albumLength: req.body.time,
             albumDescription: req.body.mainRequest || '',
             note: req.body.note || '',
@@ -180,6 +212,17 @@ app.post('/api/reservations', upload.single('audio'), async(req, res) => {
         });
 
         try {
+            // 데이터 유효성 검사
+            const validationError = newAlbum.validateSync();
+            if (validationError) {
+                console.error('Validation Error:', validationError);
+                return res.status(400).json({
+                    message: '数据验证失败',
+                    errors: validationError.errors,
+                    code: 'VALIDATION_ERROR'
+                });
+            }
+
             await newAlbum.save();
         } catch (dbError) {
             console.error('MongoDB Save Error:', dbError);
@@ -240,21 +283,32 @@ app.delete('/api/reservations/:id', async(req, res) => {
     }
 });
 
-// MongoDB 연결
-const MONGODB_URI = process.env.MONGODB_URI;
-if (!MONGODB_URI) {
-    console.error('❌ 未设置MONGODB_URI环境变量');
-    process.exit(1);
+// 날짜 변환 함수 추가
+function parseChineseDate(dateStr) {
+    try {
+        // "YYYY年MM月DD日" 형식에서 숫자만 추출
+        const matches = dateStr.match(/(\d{4})年(\d{1,2})月(\d{1,2})日/);
+        if (!matches) {
+            console.error('날짜 형식 오류:', dateStr);
+            throw new Error('Invalid date format');
+        }
+        
+        const [_, year, month, day] = matches;
+        // month는 0-based이므로 1을 빼줍니다
+        const date = new Date(year, month - 1, day);
+        
+        // 유효한 날짜인지 확인
+        if (isNaN(date.getTime())) {
+            console.error('유효하지 않은 날짜:', dateStr);
+            throw new Error('Invalid date');
+        }
+        
+        return date;
+    } catch (error) {
+        console.error('날짜 파싱 오류:', error);
+        throw error;
+    }
 }
-
-mongoose.connect(MONGODB_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true
-}).then(() => {
-    console.log('✅ MongoDB连接成功');
-}).catch(err => {
-    console.error('❌ MongoDB连接失败:', err);
-});
 
 // 서버 시작
 app.listen(port, () => {
