@@ -1,16 +1,18 @@
 const express = require('express');
 const multer = require('multer');
-const aws = require('aws-sdk');
+const { S3Client, PutObjectCommand, GetObjectCommand, DeleteObjectCommand } = require('@aws-sdk/client-s3');
 const { v4: uuidv4 } = require('uuid');
 const Album = require('./models/Album');
 
 const router = express.Router();
 
 // ✅ S3 설정
-const s3 = new aws.S3({
-    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+const s3Client = new S3Client({
     region: process.env.AWS_REGION,
+    credentials: {
+        accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY
+    }
 });
 
 // ✅ Multer 메모리 저장소 설정
@@ -39,7 +41,7 @@ router.post('/', upload.single('audio'), async(req, res) => {
 
         // S3에 업로드할 파일 이름 설정
         const filename = `${uuidv4()}_${req.file.originalname}`;
-        const s3Params = {
+        const uploadParams = {
             Bucket: process.env.AWS_BUCKET_NAME,
             Key: `audio/${filename}`,
             Body: req.file.buffer,
@@ -47,8 +49,9 @@ router.post('/', upload.single('audio'), async(req, res) => {
         };
 
         // S3에 업로드
-        const s3Upload = await s3.upload(s3Params).promise();
-        console.log('✅ S3 업로드 성공:', s3Upload.Location);
+        const s3Upload = await s3Client.send(new PutObjectCommand(uploadParams));
+        const audioUrl = `https://${process.env.AWS_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/audio/${filename}`;
+        console.log('✅ S3 업로드 성공:', audioUrl);
 
         // MongoDB에 저장
         const newAlbum = new Album({
@@ -61,13 +64,13 @@ router.post('/', upload.single('audio'), async(req, res) => {
             albumDescription: mainRequest,
             note,
             reservationCode: memberKey,
-            audioUrl: s3Upload.Location,
+            audioUrl,
         });
 
         await newAlbum.save();
         console.log('✅ MongoDB 저장 성공:', newAlbum._id);
 
-        res.status(200).json({ message: '저장 완료', url: s3Upload.Location });
+        res.status(200).json({ message: '저장 완료', url: audioUrl });
     } catch (err) {
         console.error('❌ 업로드 처리 중 오류:', JSON.stringify(err, null, 2));
         res.status(500).json({ message: '예약 생성 실패', error: err.message });
@@ -96,17 +99,19 @@ router.get('/download/:id', async(req, res) => {
         const key = decodeURIComponent(album.audioUrl.split('/').slice(-1)[0]);
         const filename = key.split('_').slice(1).join('_');
 
-        const s3Params = {
+        const getObjectParams = {
             Bucket: process.env.AWS_BUCKET_NAME,
             Key: `audio/${key}`,
         };
 
-        const s3Stream = s3.getObject(s3Params).createReadStream();
+        const { Body } = await s3Client.send(new GetObjectCommand(getObjectParams));
+        
         res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
         res.setHeader('Content-Type', 'audio/mpeg');
-        s3Stream.pipe(res);
+        
+        Body.pipe(res);
 
-        s3Stream.on('error', (err) => {
+        Body.on('error', (err) => {
             console.error('❌ S3 스트리밍 실패:', err);
             if (!res.headersSent) {
                 res.status(500).json({ message: '다운로드 실패', error: err.message });
