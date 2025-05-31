@@ -164,7 +164,13 @@ app.delete('/api/reservations/:id', async(req, res) => {
 });
 
 // MongoDB 연결
-mongoose.connect(process.env.MONGODB_URI, {
+const MONGODB_URI = process.env.MONGODB_URI;
+if (!MONGODB_URI) {
+    console.error('❌ MONGODB_URI 환경 변수가 설정되지 않았습니다.');
+    process.exit(1);
+}
+
+mongoose.connect(MONGODB_URI, {
     useNewUrlParser: true,
     useUnifiedTopology: true
 }).then(() => {
