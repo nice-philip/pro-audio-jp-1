@@ -22,10 +22,12 @@ const s3Client = new S3Client({
 
 // CORS 설정
 app.use(cors({
-    origin: '*',  // 모든 출처 허용
-    methods: ['GET', 'POST', 'DELETE', 'UPDATE', 'PUT', 'PATCH'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
-    credentials: true
+    origin: 'https://cheery-bienenstitch-8bad49.netlify.app',
+    methods: ['GET', 'POST', 'DELETE', 'PUT', 'PATCH', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+    credentials: true,
+    preflightContinue: false,
+    optionsSuccessStatus: 204
 }));
 
 // JSON 파싱 허용
