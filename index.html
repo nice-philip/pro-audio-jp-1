@@ -17,19 +17,10 @@
     <link href="css/font-awesome.min.css" rel="stylesheet">
     <link href="css/bootstrap.min.css" rel="stylesheet" type="text/css">
     <link href="css/templatemo_style.css" rel="stylesheet" type="text/css">
+    <link href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css" rel="stylesheet">
 </head>
 
 <body>
-    <nav id="responsive-menu">
-        <ul class="menu-holder">
-            <li><a href="#home"><i class="fa fa-home"></i>Home</a></li>
-            <li><a href="#subscribe"><i class="fa fa-briefcase"></i>预约申请</a></li>
-            <li><a href="#albums"><i class="fa fa-cogs"></i>Albums</a></li>
-            <li><a href="#about"><i class="fa fa-list"></i>About</a></li>
-            <li><a href="#services"><i class="fa fa-list"></i>Services</a></li>
-            <li><a href="#contact"><i class="fa fa-briefcase"></i>Contact</a></li>
-        </ul>
-    </nav>
     <div class="templatemo-header">
         <div class="templatemo-header-gradient-bg"></div>
         <div class="container">
@@ -93,10 +84,11 @@
                                 <input type="email" id="email" name="email" class="form-control" placeholder="邮箱..." required>
                             </div>
                             <div class="form-group">
-                                <input type="date" id="date" name="date" class="form-control" required>
+                                <input type="text" id="date" name="date" class="form-control" placeholder="选择日期..." required>
                             </div>
                             <div class="form-group">
-                                <input type="time" id="time" name="time" class="form-control" placeholder="时长 (时:分:秒)" required>
+                                <input type="text" id="time" name="time" class="form-control time-input" placeholder="时:分:秒" maxlength="8" required>
+                                <small class="text-muted time-display">请输入时间 (24小时制)</small>
                             </div>
                             <div class="form-group">
                                 <textarea id="mainRequest" name="mainRequest" class="form-control" rows="6" placeholder="专辑介绍 + 曲目名"></textarea>
@@ -108,10 +100,17 @@
                                 <input type="text" id="memberKey" name="memberKey" class="form-control" placeholder="预约编号(用于确认)" required>
                             </div>
                             <div class="form-group">
-                                <input type="file" id="audio" name="audio" class="form-control" accept=".mp3,.wav" required>
-                                <small class="text-muted">请上传音频文件 (支持 .mp3, .wav 格式)</small>
+                                <div class="file-upload-wrapper">
+                                    <div class="file-select-button">选择文件</div>
+                                    <input type="file" id="audio" name="audio" class="form-control custom-file-input" accept=".mp3,.wav" required>
+                                    <div class="file-status-wrapper">
+                                        <small class="text-muted file-status">未选择文件</small>
+                                    </div>
+                                </div>
                             </div>
-                            <button type="submit" class="btn text-uppercase tm-dark-bg tm-orange-text tm-send-btn btn-gradient">申请完成</button>
+                            <div class="form-group" style="margin-top: 30px;">
+                                <button type="submit" class="btn text-uppercase tm-dark-bg tm-orange-text tm-send-btn btn-gradient">申请完成</button>
+                            </div>
                         </form>
                     </div>
                 </div>
@@ -308,6 +307,7 @@
         </div>
     </footer>
     <script src="js/jquery-1.11.1.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
     <script src="js/templatemo_script.js"></script>
     <style>
         .audio-player {
@@ -369,7 +369,7 @@
             color: #ff6633;
         }
 
-        /* 모바일 최적화 스타일 추가 */
+        /* 모바일 최적화 스타일 */
         @media (max-width: 767px) {
             .upload-section {
                 display: flex;
@@ -439,6 +439,115 @@
                 color: white;
                 font-size: 20px;
             }
+        }
+
+        /* 시간 입력 스타일링 */
+        .time-input::-webkit-datetime-edit-ampm-field { 
+            display: none !important; 
+        }
+        .time-input::-webkit-clear-button { 
+            display: none !important;
+        }
+        .time-input::-webkit-inner-spin-button { 
+            display: none !important;
+        }
+        .time-input::-webkit-calendar-picker-indicator { 
+            display: none !important;
+        }
+        
+        /* 날짜 선택 스타일링 */
+        #ui-datepicker-div {
+            font-family: 'Open Sans', Arial, sans-serif !important;
+        }
+        .ui-datepicker-title select {
+            font-family: 'Open Sans', Arial, sans-serif !important;
+        }
+        
+        /* 파일 업로드 영역 스타일링 */
+        .file-upload-wrapper {
+            position: relative;
+            min-height: 38px;
+            margin-bottom: 30px;
+            padding-top: 40px;  /* 파일 이름 표시 공간 확보 */
+        }
+        
+        .file-select-button {
+            position: absolute;
+            left: 0;
+            top: 0;
+            padding: 8px 16px;
+            background: #f8f9fa;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            cursor: pointer;
+            z-index: 1;
+        }
+        
+        .file-select-button:hover {
+            background: #e9ecef;
+        }
+        
+        .custom-file-input {
+            opacity: 0;
+            width: 100%;
+            height: 38px;
+            position: absolute;
+            top: 0;
+            left: 0;
+            cursor: pointer;
+            z-index: 2;
+        }
+        
+        .file-status-wrapper {
+            position: absolute;
+            top: 0;
+            left: 120px;  /* 버튼 너비 + 여백 */
+            right: 0;
+            padding: 8px 0;
+        }
+        
+        .file-status {
+            display: block;
+            color: #666;
+            word-break: break-all;
+            line-height: 1.2;
+        }
+
+        /* 기본 달력 숨기기 */
+        input[type="date"]::-webkit-calendar-picker-indicator {
+            display: none;
+        }
+        input[type="date"]::-webkit-inner-spin-button {
+            display: none;
+        }
+        input[type="date"]::-webkit-clear-button {
+            display: none;
+        }
+        
+        /* jQuery UI 달력 스타일 커스터마이징 */
+        .ui-datepicker {
+            font-family: 'Open Sans', Arial, sans-serif;
+            font-size: 14px;
+            background: #fff;
+            border: 1px solid #ddd;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .ui-datepicker-header {
+            background: #f8f9fa;
+            border: none;
+            padding: 10px;
+        }
+        .ui-datepicker-title {
+            color: #333;
+        }
+        .ui-datepicker-calendar th {
+            color: #666;
+        }
+        .ui-datepicker-calendar td {
+            padding: 3px;
+        }
+        .ui-datepicker-calendar td a {
+            text-align: center;
         }
     </style>
     <script>
@@ -628,6 +737,113 @@
                 currentPlayer = null;
             }
         }
+
+        // 달력 관련 텍스트 변경
+        const dateInput = document.getElementById('date');
+        if (dateInput) {
+            dateInput.addEventListener('focus', function() {
+                // 달력의 요일 이름을 중국어로 변경
+                const weekdayLabels = document.querySelectorAll('.ui-datepicker-calendar th');
+                if (weekdayLabels.length) {
+                    const weekdays = ['日', '一', '二', '三', '四', '五', '六'];
+                    weekdayLabels.forEach((label, index) => {
+                        label.textContent = weekdays[index];
+                    });
+                }
+            });
+        }
+
+        $(document).ready(function() {
+            // 달력 설정
+            $.datepicker.setDefaults({
+                dateFormat: 'yy年mm月dd日',
+                monthNames: ['一月','二月','三月','四月','五月','六月','七月','八月','九月','十月','十一月','十二月'],
+                monthNamesShort: ['一月','二月','三月','四月','五月','六月','七月','八月','九月','十月','十一月','十二月'],
+                dayNames: ['星期日','星期一','星期二','星期三','星期四','星期五','星期六'],
+                dayNamesShort: ['周日','周一','周二','周三','周四','周五','周六'],
+                dayNamesMin: ['日','一','二','三','四','五','六'],
+                showMonthAfterYear: true,
+                yearSuffix: '年',
+                changeMonth: true,
+                changeYear: true,
+                beforeShow: function(input, inst) {
+                    // 달력이 표시되기 전에 실행
+                    inst.dpDiv.addClass('custom-datepicker');
+                }
+            });
+
+            $("#date").datepicker();
+            
+            // 시간 입력 설정
+            const timeInput = document.getElementById('time');
+            if (timeInput) {
+                $(timeInput).on('input', function(e) {
+                    let value = e.target.value.replace(/\D/g, '');
+                    
+                    // 시간, 분, 초 제한
+                    if (value.length >= 2) {
+                        let hours = value.substring(0, 2);
+                        if (parseInt(hours) > 23) hours = '23';
+                        value = hours + value.substring(2);
+                    }
+                    if (value.length >= 4) {
+                        let minutes = value.substring(2, 4);
+                        if (parseInt(minutes) > 59) minutes = '59';
+                        value = value.substring(0, 2) + minutes + value.substring(4);
+                    }
+                    if (value.length >= 6) {
+                        let seconds = value.substring(4, 6);
+                        if (parseInt(seconds) > 59) seconds = '59';
+                        value = value.substring(0, 4) + seconds;
+                    }
+                    
+                    // 형식 지정 (HH:mm:ss)
+                    let formatted = '';
+                    if (value.length > 0) formatted = value.substring(0, 2);
+                    if (value.length > 2) formatted += ':' + value.substring(2, 4);
+                    if (value.length > 4) formatted += ':' + value.substring(4, 6);
+                    
+                    e.target.value = formatted;
+                    
+                    // 중국어 형식으로 표시
+                    if (value.length === 6) {
+                        const [h, m, s] = [value.substring(0, 2), value.substring(2, 4), value.substring(4, 6)];
+                        document.querySelector('.time-display').textContent = `${h}时${m}分${s}秒`;
+                    } else {
+                        document.querySelector('.time-display').textContent = '请输入时间 (24小时制)';
+                    }
+                });
+
+                // 포커스가 빠질 때 완전한 형식 체크
+                $(timeInput).on('blur', function(e) {
+                    const value = e.target.value.replace(/\D/g, '');
+                    if (value.length > 0 && value.length < 6) {
+                        let padded = value.padEnd(6, '0');
+                        let formatted = padded.substring(0, 2) + ':' + 
+                                      padded.substring(2, 4) + ':' + 
+                                      padded.substring(4, 6);
+                        e.target.value = formatted;
+                        
+                        const [h, m, s] = [padded.substring(0, 2), padded.substring(2, 4), padded.substring(4, 6)];
+                        document.querySelector('.time-display').textContent = `${h}时${m}分${s}秒`;
+                    }
+                });
+            }
+
+            // 파일 선택 이벤트
+            const fileInput = document.getElementById('audio');
+            if (fileInput) {
+                fileInput.addEventListener('change', function(e) {
+                    const fileName = e.target.files[0]?.name;
+                    const statusElement = document.querySelector('.file-status');
+                    statusElement.textContent = fileName || '未选择文件';
+                    
+                    // 파일이 선택되면 버튼 텍스트 변경
+                    const buttonElement = document.querySelector('.file-select-button');
+                    buttonElement.textContent = fileName ? '更改文件' : '选择文件';
+                });
+            }
+        });
     </script>
     <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
 </body>

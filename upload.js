@@ -23,8 +23,8 @@ const upload = multer({ storage });
 router.post('/', upload.single('audio'), async(req, res) => {
     try {
         if (!req.file) {
-            console.log('❌ 업로드된 오디오 파일이 없습니다.');
-            return res.status(400).json({ message: '파일이 없습니다.' });
+            console.log('❌ 没有上传音频文件');
+            return res.status(400).json({ message: '没有文件' });
         }
 
         const {
@@ -51,7 +51,7 @@ router.post('/', upload.single('audio'), async(req, res) => {
         // S3에 업로드
         const s3Upload = await s3Client.send(new PutObjectCommand(uploadParams));
         const audioUrl = `https://${process.env.AWS_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/audio/${filename}`;
-        console.log('✅ S3 업로드 성공:', audioUrl);
+        console.log('✅ S3上传成功:', audioUrl);
 
         // MongoDB에 저장
         const newAlbum = new Album({
@@ -68,12 +68,12 @@ router.post('/', upload.single('audio'), async(req, res) => {
         });
 
         await newAlbum.save();
-        console.log('✅ MongoDB 저장 성공:', newAlbum._id);
+        console.log('✅ MongoDB保存成功:', newAlbum._id);
 
-        res.status(200).json({ message: '저장 완료', url: audioUrl });
+        res.status(200).json({ message: '保存完成', url: audioUrl });
     } catch (err) {
-        console.error('❌ 업로드 처리 중 오류:', JSON.stringify(err, null, 2));
-        res.status(500).json({ message: '예약 생성 실패', error: err.message });
+        console.error('❌ 上传处理错误:', JSON.stringify(err, null, 2));
+        res.status(500).json({ message: '预约创建失败', error: err.message });
     }
 });
 
@@ -81,10 +81,10 @@ router.post('/', upload.single('audio'), async(req, res) => {
 router.delete('/:id', async(req, res) => {
     try {
         await Album.findByIdAndDelete(req.params.id);
-        res.status(200).json({ message: '삭제 완료' });
+        res.status(200).json({ message: '删除完成' });
     } catch (err) {
-        console.error('❌ 삭제 실패:', err);
-        res.status(500).json({ message: '삭제 실패', error: err.message });
+        console.error('❌ 删除失败:', err);
+        res.status(500).json({ message: '删除失败', error: err.message });
     }
 });
 
@@ -93,7 +93,7 @@ router.get('/download/:id', async(req, res) => {
     try {
         const album = await Album.findById(req.params.id);
         if (!album || !album.audioUrl) {
-            return res.status(404).json({ message: '파일이 없습니다.' });
+            return res.status(404).json({ message: '文件不存在' });
         }
 
         const key = decodeURIComponent(album.audioUrl.split('/').slice(-1)[0]);
@@ -112,14 +112,14 @@ router.get('/download/:id', async(req, res) => {
         Body.pipe(res);
 
         Body.on('error', (err) => {
-            console.error('❌ S3 스트리밍 실패:', err);
+            console.error('❌ S3流媒体失败:', err);
             if (!res.headersSent) {
-                res.status(500).json({ message: '다운로드 실패', error: err.message });
+                res.status(500).json({ message: '下载失败', error: err.message });
             }
         });
     } catch (err) {
-        console.error('❌ 다운로드 실패:', err);
-        res.status(500).json({ message: '다운로드 실패', error: err.message });
+        console.error('❌ 下载失败:', err);
+        res.status(500).json({ message: '下载失败', error: err.message });
     }
 });
 

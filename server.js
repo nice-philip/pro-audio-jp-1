@@ -73,7 +73,7 @@ app.get('/api/reservations', async(req, res) => {
     const key = req.query.key;
 
     if (!key) {
-        return res.status(400).json({ message: '예약번호가 필요합니다.' });
+        return res.status(400).json({ message: '请输入预约号码' });
     }
 
     try {
@@ -83,13 +83,13 @@ app.get('/api/reservations', async(req, res) => {
         } else {
             const userReservations = await Album.find({ reservationCode: key }).sort({ createdAt: -1 });
             if (userReservations.length === 0) {
-                return res.status(404).json({ message: '예약 정보를 찾을 수 없습니다.' });
+                return res.status(404).json({ message: '未找到预约信息' });
             }
             return res.status(200).json(userReservations);
         }
     } catch (err) {
-        console.error('❌ 예약 조회 실패:', err);
-        return res.status(500).json({ message: '조회 실패', error: err.message });
+        console.error('❌ 查询预约失败:', err);
+        return res.status(500).json({ message: '查询失败', error: err.message });
     }
 });
 
@@ -97,8 +97,8 @@ app.get('/api/reservations', async(req, res) => {
 app.use((err, req, res, next) => {
     console.error('Server Error:', err);
     res.status(500).json({
-        message: '서버 오류가 발생했습니다',
-        error: process.env.NODE_ENV === 'development' ? err.message : '알 수 없는 오류'
+        message: '服务器错误',
+        error: process.env.NODE_ENV === 'development' ? err.message : '未知错误'
     });
 });
 
@@ -107,12 +107,12 @@ const handleUploadErrors = (err, req, res, next) => {
     if (err instanceof multer.MulterError) {
         if (err.code === 'LIMIT_FILE_SIZE') {
             return res.status(400).json({
-                message: '파일 크기가 너무 큽니다.',
+                message: '文件大小超出限制',
                 code: 'FILE_TOO_LARGE'
             });
         }
         return res.status(400).json({
-            message: '파일 업로드 중 오류가 발생했습니다.',
+            message: '文件上传失败',
             code: 'UPLOAD_ERROR'
         });
     }
@@ -130,7 +130,7 @@ app.post('/api/reservations', upload.single('audio'), async(req, res) => {
         
         if (missingFields.length > 0) {
             return res.status(400).json({
-                message: '필수 항목이 누락되었습니다',
+                message: '缺少必填项',
                 fields: missingFields,
                 code: 'MISSING_FIELDS'
             });
@@ -138,7 +138,7 @@ app.post('/api/reservations', upload.single('audio'), async(req, res) => {
 
         if (!req.file) {
             return res.status(400).json({
-                message: '오디오 파일이 필요합니다',
+                message: '请上传音频文件',
                 code: 'FILE_REQUIRED'
             });
         }
@@ -157,7 +157,7 @@ app.post('/api/reservations', upload.single('audio'), async(req, res) => {
         } catch (s3Error) {
             console.error('S3 Upload Error:', s3Error);
             return res.status(500).json({
-                message: 'S3 업로드 실패',
+                message: 'S3上传失败',
                 code: 'S3_UPLOAD_ERROR'
             });
         }
@@ -193,13 +193,13 @@ app.post('/api/reservations', upload.single('audio'), async(req, res) => {
                 console.error('S3 Delete Error:', deleteError);
             }
             return res.status(500).json({
-                message: 'DB 저장 실패',
+                message: '数据库保存失败',
                 code: 'DB_SAVE_ERROR'
             });
         }
 
         res.status(200).json({
-            message: '예약이 완료되었습니다',
+            message: '预约完成',
             reservationCode: req.body.memberKey,
             audioUrl
         });
@@ -207,8 +207,8 @@ app.post('/api/reservations', upload.single('audio'), async(req, res) => {
     } catch (err) {
         console.error('예약 생성 실패:', err);
         res.status(500).json({
-            message: '예약 생성 실패',
-            error: process.env.NODE_ENV === 'development' ? err.message : '알 수 없는 오류',
+            message: '预约创建失败',
+            error: process.env.NODE_ENV === 'development' ? err.message : '未知错误',
             code: 'RESERVATION_ERROR'
         });
     }
@@ -219,7 +219,7 @@ app.delete('/api/reservations/:id', async(req, res) => {
     try {
         const album = await Album.findById(req.params.id);
         if (!album) {
-            return res.status(404).json({ message: '예약을 찾을 수 없습니다.' });
+            return res.status(404).json({ message: '未找到预约' });
         }
 
         if (album.audioUrl) {
@@ -233,17 +233,17 @@ app.delete('/api/reservations/:id', async(req, res) => {
         }
 
         await Album.findByIdAndDelete(req.params.id);
-        res.status(200).json({ message: '예약이 삭제되었습니다.' });
+        res.status(200).json({ message: '预约已删除' });
     } catch (err) {
-        console.error('❌ 예약 삭제 실패:', err);
-        res.status(500).json({ message: '예약 삭제 실패', error: err.message });
+        console.error('❌ 删除预约失败:', err);
+        res.status(500).json({ message: '删除预约失败', error: err.message });
     }
 });
 
 // MongoDB 연결
 const MONGODB_URI = process.env.MONGODB_URI;
 if (!MONGODB_URI) {
-    console.error('❌ MONGODB_URI 환경 변수가 설정되지 않았습니다.');
+    console.error('❌ 未设置MONGODB_URI环境变量');
     process.exit(1);
 }
 
@@ -251,12 +251,12 @@ mongoose.connect(MONGODB_URI, {
     useNewUrlParser: true,
     useUnifiedTopology: true
 }).then(() => {
-    console.log('✅ MongoDB 연결 성공');
+    console.log('✅ MongoDB连接成功');
 }).catch(err => {
-    console.error('❌ MongoDB 연결 실패:', err);
+    console.error('❌ MongoDB连接失败:', err);
 });
 
 // 서버 시작
 app.listen(port, () => {
-    console.log(`🚀 서버가 ${port}번 포트에서 실행 중입니다.`);
+    console.log(`🚀 服务器运行在端口 ${port}`);
 });
