@@ -153,9 +153,67 @@ const handleUploadErrors = (err, req, res, next) => {
 
 app.use(handleUploadErrors);
 
+// 날짜 변환 함수 개선
+function parseChineseDate(dateStr) {
+    try {
+        console.log('입력된 날짜 문자열:', dateStr);
+        
+        // 날짜 문자열이 없는 경우
+        if (!dateStr) {
+            console.error('날짜 문자열이 비어있음');
+            throw new Error('Date string is empty');
+        }
+
+        // "YYYY年MM月DD日" 형식에서 숫자만 추출
+        const matches = dateStr.match(/(\d{4})年(\d{1,2})月(\d{1,2})日/);
+        if (!matches) {
+            console.error('날짜 형식이 맞지 않음:', dateStr);
+            throw new Error(`Invalid date format: ${dateStr}`);
+        }
+        
+        const [_, year, month, day] = matches;
+        console.log('파싱된 값:', { year, month, day });
+        
+        // 날짜 유효성 검사
+        if (year < 1900 || year > 2100) {
+            throw new Error(`Invalid year: ${year}`);
+        }
+        if (month < 1 || month > 12) {
+            throw new Error(`Invalid month: ${month}`);
+        }
+        if (day < 1 || day > 31) {
+            throw new Error(`Invalid day: ${day}`);
+        }
+        
+        // Date 객체 생성 (month는 0-based)
+        const date = new Date(year, month - 1, day);
+        
+        // 유효한 날짜인지 확인
+        if (isNaN(date.getTime())) {
+            console.error('유효하지 않은 날짜:', { year, month, day });
+            throw new Error('Invalid date');
+        }
+        
+        console.log('변환된 Date 객체:', date);
+        return date;
+    } catch (error) {
+        console.error('날짜 파싱 오류:', error);
+        throw error;
+    }
+}
+
 // 예약 생성 API 개선
 app.post('/api/reservations', upload.single('audio'), async(req, res) => {
     try {
+        console.log('받은 데이터:', {
+            name: req.body.name,
+            age: req.body.age,
+            gender: req.body.gender,
+            email: req.body.email,
+            date: req.body.date,
+            time: req.body.time
+        });
+
         // 필수 필드 검증
         const requiredFields = ['name', 'age', 'gender', 'email', 'date', 'time', 'memberKey'];
         const missingFields = requiredFields.filter(field => !req.body[field]);
@@ -186,6 +244,7 @@ app.post('/api/reservations', upload.single('audio'), async(req, res) => {
 
         try {
             await s3Client.send(new PutObjectCommand(uploadParams));
+            console.log('✅ S3 업로드 성공');
         } catch (s3Error) {
             console.error('S3 Upload Error:', s3Error);
             return res.status(500).json({
@@ -196,13 +255,26 @@ app.post('/api/reservations', upload.single('audio'), async(req, res) => {
 
         const audioUrl = `https://${process.env.AWS_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/audio/${filename}`;
 
+        // 날짜 변환
+        let parsedDate;
+        try {
+            parsedDate = parseChineseDate(req.body.date);
+        } catch (dateError) {
+            console.error('날짜 변환 실패:', dateError);
+            return res.status(400).json({
+                message: '日期格式错误',
+                error: dateError.message,
+                code: 'DATE_FORMAT_ERROR'
+            });
+        }
+
         // MongoDB 저장 시도
         const newAlbum = new Album({
             name: req.body.name,
             age: Number(req.body.age),
             gender: req.body.gender,
             email: req.body.email,
-            date: parseChineseDate(req.body.date),
+            date: parsedDate,
             albumLength: req.body.time,
             albumDescription: req.body.mainRequest || '',
             note: req.body.note || '',
@@ -212,18 +284,8 @@ app.post('/api/reservations', upload.single('audio'), async(req, res) => {
         });
 
         try {
-            // 데이터 유효성 검사
-            const validationError = newAlbum.validateSync();
-            if (validationError) {
-                console.error('Validation Error:', validationError);
-                return res.status(400).json({
-                    message: '数据验证失败',
-                    errors: validationError.errors,
-                    code: 'VALIDATION_ERROR'
-                });
-            }
-
             await newAlbum.save();
+            console.log('✅ MongoDB 저장 성공');
         } catch (dbError) {
             console.error('MongoDB Save Error:', dbError);
             // S3에 업로드된 파일 삭제 시도
@@ -282,33 +344,6 @@ app.delete('/api/reservations/:id', async(req, res) => {
         res.status(500).json({ message: '删除预约失败', error: err.message });
     }
 });
-
-// 날짜 변환 함수 추가
-function parseChineseDate(dateStr) {
-    try {
-        // "YYYY年MM月DD日" 형식에서 숫자만 추출
-        const matches = dateStr.match(/(\d{4})年(\d{1,2})月(\d{1,2})日/);
-        if (!matches) {
-            console.error('날짜 형식 오류:', dateStr);
-            throw new Error('Invalid date format');
-        }
-        
-        const [_, year, month, day] = matches;
-        // month는 0-based이므로 1을 빼줍니다
-        const date = new Date(year, month - 1, day);
-        
-        // 유효한 날짜인지 확인
-        if (isNaN(date.getTime())) {
-            console.error('유효하지 않은 날짜:', dateStr);
-            throw new Error('Invalid date');
-        }
-        
-        return date;
-    } catch (error) {
-        console.error('날짜 파싱 오류:', error);
-        throw error;
-    }
-}
 
 // 서버 시작
 app.listen(port, () => {
