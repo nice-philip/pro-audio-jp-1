@@ -156,24 +156,24 @@ app.use(handleUploadErrors);
 // 날짜 변환 함수 개선
 function parseChineseDate(dateStr) {
     try {
-        console.log('입력된 날짜 문자열 [타입]:', typeof dateStr);
-        console.log('입력된 날짜 문자열 [값]:', dateStr);
+        console.log('[날짜 파싱] 입력값 타입:', typeof dateStr);
+        console.log('[날짜 파싱] 입력값:', dateStr);
         
         // 날짜 문자열이 없는 경우
         if (!dateStr) {
-            console.error('날짜 문자열이 비어있음');
+            console.error('[날짜 파싱] 날짜 문자열이 비어있음');
             throw new Error('Date string is empty');
         }
 
         // 날짜 문자열 정규화
         const normalizedDateStr = String(dateStr).trim();
-        console.log('정규화된 날짜 문자열:', normalizedDateStr);
+        console.log('[날짜 파싱] 정규화된 문자열:', normalizedDateStr);
 
         // "YYYY年MM月DD日" 형식에서 숫자만 추출
         const matches = normalizedDateStr.match(/(\d{4})年(\d{1,2})月(\d{1,2})日/);
         if (!matches) {
-            console.error('날짜 형식이 맞지 않음. 예상 형식: YYYY年MM月DD日');
-            console.error('받은 형식:', normalizedDateStr);
+            console.error('[날짜 파싱] 형식이 맞지 않음. 예상 형식: YYYY年MM月DD日');
+            console.error('[날짜 파싱] 받은 형식:', normalizedDateStr);
             throw new Error(`Invalid date format. Expected: YYYY年MM月DD日, Received: ${normalizedDateStr}`);
         }
         
@@ -182,7 +182,7 @@ function parseChineseDate(dateStr) {
         const month = parseInt(monthStr, 10);
         const day = parseInt(dayStr, 10);
         
-        console.log('파싱된 값:', { year, month, day });
+        console.log('[날짜 파싱] 추출된 값:', { year, month, day });
         
         // 날짜 유효성 검사
         if (isNaN(year) || year < 1900 || year > 2100) {
@@ -202,18 +202,18 @@ function parseChineseDate(dateStr) {
         }
         
         // Date 객체 생성 (month는 0-based)
-        const date = new Date(year, month - 1, day, 12); // 정오(12시)로 설정하여 시간대 문제 방지
+        const date = new Date(Date.UTC(year, month - 1, day, 12)); // UTC 정오로 설정
         
         // 유효한 날짜인지 확인
         if (isNaN(date.getTime())) {
-            console.error('유효하지 않은 날짜:', { year, month, day });
+            console.error('[날짜 파싱] 유효하지 않은 날짜:', { year, month, day });
             throw new Error(`Invalid date: ${year}-${month}-${day}`);
         }
         
-        console.log('변환된 Date 객체:', date.toISOString());
+        console.log('[날짜 파싱] 생성된 Date 객체:', date.toISOString());
         return date;
     } catch (error) {
-        console.error('날짜 파싱 오류:', error);
+        console.error('[날짜 파싱] 오류:', error);
         throw error;
     }
 }
@@ -221,7 +221,7 @@ function parseChineseDate(dateStr) {
 // 예약 생성 API 개선
 app.post('/api/reservations', upload.single('audio'), async(req, res) => {
     try {
-        console.log('받은 데이터:', {
+        console.log('[API] 받은 데이터:', {
             name: req.body.name,
             age: req.body.age,
             gender: req.body.gender,
@@ -236,7 +236,7 @@ app.post('/api/reservations', upload.single('audio'), async(req, res) => {
         const missingFields = requiredFields.filter(field => !req.body[field]);
         
         if (missingFields.length > 0) {
-            console.error('필수 필드 누락:', missingFields);
+            console.error('[API] 필수 필드 누락:', missingFields);
             return res.status(400).json({
                 message: '缺少必填项',
                 fields: missingFields,
@@ -245,7 +245,7 @@ app.post('/api/reservations', upload.single('audio'), async(req, res) => {
         }
 
         if (!req.file) {
-            console.error('오디오 파일 누락');
+            console.error('[API] 오디오 파일 누락');
             return res.status(400).json({
                 message: '请上传音频文件',
                 code: 'FILE_REQUIRED'
@@ -256,9 +256,9 @@ app.post('/api/reservations', upload.single('audio'), async(req, res) => {
         let parsedDate;
         try {
             parsedDate = parseChineseDate(req.body.date);
-            console.log('날짜 변환 성공:', parsedDate);
+            console.log('[API] 날짜 변환 성공:', parsedDate.toISOString());
         } catch (dateError) {
-            console.error('날짜 변환 실패:', dateError);
+            console.error('[API] 날짜 변환 실패:', dateError);
             return res.status(400).json({
                 message: '日期格式错误',
                 error: dateError.message,
@@ -281,9 +281,9 @@ app.post('/api/reservations', upload.single('audio'), async(req, res) => {
 
         try {
             await s3Client.send(new PutObjectCommand(uploadParams));
-            console.log('✅ S3 업로드 성공');
+            console.log('[API] S3 업로드 성공');
         } catch (s3Error) {
-            console.error('S3 Upload Error:', s3Error);
+            console.error('[API] S3 업로드 실패:', s3Error);
             return res.status(500).json({
                 message: 'S3上传失败',
                 code: 'S3_UPLOAD_ERROR'
@@ -308,10 +308,15 @@ app.post('/api/reservations', upload.single('audio'), async(req, res) => {
         });
 
         try {
+            console.log('[API] MongoDB 저장 시도:', {
+                name: newAlbum.name,
+                date: newAlbum.date.toISOString(),
+                time: newAlbum.albumLength
+            });
             await newAlbum.save();
-            console.log('✅ MongoDB 저장 성공');
+            console.log('[API] MongoDB 저장 성공');
         } catch (dbError) {
-            console.error('MongoDB Save Error:', dbError);
+            console.error('[API] MongoDB 저장 실패:', dbError);
             // S3에 업로드된 파일 삭제 시도
             try {
                 await s3Client.send(new DeleteObjectCommand({
@@ -319,11 +324,12 @@ app.post('/api/reservations', upload.single('audio'), async(req, res) => {
                     Key: `audio/${filename}`
                 }));
             } catch (deleteError) {
-                console.error('S3 Delete Error:', deleteError);
+                console.error('[API] S3 파일 삭제 실패:', deleteError);
             }
             return res.status(500).json({
                 message: '数据库保存失败',
-                code: 'DB_SAVE_ERROR'
+                code: 'DB_SAVE_ERROR',
+                details: dbError.message
             });
         }
 
@@ -334,7 +340,7 @@ app.post('/api/reservations', upload.single('audio'), async(req, res) => {
         });
 
     } catch (err) {
-        console.error('예약 생성 실패:', err);
+        console.error('[API] 예약 생성 실패:', err);
         res.status(500).json({
             message: '预约创建失败',
             error: process.env.NODE_ENV === 'development' ? err.message : '未知错误',
