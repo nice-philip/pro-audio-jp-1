@@ -601,9 +601,21 @@
             try {
                 formData.append('language', 'zh');
 
+                const genderValue = formData.get('gender');
+                if (genderValue === '男') {
+                    formData.set('gender', 'male');
+                } else if (genderValue === '女') {
+                    formData.set('gender', 'female');
+                } else {
+                    formData.set('gender', 'other');
+                }
+
                 const dateValue = $("#date").datepicker("getDate");
                 if (dateValue) {
-                    const formattedDate = dateValue.toISOString().split('T')[0];
+                    const year = dateValue.getFullYear();
+                    const month = String(dateValue.getMonth() + 1).padStart(2, '0');
+                    const day = String(dateValue.getDate()).padStart(2, '0');
+                    const formattedDate = `${year}年${month}月${day}日`;
                     formData.set("date", formattedDate);
                     console.log('发送日期:', formattedDate);
                 } else {
@@ -876,7 +888,7 @@
         $(document).ready(function() {
             // カレンダー設定
             $.datepicker.setDefaults({
-                dateFormat: 'yy-mm-dd',  // ISO 형식에 맞춤
+                dateFormat: 'yy年mm月dd日',  // 서버가 기대하는 형식으로 변경
                 monthNames: ['一月', '二月', '三月', '四月', '五月', '六月', '七月', '八月', '九月', '十月', '十一月', '十二月'],
                 monthNamesShort: ['一月', '二月', '三月', '四月', '五月', '六月', '七月', '八月', '九月', '十月', '十一月', '十二月'],
                 dayNames: ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'],
