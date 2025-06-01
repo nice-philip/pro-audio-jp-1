@@ -55,23 +55,29 @@ if (!process.env.AWS_REGION || !process.env.AWS_ACCESS_KEY_ID ||
 
 // ✅ 여러 도메인을 허용하도록 설정
 const allowedOrigins = [
-    'https://brilliant-unicorn-a5395d.netlify.app',  // 일본어 사이트
+    'https://brilliant-unicorn-a5395d.netlify.app',    // Japanese site
+    'https://cheery-bienenstitch-8bad49.netlify.app',  // Additional Japanese site
+    'https://pro-audio.netlify.app',                   // Chinese site
+    'https://pro-audio-cn.netlify.app',               // Additional Chinese domain
+    'https://pro-audio-jp.netlify.app',               // Additional Japanese domain
     'http://localhost:3000',
     'http://localhost:8080',
-    'http://127.0.0.1:5500',
-    'https://pro-audio.netlify.app'
+    'http://127.0.0.1:5500'
 ];
 
 const corsOptions = {
     origin: function(origin, callback) {
+        // Allow requests with no origin (like mobile apps or curl requests)
         if (!origin || allowedOrigins.includes(origin)) {
             callback(null, true);
         } else {
-            callback(new Error('CORS 차단: 허용되지 않은 origin'));
+            console.error('CORS blocked. Origin not allowed:', origin);
+            callback(new Error('CORS blocked: Origin not allowed'));
         }
     },
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'X-Language', 'Referer'],
+    exposedHeaders: ['ETag', 'x-amz-server-side-encryption', 'x-amz-request-id', 'x-amz-id-2'],
     credentials: false,
     preflightContinue: false,
     optionsSuccessStatus: 204,

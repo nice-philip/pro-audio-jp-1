@@ -60,6 +60,20 @@ function parseChineseDate(dateStr) {
     return new Date(year, month - 1, day);
 }
 
+// ✅ 성별 값 변환 함수
+function normalizeGender(gender, language) {
+    if (language === 'ja') {
+        // Japanese gender values
+        const genderMap = {
+            'male': '男性',
+            'female': '女性',
+            'other': 'その他'
+        };
+        return genderMap[gender] || gender;
+    }
+    return gender; // Return as-is for other languages
+}
+
 // ✅ 오디오 업로드 및 DB 저장 라우터
 router.post('/', upload.single('audio'), async(req, res) => {
     try {
@@ -77,7 +91,8 @@ router.post('/', upload.single('audio'), async(req, res) => {
             time,
             mainRequest,
             note,
-            memberKey
+            memberKey,
+            language
         } = req.body;
 
         // 필수 항목 확인
@@ -85,6 +100,9 @@ router.post('/', upload.single('audio'), async(req, res) => {
         if (required.some(val => !val)) {
             return res.status(400).json({ message: '必須項目が不足しています', code: 'MISSING_FIELDS' });
         }
+
+        // 성별 값 정규화
+        const normalizedGender = normalizeGender(gender, language);
 
         // 날짜 파싱
         let parsedDate;
@@ -117,7 +135,7 @@ router.post('/', upload.single('audio'), async(req, res) => {
         const newAlbum = new Album({
             name,
             age: Number(age),
-            gender,
+            gender: normalizedGender,
             email,
             date: parsedDate,
             albumLength: time,

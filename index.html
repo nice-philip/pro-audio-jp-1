@@ -76,8 +76,8 @@
                             <div class="form-group">
                                 <select id="gender" name="gender" class="form-control" required>
                                     <option value="">性別を選択...</option>
-                                    <option value="男">男性</option>
-                                    <option value="女">女性</option>
+                                    <option value="男性">男性</option>
+                                    <option value="女性">女性</option>
                                     <option value="その他">その他</option>
                                 </select>
                             </div>
@@ -599,17 +599,16 @@
             const formData = new FormData(form);
 
             try {
-                formData.append('language', 'zh');
+                // Detect language and API endpoint based on the current domain
+                const currentDomain = window.location.hostname;
+                const isJapanese = currentDomain.includes('brilliant-unicorn') || currentDomain.includes('pro-audio-jp');
+                const apiEndpoint = isJapanese 
+                    ? "https://pro-audio-jp.onrender.com/api/upload"
+                    : "https://pro-audio.onrender.com/api/upload";
+                
+                formData.append('language', isJapanese ? 'ja' : 'zh');
 
-                const genderValue = formData.get('gender');
-                if (genderValue === '男') {
-                    formData.set('gender', 'male');
-                } else if (genderValue === '女') {
-                    formData.set('gender', 'female');
-                } else {
-                    formData.set('gender', 'other');
-                }
-
+                // Convert date to YYYY年MM月DD日 format
                 const dateValue = $("#date").datepicker("getDate");
                 if (dateValue) {
                     const year = dateValue.getFullYear();
@@ -617,22 +616,23 @@
                     const day = String(dateValue.getDate()).padStart(2, '0');
                     const formattedDate = `${year}年${month}月${day}日`;
                     formData.set("date", formattedDate);
-                    console.log('发送日期:', formattedDate);
+                    console.log('送信日付:', formattedDate);
                 } else {
-                    throw new Error('请选择日期');
+                    throw new Error('日付を選択してください');
                 }
 
                 const timeValue = document.getElementById('time').value;
                 if (!timeValue || !/^\d{2}:\d{2}:\d{2}$/.test(timeValue)) {
-                    throw new Error('请输入正确的时间格式 (HH:MM:SS)');
+                    throw new Error('正しい時間形式を入力してください (HH:MM:SS)');
                 }
 
                 submitButton.disabled = true;
-                submitButton.textContent = '提交中...';
+                submitButton.textContent = '送信中...';
 
-                console.log('📤 开始上传文件');
+                console.log('📤 ファイルアップロード開始');
+                console.log('送信先:', apiEndpoint);
 
-                fetch("https://pro-audio.onrender.com/api/upload", {
+                fetch(apiEndpoint, {
                     method: "POST",
                     body: formData,
                     mode: 'cors',
