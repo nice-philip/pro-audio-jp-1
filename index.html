@@ -599,6 +599,8 @@
             const formData = new FormData(form);
 
             try {
+                formData.append('language', 'zh');
+
                 const dateValue = $("#date").datepicker("getDate");
                 if (dateValue) {
                     const formattedDate = dateValue.toISOString().split('T')[0];
@@ -618,15 +620,13 @@
 
                 console.log('📤 开始上传文件');
 
-                // 중국어 버전용 API 엔드포인트 사용
                 fetch("https://pro-audio.onrender.com/api/upload", {
                     method: "POST",
                     body: formData,
                     mode: 'cors',
                     credentials: 'omit',
                     headers: {
-                        'Accept': 'application/json',
-                        'X-Language': 'zh' // 언어 식별자 추가
+                        'Accept': 'application/json'
                     }
                 })
                 .then(async response => {
