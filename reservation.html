@@ -2,7 +2,7 @@
 <html>
 
 <head>
-    <title>预约查询 - AI音频</title>
+    <title>予約確認 - AIオーディオ</title>
     <meta name="keywords" content="" />
     <meta name="description" content="" />
     <meta charset="UTF-8">
@@ -13,7 +13,7 @@
     <link href="css/bootstrap.min.css" rel="stylesheet" type="text/css">
     <link href="css/templatemo_style.css" rel="stylesheet" type="text/css">
     <style>
-        /* 모바일 최적화 스타일 */
+        /* モバイル最適化スタイル */
         .home-button {
             position: fixed;
             bottom: 20px;
@@ -127,18 +127,18 @@
 <body>
     <nav id="responsive-menu">
         <ul class="menu-holder">
-            <li><a href="index.html"><i class="fa fa-home"></i>首页</a></li>
-            <li><a href="reservation.html"><i class="fa fa-search"></i>预约查询</a></li>
+            <li><a href="index.html"><i class="fa fa-home"></i>ホーム</a></li>
+            <li><a href="reservation.html"><i class="fa fa-search"></i>予約確認</a></li>
         </ul>
     </nav>
     <div class="templatemo-header">
         <div class="templatemo-header-gradient-bg"></div>
         <div class="container">
-            <h1 class="text-center text-uppercase templatemo-site-name">预约<span class="blue">查询</span></h1>
+            <h1 class="text-center text-uppercase templatemo-site-name">予約<span class="blue">確認</span></h1>
             <nav class="hidden-xs text-center text-uppercase templatemo-nav">
                 <ul class="menu-holder">
-                    <li><a href="index.html"><i class="fa fa-home"></i> 首页</a></li>
-                    <li class="active"><a href="reservation.html">预约查询</a></li>
+                    <li><a href="index.html"><i class="fa fa-home"></i> ホーム</a></li>
+                    <li class="active"><a href="reservation.html">予約確認</a></li>
                 </ul>
             </nav>
             <div class="text-right visible-xs">
@@ -149,14 +149,14 @@
     <div class="templatemo-header-image"></div>
     <div class="container">
         <section id="reservation-check" class="templatemo-section">
-            <h2 class="text-uppercase text-center">预约查询</h2>
+            <h2 class="text-uppercase text-center">予約確認</h2>
             <div class="row margin-top-50">
                 <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12 col-lg-offset-3 col-md-offset-3 col-sm-offset-3">
                     <form class="tm-reservation-form">
                         <div class="form-group">
-                            <input type="text" id="memberKey" class="form-control" placeholder="请输入预约号码..." />
+                            <input type="text" id="memberKey" class="form-control" placeholder="予約番号を入力してください..." />
                         </div>
-                        <button type="button" onclick="checkReservation()" class="btn text-uppercase tm-dark-bg tm-orange-text tm-send-btn btn-gradient center-block">查询预约</button>
+                        <button type="button" onclick="checkReservation()" class="btn text-uppercase tm-dark-bg tm-orange-text tm-send-btn btn-gradient center-block">予約を確認</button>
                     </form>
                 </div>
             </div>
@@ -165,11 +165,11 @@
                     <table class="table table-bordered">
                         <thead>
                             <tr>
-                                <th>预约号码</th>
-                                <th>姓名</th>
-                                <th>预约日期</th>
-                                <th>时长</th>
-                                <th>状态</th>
+                                <th>予約番号</th>
+                                <th>お名前</th>
+                                <th>予約日</th>
+                                <th>時間</th>
+                                <th>状態</th>
                                 <th>操作</th>
                             </tr>
                         </thead>
@@ -182,11 +182,11 @@
     </div>
     <footer class="templatemo-footer margin-top-50">
         <div class="container">
-            <p class="text-uppercase small templatemo-copyright">Copyright &copy; 2024 AI音频</p>
+            <p class="text-uppercase small templatemo-copyright">Copyright &copy; 2024 AIオーディオ</p>
         </div>
     </footer>
 
-    <!-- 모바일 홈 버튼 -->
+    <!-- モバイルホームボタン -->
     <a href="index.html" class="home-button">
         <i class="fa fa-home fa-2x"></i>
     </a>
@@ -197,7 +197,7 @@
         async function checkReservation() {
             const memberKey = document.getElementById('memberKey').value.trim();
             if (!memberKey) {
-                alert('请输入预约号码');
+                alert('予約番号を入力してください');
                 return;
             }
 
@@ -208,12 +208,12 @@
                 if (response.ok) {
                     displayReservations(result);
                 } else {
-                    alert('查询失败：' + result.message);
+                    alert('確認失敗：' + result.message);
                     document.getElementById('reservationResults').style.display = 'none';
                 }
             } catch (error) {
                 console.error('Error:', error);
-                alert('查询失败，请稍后重试');
+                alert('確認に失敗しました。後でもう一度お試しください');
             }
         }
 
@@ -224,7 +224,7 @@
             tableBody.innerHTML = '';
 
             if (!reservations || reservations.length === 0) {
-                tableBody.innerHTML = `<tr><td colspan="6" class="text-center">没有找到匹配的预约记录。</td></tr>`;
+                tableBody.innerHTML = `<tr><td colspan="6" class="text-center">該当する予約記録が見つかりませんでした。</td></tr>`;
                 resultsDiv.style.display = 'block';
                 return;
             }
@@ -241,10 +241,10 @@
                     <td>${reservation.name}</td>
                     <td>${formattedDate}</td>
                     <td>${reservation.albumLength}</td>
-                    <td>${reservation.status || '处理中'}</td>
+                    <td>${reservation.status || '処理中'}</td>
                     <td>
                         ${isAdmin ? `<button onclick="deleteReservation('${reservation._id}')" class="delete-btn">
-                            <i class="fa fa-trash"></i> 删除
+                            <i class="fa fa-trash"></i> 削除
                         </button>` : '-'}
                     </td>
                 `;
@@ -255,7 +255,7 @@
         }
 
         async function deleteReservation(id) {
-            if (!confirm('确定要删除这条预约记录吗？')) {
+            if (!confirm('この予約記録を削除してもよろしいですか？')) {
                 return;
             }
 
@@ -265,16 +265,16 @@
                 });
 
                 if (response.ok) {
-                    alert('删除成功');
-                    // 重新加载预约列表
+                    alert('削除が完了しました');
+                    // 予約リストを再読み込み
                     checkReservation();
                 } else {
                     const error = await response.json();
-                    alert('删除失败：' + (error.message || '请稍后重试'));
+                    alert('削除に失敗しました：' + (error.message || '後でもう一度お試しください'));
                 }
             } catch (error) {
                 console.error('Error:', error);
-                alert('删除失败，请稍后重试');
+                alert('削除に失敗しました。後でもう一度お試しください');
             }
         }
     </script>

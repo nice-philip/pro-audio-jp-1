@@ -5,6 +5,16 @@ const multer = require('multer');
 const { S3Client, PutObjectCommand, DeleteObjectCommand } = require('@aws-sdk/client-s3');
 require('dotenv').config();
 
+console.log('🚀 Starting server...');
+console.log('Environment:', {
+    PORT: process.env.PORT,
+    MONGODB_URI: process.env.MONGODB_URI ? '(set)' : '(not set)',
+    AWS_REGION: process.env.AWS_REGION,
+    AWS_BUCKET_NAME: process.env.AWS_BUCKET_NAME,
+    AWS_ACCESS_KEY_ID: process.env.AWS_ACCESS_KEY_ID ? '(set)' : '(not set)',
+    AWS_SECRET_ACCESS_KEY: process.env.AWS_SECRET_ACCESS_KEY ? '(set)' : '(not set)'
+});
+
 const uploadRoutes = require('./upload');
 const Album = require('./models/Album');
 
@@ -17,18 +27,18 @@ mongoose.connect(process.env.MONGODB_URI, {
     useUnifiedTopology: true,
     serverSelectionTimeoutMS: 5000
 }).then(() => {
-    console.log('✅ MongoDB 连接成功');
+    console.log('✅ MongoDB 接続完了');
 }).catch((err) => {
-    console.error('❌ MongoDB 连接失败:', err);
+    console.error('❌ MongoDB 接続失敗:', err);
 });
 
 // MongoDB 연결 에러 처리
 mongoose.connection.on('error', (err) => {
-    console.error('MongoDB 错误:', err);
+    console.error('MongoDB エラー:', err);
 });
 
 mongoose.connection.on('disconnected', () => {
-    console.log('MongoDB 断开连接，尝试重新连接...');
+    console.log('MongoDB 接続が切断されました。再接続を試みています...');
     mongoose.connect(process.env.MONGODB_URI, {
         useNewUrlParser: true,
         useUnifiedTopology: true,
@@ -39,13 +49,13 @@ mongoose.connection.on('disconnected', () => {
 // AWS S3 설정 검증
 if (!process.env.AWS_REGION || !process.env.AWS_ACCESS_KEY_ID || 
     !process.env.AWS_SECRET_ACCESS_KEY || !process.env.AWS_BUCKET_NAME) {
-    console.error('❌ AWS 配置缺失');
+    console.error('❌ AWS 設定が不足しています');
     process.exit(1);
 }
 
 // ✅ 여러 도메인을 허용하도록 설정
 const allowedOrigins = [
-    'https://cheery-bienenstitch-8bad49.netlify.app',
+    'https://brilliant-unicorn-a5395d.netlify.app',  // 일본어 사이트
     'http://localhost:3000',
     'http://localhost:8080',
     'http://127.0.0.1:5500',
@@ -105,7 +115,7 @@ app.get('/api/reservations', async(req, res) => {
     const key = req.query.key;
 
     if (!key) {
-        return res.status(400).json({ message: '请输入预约号码' });
+        return res.status(400).json({ message: '予約番号を入力してください' });
     }
 
     try {
@@ -115,13 +125,13 @@ app.get('/api/reservations', async(req, res) => {
         } else {
             const userReservations = await Album.find({ reservationCode: key }).sort({ createdAt: -1 });
             if (userReservations.length === 0) {
-                return res.status(404).json({ message: '未找到预约信息' });
+                return res.status(404).json({ message: '予約情報が見つかりません' });
             }
             return res.status(200).json(userReservations);
         }
     } catch (err) {
-        console.error('❌ 查询预约失败:', err);
-        return res.status(500).json({ message: '查询失败', error: err.message });
+        console.error('❌ 予約照会に失敗:', err);
+        return res.status(500).json({ message: '照会に失敗しました', error: err.message });
     }
 });
 
@@ -129,8 +139,8 @@ app.get('/api/reservations', async(req, res) => {
 app.use((err, req, res, next) => {
     console.error('Server Error:', err);
     res.status(500).json({
-        message: '服务器错误',
-        error: process.env.NODE_ENV === 'development' ? err.message : '未知错误'
+        message: 'サーバーエラー',
+        error: process.env.NODE_ENV === 'development' ? err.message : '不明なエラー'
     });
 });
 
@@ -139,12 +149,12 @@ const handleUploadErrors = (err, req, res, next) => {
     if (err instanceof multer.MulterError) {
         if (err.code === 'LIMIT_FILE_SIZE') {
             return res.status(400).json({
-                message: '文件大小超出限制',
+                message: 'ファイルサイズが制限を超えています',
                 code: 'FILE_TOO_LARGE'
             });
         }
         return res.status(400).json({
-            message: '文件上传失败',
+            message: 'ファイルアップロードに失敗しました',
             code: 'UPLOAD_ERROR'
         });
     }

@@ -64,8 +64,8 @@ function parseChineseDate(dateStr) {
 router.post('/', upload.single('audio'), async(req, res) => {
     try {
         if (!req.file) {
-            console.log('❌ 没有上传音频文件');
-            return res.status(400).json({ message: '没有文件', code: 'FILE_REQUIRED' });
+            console.log('❌ 音声ファイルがアップロードされていません');
+            return res.status(400).json({ message: 'ファイルがありません', code: 'FILE_REQUIRED' });
         }
 
         const {
@@ -83,18 +83,18 @@ router.post('/', upload.single('audio'), async(req, res) => {
         // 필수 항목 확인
         const required = [name, age, gender, email, date, time, memberKey];
         if (required.some(val => !val)) {
-            return res.status(400).json({ message: '缺少必填项', code: 'MISSING_FIELDS' });
+            return res.status(400).json({ message: '必須項目が不足しています', code: 'MISSING_FIELDS' });
         }
 
         // 날짜 파싱
         let parsedDate;
         try {
             parsedDate = parseChineseDate(date);
-            console.log('✅ 날짜 파싱 성공:', parsedDate.toISOString());
+            console.log('✅ 日付パース成功:', parsedDate.toISOString());
         } catch (e) {
-            console.error('[日期转换失败]', e.message);
+            console.error('[日付変換失敗]', e.message);
             return res.status(400).json({
-                message: '日期格式错误',
+                message: '日付フォーマットが正しくありません',
                 error: e.message,
                 code: 'DATE_PARSE_ERROR'
             });
@@ -111,7 +111,7 @@ router.post('/', upload.single('audio'), async(req, res) => {
 
         await s3Client.send(new PutObjectCommand(uploadParams));
         const audioUrl = `https://${process.env.AWS_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/audio/${filename}`;
-        console.log('✅ S3上传成功:', audioUrl);
+        console.log('✅ S3アップロード成功:', audioUrl);
 
         // MongoDB 저장
         const newAlbum = new Album({
@@ -130,11 +130,11 @@ router.post('/', upload.single('audio'), async(req, res) => {
         await newAlbum.save();
         console.log('✅ MongoDB保存成功:', newAlbum._id);
 
-        res.status(200).json({ message: '保存完成', url: audioUrl });
+        res.status(200).json({ message: '保存完了', url: audioUrl });
 
     } catch (err) {
-        console.error('❌ 上传处理错误:', err);
-        res.status(500).json({ message: '预约创建失败', error: err.message });
+        console.error('❌ アップロード処理エラー:', err);
+        res.status(500).json({ message: '予約作成に失敗しました', error: err.message });
     }
 });
 
@@ -143,7 +143,7 @@ router.delete('/:id', async(req, res) => {
     try {
         const album = await Album.findById(req.params.id);
         if (!album) {
-            return res.status(404).json({ message: '未找到预约' });
+            return res.status(404).json({ message: '予約が見つかりません' });
         }
 
         // S3 오디오 파일 삭제
@@ -154,14 +154,14 @@ router.delete('/:id', async(req, res) => {
                 Key: `audio/${key}`
             };
             await s3Client.send(new DeleteObjectCommand(deleteParams));
-            console.log('✅ S3文件已删除:', key);
+            console.log('✅ S3ファイルを削除しました:', key);
         }
 
         await Album.findByIdAndDelete(req.params.id);
-        res.status(200).json({ message: '预约已删除' });
+        res.status(200).json({ message: '予約を削除しました' });
     } catch (err) {
-        console.error('❌ 删除失败:', err);
-        res.status(500).json({ message: '删除失败', error: err.message });
+        console.error('❌ 削除に失敗:', err);
+        res.status(500).json({ message: '削除に失敗しました', error: err.message });
     }
 });
 
@@ -170,7 +170,7 @@ router.get('/download/:id', async(req, res) => {
     try {
         const album = await Album.findById(req.params.id);
         if (!album || !album.audioUrl) {
-            return res.status(404).json({ message: '文件不存在' });
+            return res.status(404).json({ message: 'ファイルが存在しません' });
         }
 
         const key = decodeURIComponent(album.audioUrl.split('/').slice(-1)[0]);
@@ -188,14 +188,14 @@ router.get('/download/:id', async(req, res) => {
         Body.pipe(res);
 
         Body.on('error', (err) => {
-            console.error('❌ S3流媒体失败:', err);
+            console.error('❌ S3ストリーミングに失敗:', err);
             if (!res.headersSent) {
-                res.status(500).json({ message: '下载失败', error: err.message });
+                res.status(500).json({ message: 'ダウンロードに失敗しました', error: err.message });
             }
         });
     } catch (err) {
-        console.error('❌ 下载失败:', err);
-        res.status(500).json({ message: '下载失败', error: err.message });
+        console.error('❌ ダウンロードに失敗:', err);
+        res.status(500).json({ message: 'ダウンロードに失敗しました', error: err.message });
     }
 });
 
