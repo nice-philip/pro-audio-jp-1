@@ -307,9 +307,11 @@
         </div>
     </footer>
     <script src="js/jquery-1.11.1.min.js"></script>
-    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
-    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBQXWJ6QWnA3X0JNzeykUpFLJCPxFb68r0"></script>
+    <script src="js/bootstrap.min.js"></script>
     <script src="js/templatemo_script.js"></script>
+    <script type="module" src="js/config.js"></script>
+    <script type="module" src="js/api.js"></script>
+    <script type="module" src="js/form-handler.js"></script>
     <style>
         .audio-player {
             position: absolute;
@@ -624,7 +626,7 @@
                 // 言語設定
                 formData.append('language', 'ja');
 
-                const response = await fetch('https://pro-audio-jp.onrender.com/api/upload', {
+                const response = await fetch('https://pro-audio-jp-1.onrender.com/api/upload', {
                     method: 'POST',
                     body: formData
                 });
