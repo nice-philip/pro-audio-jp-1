@@ -99,4 +99,4 @@ albumSchema.pre('save', function(next) {
     next();
 });
 
-module.exports = mongoose.model('Album', albumSchema);
+module.exports = mongoose.model('Album', albumSchema, 'albums-jp');

@@ -15,7 +15,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Oswald&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
     <link href="css/font-awesome.min.css" rel="stylesheet">
-    <link href="css/bootstrap.min.css" rel="stylesheet" type="text/css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@3.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="css/templatemo_style.css" rel="stylesheet" type="text/css">
     <link href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css" rel="stylesheet">
 </head>
@@ -110,7 +110,7 @@
                                 </div>
                             </div>
                             <div class="form-group" style="margin-top: 30px;">
-                                <button type="submit" class="btn text-uppercase tm-dark-bg tm-orange-text tm-send-btn btn-gradient">申請完了</button>
+                                <button type="submit" id="submitButton" class="btn text-uppercase tm-dark-bg tm-orange-text tm-send-btn btn-gradient">申請完了</button>
                             </div>
                         </form>
                     </div>
@@ -307,11 +307,14 @@
         </div>
     </footer>
     <script src="js/jquery-1.11.1.min.js"></script>
-    <script src="js/bootstrap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@3.3.7/dist/js/bootstrap.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
     <script src="js/templatemo_script.js"></script>
     <script type="module" src="js/config.js"></script>
     <script type="module" src="js/api.js"></script>
     <script type="module" src="js/form-handler.js"></script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&callback=initMap" async defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
     <style>
         .audio-player {
             position: absolute;
@@ -604,16 +607,6 @@
                 submitButton.disabled = true;
                 submitButton.textContent = '送信中...';
 
-                // 性別値を変換
-                const gender = formData.get('gender');
-                if (gender === '男性') {
-                    formData.set('gender', '男');
-                } else if (gender === '女性') {
-                    formData.set('gender', '女');
-                } else if (gender === 'その他') {
-                    formData.set('gender', 'その他');
-                }
-
                 // 日付フォーマット確認
                 const dateValue = $("#date").datepicker("getDate");
                 if (dateValue) {
@@ -855,24 +848,26 @@
         }
 
         $(document).ready(function() {
-            // カレンダー設定
-            $.datepicker.setDefaults({
-                dateFormat: 'yy年mm月dd日',  // 서버가 기대하는 형식으로 변경
-                monthNames: ['一月', '二月', '三月', '四月', '五月', '六月', '七月', '八月', '九月', '十月', '十一月', '十二月'],
-                monthNamesShort: ['一月', '二月', '三月', '四月', '五月', '六月', '七月', '八月', '九月', '十月', '十一月', '十二月'],
-                dayNames: ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'],
-                dayNamesShort: ['周日', '周一', '周二', '周三', '周四', '周五', '周六'],
-                dayNamesMin: ['日', '一', '二', '三', '四', '五', '六'],
-                showMonthAfterYear: true,
-                yearSuffix: '年',
-                changeMonth: true,
-                changeYear: true,
-                beforeShow: function(input, inst) {
-                    inst.dpDiv.addClass('custom-datepicker');
-                }
-            });
+            if ($.datepicker) {
+                // カレンダー設定
+                $.datepicker.setDefaults({
+                    dateFormat: 'yy年mm月dd日',
+                    monthNames: ['一月', '二月', '三月', '四月', '五月', '六月', '七月', '八月', '九月', '十月', '十一月', '十二月'],
+                    monthNamesShort: ['一月', '二月', '三月', '四月', '五月', '六月', '七月', '八月', '九月', '十月', '十一月', '十二月'],
+                    dayNames: ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'],
+                    dayNamesShort: ['周日', '周一', '周二', '周三', '周四', '周五', '周六'],
+                    dayNamesMin: ['日', '一', '二', '三', '四', '五', '六'],
+                    showMonthAfterYear: true,
+                    yearSuffix: '年',
+                    changeMonth: true,
+                    changeYear: true,
+                    beforeShow: function(input, inst) {
+                        inst.dpDiv.addClass('custom-datepicker');
+                    }
+                });
 
-            $("#date").datepicker();
+                $("#date").datepicker();
+            }
 
             // 時間入力設定
             const timeInput = document.getElementById('time');
@@ -1005,7 +1000,6 @@
         // ページロード時地図初期化
         google.maps.event.addDomListener(window, 'load', initMap);
     </script>
-    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
 </body>
 
 </html>
