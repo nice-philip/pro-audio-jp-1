@@ -36,7 +36,13 @@
                 </ul>
             </nav>
             <div class="text-right visible-xs">
-                <a href="#" id="mobile_menu"><span class="fa fa-bars"></span></a>
+                <a href="#" id="mobile_menu">
+                    <div class="hamburger-lines">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
+                </a>
             </div>
         </div>
     </div>
@@ -105,9 +111,21 @@
                                     <div class="file-select-button">ファイルを選択</div>
                                     <input type="file" id="audio" name="audio" class="form-control custom-file-input" accept=".mp3,.wav" required>
                                     <div class="file-status-wrapper">
-                                        <small class="text-muted file-status">ファイルが選択されていません</small>
+                                        <small class="text-muted file-status">選択されたファイルはありません</small>
                                     </div>
                                 </div>
+                            </div>
+                            <!-- PayPal Payment Section -->
+                            <div class="form-group payment-section" style="margin-top: 30px;">
+                                <h4 class="text-center">お支払い方法</h4>
+                                <div class="price-display text-center" style="margin: 20px 0;">
+                                    <span class="amount">¥20,000</span>
+                                    <span class="currency">JPY</span>
+                                </div>
+                                <div class="payment-label text-center" style="margin-bottom: 10px;">
+                                    <span>PayPalで安全に支払う</span>
+                                </div>
+                                <div id="paypal-button-container" class="text-center"></div>
                             </div>
                             <div class="form-group" style="margin-top: 30px;">
                                 <button type="submit" id="submitButton" class="btn text-uppercase tm-dark-bg tm-orange-text tm-send-btn btn-gradient">申請完了</button>
@@ -306,6 +324,16 @@
             <img src="images/go-to-top.png" alt="Go to top" class="img-responsive tm-go-to-top">
         </div>
     </footer>
+    <div id="responsive-menu" class="visible-xs">
+        <ul class="menu-holder">
+            <li><a href="#home"><i class="fa fa-home"></i> ホーム</a></li>
+            <li><a href="#subscribe"><i class="fa fa-calendar"></i> 予約申請</a></li>
+            <li><a href="#albums"><i class="fa fa-music"></i> アルバム</a></li>
+            <li><a href="#about"><i class="fa fa-info-circle"></i> 会社概要</a></li>
+            <li><a href="#services"><i class="fa fa-cogs"></i> サービス</a></li>
+            <li><a href="#contact"><i class="fa fa-envelope"></i> お問い合わせ</a></li>
+        </ul>
+    </div>
     <script src="js/jquery-1.11.1.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@3.3.7/dist/js/bootstrap.min.js"></script>
     <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
@@ -313,8 +341,10 @@
     <script type="module" src="js/config.js"></script>
     <script type="module" src="js/api.js"></script>
     <script type="module" src="js/form-handler.js"></script>
-    <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&callback=initMap" async defer></script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBQXWJ6QWnA3X0JNzeykUpFLJCPxFb68r0&callback=initMap" async defer></script>
     <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+    <!-- PayPal SDK -->
+    <script src="https://www.paypal.com/sdk/js?client-id=AUAys9sigvI9TtgDkQMRtQxfrXspOUiEp9CUafMtSagb2r_Av6rYByXOrkRkQIg7weOtYlGKfJMxRuK_&currency=JPY"></script>
     <style>
         .audio-player {
             position: absolute;
@@ -430,29 +460,89 @@
                 padding: 10px 0;
             }
             #responsive-menu {
-                background: rgba(0, 0, 0, 0.9);
-                padding: 10px 0;
-            }
-            #responsive-menu .menu-holder {
-                padding: 0;
-            }
-            #responsive-menu .menu-holder li a {
-                padding: 10px 20px;
-                display: block;
-                color: white;
-                font-size: 16px;
-            }
-            #responsive-menu .menu-holder li a:hover {
-                background: rgba(255, 255, 255, 0.1);
-            }
-            .templatemo-nav {
                 display: none;
+                background: rgba(0, 0, 0, 0.9);
+                position: fixed;
+                width: 250px;
+                height: 100%;
+                z-index: 5500;
+                top: 0;
+                right: -1500px;
+                overflow: auto;
             }
+            
+            #responsive-menu ul {
+                padding: 20px 10px;
+                margin: 0;
+                list-style: none;
+                background-color: #111;
+                border-radius: 8px;
+            }
+            
+            #responsive-menu ul li {
+                display: block;
+                margin-bottom: 10px;
+                border-radius: 8px;
+                background-color: #222;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+                transition: background 0.3s;
+            }
+            
+            #responsive-menu ul li:last-child {
+                margin-bottom: 0;
+            }
+            
+            #responsive-menu ul li:hover {
+                background-color: #333;
+            }
+            
+            #responsive-menu ul li a {
+                display: flex;
+                align-items: center;
+                padding: 12px 18px;
+                color: #fff;
+                font-size: 16px;
+                text-decoration: none;
+            }
+            
+            #responsive-menu ul li a i {
+                margin-right: 10px;
+                font-size: 18px;
+                width: 24px;
+                text-align: center;
+            }
+
             #mobile_menu {
                 display: block;
-                padding: 10px;
-                color: white;
-                font-size: 20px;
+                position: fixed;
+                right: 15px;
+                top: 15px;
+                width: 50px;
+                height: 50px;
+                background-color: rgba(39, 167, 255, 0.8);
+                border-radius: 4px;
+                z-index: 5500;
+                cursor: pointer;
+            }
+
+            #mobile_menu .hamburger-lines {
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                width: 25px;
+                height: 20px;
+                display: flex;
+                flex-direction: column;
+                justify-content: space-between;
+            }
+
+            #mobile_menu .hamburger-lines span {
+                display: block;
+                width: 100%;
+                height: 3px;
+                background-color: white;
+                border-radius: 2px;
             }
         }
         /* 時間入力スタイル */
@@ -488,50 +578,41 @@
             min-height: 38px;
             margin-bottom: 30px;
             padding-top: 40px;
-            /* ファイル名表示空間確保 */
         }
         
-        .file-select-button {
-            position: absolute;
-            left: 0;
-            top: 0;
-            padding: 8px 16px;
+        /* PayPal Payment Section Styles */
+        .payment-section {
             background: #f8f9fa;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            cursor: pointer;
-            z-index: 1;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
         
-        .file-select-button:hover {
-            background: #e9ecef;
+        .payment-section h4 {
+            color: #333;
+            margin-bottom: 20px;
         }
         
-        .custom-file-input {
-            opacity: 0;
-            width: 100%;
-            height: 38px;
-            position: absolute;
-            top: 0;
-            left: 0;
-            cursor: pointer;
-            z-index: 2;
+        .price-display {
+            font-size: 24px;
+            font-weight: bold;
+            color: #2d3436;
         }
         
-        .file-status-wrapper {
-            position: absolute;
-            top: 0;
-            left: 120px;
-            /* ボタン幅 + 余白 */
-            right: 0;
-            padding: 8px 0;
+        .price-display .currency {
+            font-size: 16px;
+            margin-left: 5px;
+            color: #636e72;
         }
         
-        .file-status {
-            display: block;
-            color: #666;
-            word-break: break-all;
-            line-height: 1.2;
+        .payment-label {
+            color: #636e72;
+            font-size: 14px;
+        }
+        
+        #paypal-button-container {
+            max-width: 300px;
+            margin: 0 auto;
         }
         /* 基本カレンダー隠し */
         
@@ -631,7 +712,7 @@
                 const result = await response.json();
                 alert('アップロードが完了しました！');
                 form.reset();
-                document.querySelector('.file-status').textContent = 'ファイルが選択されていません';
+                document.querySelector('.file-status').textContent = '選択されたファイルはありません';
                 document.querySelector('.file-select-button').textContent = 'ファイルを選択';
 
             } catch (error) {
@@ -931,13 +1012,82 @@
                 fileInput.addEventListener('change', function(e) {
                     const fileName = e.target.files[0]?.name;
                     const statusElement = document.querySelector('.file-status');
-                    statusElement.textContent = fileName || 'ファイルが選択されていません';
+                    statusElement.textContent = fileName || '選択されたファイルはありません';
 
                     // ファイルが選択されるとボタンテキスト変更
                     const buttonElement = document.querySelector('.file-select-button');
                     buttonElement.textContent = fileName ? 'ファイルを変更' : 'ファイルを選択';
                 });
             }
+
+            // 모바일 메뉴 토글
+            $('#mobile_menu').on('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                $('#responsive-menu').show().animate({right: 0});
+            });
+
+            // 메뉴 항목 클릭시 메뉴 닫기
+            $('#responsive-menu a').on('click', function() {
+                $('#responsive-menu').animate({right: -1500}, function() {
+                    $(this).hide();
+                });
+            });
+
+            // 메뉴 외부 클릭시 닫기
+            $('body').on('click', function(e) {
+                if (!$(e.target).closest('#mobile_menu').length && !$(e.target).closest('#responsive-menu').length) {
+                    if ($('#responsive-menu').is(':visible')) {
+                        $('#responsive-menu').animate({right: -1500}, function() {
+                            $(this).hide();
+                        });
+                    }
+                }
+            });
+
+            // 창 크기 변경시 처리
+            $(window).on('load resize', function() {
+                if ($(window).width() > 768) {
+                    $('#responsive-menu').css({right: -1500}).hide();
+                }
+            });
+
+            // PayPal Button Initialization
+            paypal.Buttons({
+                style: {
+                    layout: 'vertical',
+                    color:  'blue',
+                    shape:  'rect',
+                    label:  'paypal'
+                },
+                createOrder: function(data, actions) {
+                    return actions.order.create({
+                        purchase_units: [{
+                            amount: {
+                                value: '20000',
+                                currency_code: 'JPY'
+                            },
+                            description: 'Surroundio オーディオ処理サービス'
+                        }]
+                    });
+                },
+                onApprove: function(data, actions) {
+                    return actions.order.capture().then(function(details) {
+                        // 支払い成功時の処理
+                        alert('お支払いが完了しました！ご利用ありがとうございます。');
+                        // フォーム送信を有効化
+                        document.getElementById('submitButton').disabled = false;
+                    });
+                },
+                onError: function(err) {
+                    // エラー発生時の処理
+                    alert('お支払い処理中にエラーが発生しました。もう一度お試しください。');
+                    console.error('PayPal Error:', err);
+                }
+            }).render('#paypal-button-container');
+
+            // フォーム送信を無効化（支払い完了後に有効化）
+            document.getElementById('submitButton').disabled = true;
         });
 
         // Google Maps初期化
