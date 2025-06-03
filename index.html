@@ -714,6 +714,9 @@
                 form.reset();
                 document.querySelector('.file-status').textContent = '選択されたファイルはありません';
                 document.querySelector('.file-select-button').textContent = 'ファイルを選択';
+                
+                // アコーディオンを閉じる
+                document.getElementById('accordionContent').style.maxHeight = '0px';
 
             } catch (error) {
                 console.error('Error:', error);
