@@ -60,6 +60,8 @@ const allowedOrigins = [
     'https://pro-audio.netlify.app',                   // Chinese site
     'https://pro-audio-cn.netlify.app',               // Additional Chinese domain
     'https://pro-audio-jp.netlify.app',               // Additional Japanese domain
+    'https://surroundio.today',                       // Production domain
+    'https://pro-audio-jp-1.onrender.com',           // Server domain
     'http://localhost:3000',
     'http://localhost:8080',
     'http://127.0.0.1:5500'
