@@ -320,7 +320,22 @@
     </div>
     <footer class="templatemo-footer margin-top-50">
         <div class="container">
-            <p class="text-uppercase small templatemo-copyright">Surroundio copyright © 2022 Nationalux Canada, All rights reserved.</p>
+            <nav class="footer-categories">
+                <ul class="footer-menu-vertical">
+                    <li class="category-item">
+                        <a href="/terms-template.html?page=publish-rules">配信規定</a>
+                    </li>
+                    <li class="category-item">
+                        <a href="/terms-template.html?page=terms-of-use">利用規約</a>
+                    </li>
+                    <li class="category-item">
+                        <a href="/terms-template.html?page=copyright-management">著作権管理サービス利用規約</a>
+                    </li>
+                </ul>
+            </nav>
+            <div class="footer-flex-container">
+                <p class="text-uppercase small templatemo-copyright">Surroundio copyright © 2022 Nationalux Canada, All rights reserved.</p>
+            </div>
             <img src="images/go-to-top.png" alt="Go to top" class="img-responsive tm-go-to-top">
         </div>
     </footer>
@@ -332,6 +347,10 @@
             <li><a href="#about"><i class="fa fa-info-circle"></i> 会社概要</a></li>
             <li><a href="#services"><i class="fa fa-cogs"></i> サービス</a></li>
             <li><a href="#contact"><i class="fa fa-envelope"></i> お問い合わせ</a></li>
+            <li class="menu-divider"></li>
+            <li><a href="/terms-template.html?page=publish-rules"><i class="fa fa-file-text"></i> 配信規定</a></li>
+            <li><a href="/terms-template.html?page=terms-of-use"><i class="fa fa-file-text"></i> 利用規約</a></li>
+            <li><a href="/terms-template.html?page=copyright-management"><i class="fa fa-file-text"></i> 著作権管理サービス利用規約</a></li>
         </ul>
     </div>
     <script src="js/jquery-1.11.1.min.js"></script>
@@ -664,6 +683,74 @@
             border-radius: 4px;
             box-shadow: 0 2px 6px rgba(0,0,0,0.1);
             margin-bottom: 20px;
+        }
+
+        .footer-categories {
+            width: 100%;
+            text-align: left;
+            margin-bottom: 30px;
+            margin-top: 100px;
+        }
+
+        .footer-menu-vertical {
+            display: flex;
+            flex-direction: row;
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            align-items: center;
+            gap: 30px;
+            justify-content: flex-start;
+            margin-left: 20px;
+        }
+
+        .category-item a {
+            color: #fff;
+            font-size: 14px;
+            padding: 5px 10px;
+            text-decoration: none;
+            transition: color 0.3s ease;
+            white-space: nowrap;
+        }
+
+        @media (max-width: 768px) {
+            .footer-menu-vertical {
+                flex-direction: column;
+                align-items: center;
+                margin-left: 0;
+            }
+            
+            .footer-categories {
+                text-align: center;
+            }
+        }
+
+        .footer-flex-container {
+            display: flex;
+            justify-content: flex-end;
+            width: 100%;
+            margin-bottom: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding-top: 20px;
+        }
+
+        .templatemo-copyright {
+            margin: 0;
+            text-align: right;
+        }
+
+        @media (max-width: 768px) {
+            .templatemo-copyright {
+                text-align: center;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .menu-divider {
+                height: 1px;
+                background: rgba(255, 255, 255, 0.1);
+                margin: 10px 0;
+            }
         }
     </style>
     <script>

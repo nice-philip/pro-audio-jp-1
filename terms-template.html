@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Surroundio - 利用規約</title>
+    <link href="https://fonts.googleapis.com/css2?family=Oswald&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
+    <link href="css/font-awesome.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@3.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="css/templatemo_style.css" rel="stylesheet" type="text/css">
+    <style>
+        .terms-content {
+            padding: 50px 0;
+            color: #333;
+            line-height: 1.8;
+        }
+
+        .terms-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .terms-container h1 {
+            color: #333;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .terms-container h2 {
+            color: #444;
+            margin: 25px 0 15px;
+            font-size: 1.5em;
+        }
+
+        .terms-container p {
+            margin-bottom: 15px;
+        }
+
+        .terms-container ul {
+            padding-left: 20px;
+            margin-bottom: 15px;
+        }
+
+        .terms-container li {
+            margin-bottom: 8px;
+        }
+
+        @media (max-width: 768px) {
+            .terms-container {
+                padding: 15px;
+                margin: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="templatemo-header">
+        <div class="templatemo-header-gradient-bg"></div>
+        <div class="container">
+            <h1 class="text-center text-uppercase templatemo-site-name">
+                <a href="index.html" style="color: inherit; text-decoration: none;">
+                    <span class="blue">Surround</span>io
+                </a>
+            </h1>
+        </div>
+    </div>
+
+    <div class="terms-content">
+        <div class="terms-container">
+            <div id="content"></div>
+        </div>
+    </div>
+
+    <footer class="templatemo-footer">
+        <div class="container">
+            <div class="footer-flex-container">
+                <nav class="footer-categories">
+                    <ul class="footer-menu">
+                        <li class="category-item">
+                            <a href="/terms-template.html?page=publish-rules">配信規定</a>
+                        </li>
+                        <li class="category-item">
+                            <a href="/terms-template.html?page=terms-of-use">利用規約</a>
+                        </li>
+                        <li class="category-item">
+                            <a href="/terms-template.html?page=copyright-management">著作権管理サービス利用規約</a>
+                        </li>
+                    </ul>
+                </nav>
+                <p class="text-uppercase small templatemo-copyright">Surroundio copyright © 2022 Nationalux Canada, All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // URL에서 페이지 파라미터 가져오기
+            const urlParams = new URLSearchParams(window.location.search);
+            const page = urlParams.get('page');
+            
+            // 페이지에 따른 제목 설정
+            const titles = {
+                'publish-rules': '配信規定',
+                'terms-of-use': '利用規約',
+                'copyright-management': '著作権管理サービス利用規約'
+            };
+            
+            // 문서 제목 업데이트
+            document.title = `Surroundio - ${titles[page] || '利用規約'}`;
+            
+            // 컨텐츠 로드
+            if (page) {
+                fetch(`/public/${page}.txt`)
+                    .then(response => response.text())
+                    .then(text => {
+                        const contentDiv = document.getElementById('content');
+                        contentDiv.innerHTML = `<h1>${titles[page]}</h1>` + 
+                            text.split('\n').map(line => `<p>${line}</p>`).join('');
+                    })
+                    .catch(error => {
+                        console.error('Error loading content:', error);
+                        document.getElementById('content').innerHTML = '<p>コンテンツの読み込みに失敗しました。</p>';
+                    });
+            }
+        });
+    </script>
+</body>
+</html> 
