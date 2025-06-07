@@ -92,7 +92,7 @@ app.options('*', cors(corsOptions)); // Preflight 지원
 // 미들웨어 설정
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-//app.use(express.static('public'));
+app.use(express.static('public'));
 
 // 업로드 라우트에 CORS 별도 적용
 app.use('/api/upload', cors(corsOptions), uploadRoutes);
