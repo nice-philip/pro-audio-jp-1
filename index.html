@@ -60,6 +60,13 @@
         .btn-pastel.blue:hover {
             background-color: #C1E8ED !important;
         }
+
+        /* 모바일 최적화 스타일 */
+        #accordionContent {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.7s ease;
+        }
     </style>
 </head>
 
@@ -792,7 +799,10 @@
     <script>
         function openAccordion() {
             const content = document.getElementById('accordionContent');
-            if (content.style.maxHeight && content.style.maxHeight !== '0px') {
+            if (!content) return;  // content가 없으면 함수 종료
+            
+            const currentHeight = content.style.maxHeight;
+            if (currentHeight && currentHeight !== '0px') {
                 content.style.maxHeight = '0px';
             } else {
                 content.style.maxHeight = '2000px';
