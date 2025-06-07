@@ -22,12 +22,16 @@
             background: #fff;
             border-radius: 8px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-top: 50px;
         }
 
         .terms-container h1 {
             color: #333;
             margin-bottom: 30px;
             text-align: center;
+            font-size: 24px;
+            padding: 20px 0;
+            border-bottom: 1px solid #eee;
         }
 
         .terms-container h2 {
@@ -55,6 +59,26 @@
                 margin: 10px;
             }
         }
+
+        .btn-back {
+            display: inline-block;
+            padding: 10px 30px;
+            background: linear-gradient(to bottom, #ff6633, #ff5533);
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            transition: opacity 0.3s;
+        }
+        
+        .btn-back:hover {
+            opacity: 0.9;
+            color: white;
+            text-decoration: none;
+        }
+
+        .templatemo-header {
+            margin-bottom: 30px;
+        }
     </style>
 </head>
 <body>
@@ -72,6 +96,9 @@
     <div class="terms-content">
         <div class="terms-container">
             <div id="content"></div>
+            <div class="text-center" style="margin-top: 30px;">
+                <a href="javascript:history.back()" class="btn-back">戻る</a>
+            </div>
         </div>
     </div>
 
@@ -98,24 +125,25 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // URL에서 페이지 파라미터 가져오기
             const urlParams = new URLSearchParams(window.location.search);
             const page = urlParams.get('page');
             
-            // 페이지에 따른 제목 설정
             const titles = {
                 'publish-rules': '配信規定',
                 'terms-of-use': '利用規約',
                 'copyright-management': '著作権管理サービス利用規約'
             };
             
-            // 문서 제목 업데이트
             document.title = `Surroundio - ${titles[page] || '利用規約'}`;
             
-            // 컨텐츠 로드
             if (page) {
-                fetch(`/public/${page}.txt`)
-                    .then(response => response.text())
+                fetch(`./public/texts/${page}.txt`)
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Network response was not ok');
+                        }
+                        return response.text();
+                    })
                     .then(text => {
                         const contentDiv = document.getElementById('content');
                         contentDiv.innerHTML = `<h1>${titles[page]}</h1>` + 

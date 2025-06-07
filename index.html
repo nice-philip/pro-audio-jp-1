@@ -18,6 +18,47 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@3.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="css/templatemo_style.css" rel="stylesheet" type="text/css">
     <link href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css" rel="stylesheet">
+    <style>
+        /* Pastel button styles */
+        .btn-pastel {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none !important;
+            display: inline-block;
+            margin: 5px;
+            color: #2C3333 !important;
+        }
+
+        .btn-pastel:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        .btn-pastel.green {
+            background-color: #C1FFD7 !important;  /* 더 밝은 파스텔 그린 */
+        }
+        .btn-pastel.green:hover {
+            background-color: #B4EBC5 !important;
+        }
+
+        .btn-pastel.pink {
+            background-color: #FFE5F1 !important;  /* 더 밝은 파스텔 핑크 */
+        }
+        .btn-pastel.pink:hover {
+            background-color: #FFD6E8 !important;
+        }
+
+        .btn-pastel.blue {
+            background-color: #D4F1F4 !important;  /* 더 밝은 파스텔 블루 */
+        }
+        .btn-pastel.blue:hover {
+            background-color: #C1E8ED !important;
+        }
+    </style>
 </head>
 
 <body>
@@ -57,8 +98,8 @@
                     <h2 class="text-right">High Quality</h2>
                     <h3 class="text-uppercase text-right margin-top-30">たった20,000円で</h3>
                     <h4 class="text-uppercase text-right">アルバム制作からグローバル配信まで</h4>
-                    <p class="text-right margin-top-30">Surroundioは、音楽制作と配信のための無料レスポンシブテンプレートです。たった20,000円で、100万以上のデータベースに基づくAIエンジンとプロのオーディオエンジニアによる音声修復、ミキシング、マスタリングサービスを提供し、160以上のグローバルプラットフォームへの配信をサポートします。また、成長中のミュージシャンに追加特典を提供し、継続的な発展をサポートします。</p>
-                    <a href="#subscribe" class="pull-right btn-gradient margin-top-30 text-uppercase">今すぐ予約</a>
+                    <p class="text-right margin-top-30">Surroundioは、没入型の立体音響コンテンツとAI技術を活用した先端音響ソリューションをリードする専門企業です。たった20,000円で、100万以上のデータベースに基づくAIエンジンとプロのオーディオエンジニアによる音声修復、ミキシング、マスタリングサービスを提供し、160以上のグローバルプラットフォームへの配信をサポートします。また、成長中のミュージシャンに追加特典を提供し、継続的な発展をサポートします。</p>
+                    <a href="#subscribe" class="pull-right btn-pastel blue margin-top-30 text-uppercase">今すぐ予約</a>
                 </div>
             </div>
         </section>
@@ -66,8 +107,8 @@
         <section id="subscribe" class="templatemo-section">
             <h2 class="text-uppercase text-center">予約申請</h2>
             <div class="upload-section margin-top-50">
-                <button onclick="openAccordion()" class="btn text-uppercase tm-dark-bg tm-orange-text tm-send-btn btn-gradient">📩 アルバム制作を申請</button>
-                <a href="reservation.html" class="btn text-uppercase tm-dark-bg tm-orange-text tm-send-btn btn-gradient" style="margin-left: 20px;">🔍 予約確認</a>
+                <button onclick="openAccordion()" class="btn-pastel pink text-uppercase">📩 アルバム制作を申請</button>
+                <a href="reservation.html" class="btn-pastel green text-uppercase" style="margin-left: 20px;">🔍 予約確認</a>
             </div>
             <div id="accordionContent" style="max-height: 0; overflow: hidden; transition: max-height 0.7s ease;">
                 <div class="row margin-top-50">
@@ -128,7 +169,7 @@
                                 <div id="paypal-button-container" class="text-center"></div>
                             </div>
                             <div class="form-group" style="margin-top: 30px;">
-                                <button type="submit" id="submitButton" class="btn text-uppercase tm-dark-bg tm-orange-text tm-send-btn btn-gradient">申請完了</button>
+                                <button type="submit" id="submitButton" class="btn-pastel blue text-uppercase">申請完了</button>
                             </div>
                         </form>
                     </div>
@@ -320,20 +361,20 @@
     </div>
     <footer class="templatemo-footer margin-top-50">
         <div class="container">
-            <nav class="footer-categories">
-                <ul class="footer-menu-vertical">
-                    <li class="category-item">
-                        <a href="/terms-template.html?page=publish-rules">配信規定</a>
-                    </li>
-                    <li class="category-item">
-                        <a href="/terms-template.html?page=terms-of-use">利用規約</a>
-                    </li>
-                    <li class="category-item">
-                        <a href="/terms-template.html?page=copyright-management">著作権管理サービス利用規約</a>
-                    </li>
-                </ul>
-            </nav>
             <div class="footer-flex-container">
+                <nav class="footer-categories">
+                    <ul class="footer-menu">
+                        <li class="category-item">
+                            <a href="./terms-template.html?page=publish-rules">配信規定</a>
+                        </li>
+                        <li class="category-item">
+                            <a href="./terms-template.html?page=terms-of-use">利用規約</a>
+                        </li>
+                        <li class="category-item">
+                            <a href="./terms-template.html?page=copyright-management">著作権管理サービス利用規約</a>
+                        </li>
+                    </ul>
+                </nav>
                 <p class="text-uppercase small templatemo-copyright">Surroundio copyright © 2022 Nationalux Canada, All rights reserved.</p>
             </div>
             <img src="images/go-to-top.png" alt="Go to top" class="img-responsive tm-go-to-top">
@@ -348,9 +389,9 @@
             <li><a href="#services"><i class="fa fa-cogs"></i> サービス</a></li>
             <li><a href="#contact"><i class="fa fa-envelope"></i> お問い合わせ</a></li>
             <li class="menu-divider"></li>
-            <li><a href="/terms-template.html?page=publish-rules"><i class="fa fa-file-text"></i> 配信規定</a></li>
-            <li><a href="/terms-template.html?page=terms-of-use"><i class="fa fa-file-text"></i> 利用規約</a></li>
-            <li><a href="/terms-template.html?page=copyright-management"><i class="fa fa-file-text"></i> 著作権管理サービス利用規約</a></li>
+            <li><a href="./terms-template.html?page=publish-rules"><i class="fa fa-file-text"></i> 配信規定</a></li>
+            <li><a href="./terms-template.html?page=terms-of-use"><i class="fa fa-file-text"></i> 利用規約</a></li>
+            <li><a href="./terms-template.html?page=copyright-management"><i class="fa fa-file-text"></i> 著作権管理サービス利用規約</a></li>
         </ul>
     </div>
     <script src="js/jquery-1.11.1.min.js"></script>
@@ -692,32 +733,27 @@
             margin-top: 100px;
         }
 
-        .footer-menu-vertical {
+        .footer-menu {
             display: flex;
             flex-direction: row;
+            justify-content: flex-start;
             list-style: none;
             padding: 0;
             margin: 0;
-            align-items: center;
             gap: 30px;
-            justify-content: flex-start;
-            margin-left: 20px;
         }
 
-        .category-item a {
-            color: #fff;
-            font-size: 14px;
-            padding: 5px 10px;
-            text-decoration: none;
-            transition: color 0.3s ease;
-            white-space: nowrap;
+        .footer-categories {
+            width: 100%;
+            text-align: left;
+            margin-bottom: 30px;
         }
 
         @media (max-width: 768px) {
-            .footer-menu-vertical {
+            .footer-menu {
                 flex-direction: column;
                 align-items: center;
-                margin-left: 0;
+                text-align: center;
             }
             
             .footer-categories {

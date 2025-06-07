@@ -393,6 +393,43 @@ app.delete('/api/reservations/:id', async(req, res) => {
     }
 });
 
+// 예약 확인 API 엔드포인트 추가
+app.post('/api/check-reservation', async (req, res) => {
+    try {
+        const { email, memberKey } = req.body;
+        
+        if (!email || !memberKey) {
+            return res.status(400).json({
+                success: false,
+                message: '이메일과 예약번호를 모두 입력해주세요.'
+            });
+        }
+
+        const reservation = await Album.findOne({
+            email: email,
+            reservationCode: memberKey
+        });
+
+        if (!reservation) {
+            return res.status(404).json({
+                success: false,
+                message: '예약 정보를 찾을 수 없습니다.'
+            });
+        }
+
+        return res.json({
+            success: true,
+            reservation: reservation
+        });
+    } catch (error) {
+        console.error('Reservation check error:', error);
+        return res.status(500).json({
+            success: false,
+            message: '서버 오류가 발생했습니다.'
+        });
+    }
+});
+
 // 서버 시작
 app.listen(port, () => {
     console.log(`🚀 服务器运行在端口 ${port}`);
