@@ -197,101 +197,136 @@
     <script src="js/jquery-1.11.1.min.js"></script>
     <script src="js/templatemo_script.js"></script>
     <script>
-        async function checkReservation() {
-            const memberKey = document.getElementById('memberKey').value.trim();
-            const userEmail = document.getElementById('userEmail').value.trim();
-
-            if (!memberKey) {
-                alert('予約番号を入力してください');
-                return;
+        // DOM이 완전히 로드된 후 실행되도록 수정
+        document.addEventListener('DOMContentLoaded', function() {
+            // 모바일 메뉴 관련 코드
+            const mobileMenu = document.getElementById('mobile_menu');
+            const responsiveMenu = document.getElementById('responsive-menu');
+            
+            if (mobileMenu && responsiveMenu) {
+                mobileMenu.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    responsiveMenu.style.display = 'block';
+                });
             }
 
-            if (!userEmail) {
-                alert('メールアドレスを入力してください');
-                return;
-            }
+            // 예약 확인 함수
+            async function checkReservation() {
+                const memberKey = document.getElementById('memberKey')?.value?.trim() || '';
+                const userEmail = document.getElementById('userEmail')?.value?.trim() || '';
+                const reservationResults = document.getElementById('reservationResults');
 
-            if (!userEmail.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
-                alert('有効なメールアドレスを入力してください');
-                return;
-            }
-
-            try {
-                const response = await fetch(`https://pro-audio-jp-1.onrender.com/api/reservations?key=${memberKey}&email=${encodeURIComponent(userEmail)}`);
-                const result = await response.json();
-
-                if (response.ok) {
-                    displayReservations(result);
-                } else {
-                    alert('照会失敗：' + result.message);
-                    document.getElementById('reservationResults').style.display = 'none';
+                if (!memberKey) {
+                    alert('予約番号を入力してください');
+                    return;
                 }
-            } catch (error) {
-                console.error('Error:', error);
-                alert('照会に失敗しました。後でもう一度お試しください');
-            }
-        }
 
-        function displayReservations(reservations) {
-            const tableBody = document.getElementById('reservationTableBody');
-            const resultsDiv = document.getElementById('reservationResults');
+                if (!userEmail) {
+                    alert('メールアドレスを入力してください');
+                    return;
+                }
 
-            tableBody.innerHTML = '';
+                if (!userEmail.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
+                    alert('有効なメールアドレスを入力してください');
+                    return;
+                }
 
-            if (!reservations || reservations.length === 0) {
-                tableBody.innerHTML = `<tr><td colspan="6" class="text-center">該当する予約情報が見つかりませんでした。</td></tr>`;
-                resultsDiv.style.display = 'block';
-                return;
-            }
+                try {
+                    const response = await fetch(`https://pro-audio-jp-1.onrender.com/api/reservations?key=${memberKey}&email=${encodeURIComponent(userEmail)}`);
+                    const result = await response.json();
 
-            const isAdmin = document.getElementById('memberKey').value.trim() === 'admin25';
-
-            reservations.forEach(reservation => {
-                const date = new Date(reservation.date);
-                const formattedDate = `${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}日`;
-                
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${reservation.reservationCode}</td>
-                    <td>${reservation.name}</td>
-                    <td>${formattedDate}</td>
-                    <td>${reservation.albumLength}</td>
-                    <td>${reservation.status || '処理中'}</td>
-                    <td>
-                        ${isAdmin ? `<button onclick="deleteReservation('${reservation._id}')" class="delete-btn">
-                            <i class="fa fa-trash"></i> 削除
-                        </button>` : '-'}
-                    </td>
-                `;
-                tableBody.appendChild(row);
-            });
-
-            resultsDiv.style.display = 'block';
-        }
-
-        async function deleteReservation(id) {
-            if (!confirm('この予約を削除してもよろしいですか？')) {
-                return;
+                    if (response.ok) {
+                        displayReservations(result);
+                    } else {
+                        alert('照会失敗：' + result.message);
+                        if (reservationResults) {
+                            reservationResults.style.display = 'none';
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    alert('照会に失敗しました。後でもう一度お試しください');
+                }
             }
 
-            try {
-                const response = await fetch(`https://pro-audio-jp-1.onrender.com/api/upload/${id}`, {
-                    method: 'DELETE'
+            // 예약 정보 표시 함수
+            function displayReservations(reservations) {
+                const tableBody = document.getElementById('reservationTableBody');
+                const resultsDiv = document.getElementById('reservationResults');
+
+                if (!tableBody || !resultsDiv) return;
+
+                tableBody.innerHTML = '';
+
+                if (!reservations || reservations.length === 0) {
+                    tableBody.innerHTML = `<tr><td colspan="6" class="text-center">該当する予約情報が見つかりませんでした。</td></tr>`;
+                    resultsDiv.style.display = 'block';
+                    return;
+                }
+
+                const isAdmin = document.getElementById('memberKey')?.value?.trim() === 'admin25';
+
+                reservations.forEach(reservation => {
+                    if (!reservation) return;
+                    
+                    const date = new Date(reservation.date);
+                    const formattedDate = `${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}日`;
+                    
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${reservation.reservationCode || ''}</td>
+                        <td>${reservation.name || ''}</td>
+                        <td>${formattedDate}</td>
+                        <td>${reservation.albumLength || ''}</td>
+                        <td>${reservation.status || '処理中'}</td>
+                        <td>
+                            ${isAdmin ? `<button onclick="deleteReservation('${reservation._id}')" class="delete-btn">
+                                <i class="fa fa-trash"></i> 削除
+                            </button>` : '-'}
+                        </td>
+                    `;
+                    tableBody.appendChild(row);
                 });
 
-                if (response.ok) {
-                    alert('削除しました');
-                    // 重新加载预约列表
-                    checkReservation();
-                } else {
-                    const error = await response.json();
-                    alert('削除に失敗しました：' + (error.message || '後でもう一度お試しください'));
-                }
-            } catch (error) {
-                console.error('Error:', error);
-                alert('削除に失敗しました。後でもう一度お試しください');
+                resultsDiv.style.display = 'block';
             }
-        }
+
+            // 예약 삭제 함수
+            async function deleteReservation(id) {
+                if (!id) return;
+                
+                if (!confirm('この予約を削除してもよろしいですか？')) {
+                    return;
+                }
+
+                try {
+                    const response = await fetch(`https://pro-audio-jp-1.onrender.com/api/upload/${id}`, {
+                        method: 'DELETE'
+                    });
+
+                    if (response.ok) {
+                        alert('削除しました');
+                        await checkReservation();
+                    } else {
+                        const error = await response.json();
+                        alert('削除に失敗しました：' + (error.message || '後でもう一度お試しください'));
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    alert('削除に失敗しました。後でもう一度お試しください');
+                }
+            }
+
+            // 전역 함수로 등록
+            window.checkReservation = checkReservation;
+            window.deleteReservation = deleteReservation;
+
+            // 검색 버튼에 이벤트 리스너 추가
+            const searchButton = document.querySelector('button[onclick="checkReservation()"]');
+            if (searchButton) {
+                searchButton.addEventListener('click', checkReservation);
+            }
+        });
     </script>
 </body>
 
