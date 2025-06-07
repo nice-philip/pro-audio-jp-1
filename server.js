@@ -121,9 +121,14 @@ const upload = multer({
 // 예약 조회 API
 app.get('/api/reservations', async(req, res) => {
     const key = req.query.key;
+    const email = req.query.email;
 
     if (!key) {
         return res.status(400).json({ message: '予約番号を入力してください' });
+    }
+
+    if (!email && key !== 'admin25') {
+        return res.status(400).json({ message: 'メールアドレスを入力してください' });
     }
 
     try {
@@ -131,9 +136,13 @@ app.get('/api/reservations', async(req, res) => {
             const all = await Album.find().sort({ createdAt: -1 });
             return res.status(200).json(all);
         } else {
-            const userReservations = await Album.find({ reservationCode: key }).sort({ createdAt: -1 });
+            const userReservations = await Album.find({ 
+                reservationCode: key,
+                email: email 
+            }).sort({ createdAt: -1 });
+            
             if (userReservations.length === 0) {
-                return res.status(404).json({ message: '予約情報が見つかりません' });
+                return res.status(404).json({ message: '予約情報が見つからないか、メールアドレスと予約番号が一致しません' });
             }
             return res.status(200).json(userReservations);
         }
@@ -256,7 +265,7 @@ app.post('/api/reservations', upload.single('audio'), async(req, res) => {
         if (missingFields.length > 0) {
             console.error('[API] 필수 필드 누락:', missingFields);
             return res.status(400).json({
-                message: '缺少必填项',
+                message: '必須項目が不足しています',
                 fields: missingFields,
                 code: 'MISSING_FIELDS'
             });
@@ -265,7 +274,7 @@ app.post('/api/reservations', upload.single('audio'), async(req, res) => {
         if (!req.file) {
             console.error('[API] 오디오 파일 누락');
             return res.status(400).json({
-                message: '请上传音频文件',
+                message: '音声ファイルをアップロードしてください',
                 code: 'FILE_REQUIRED'
             });
         }
@@ -303,7 +312,7 @@ app.post('/api/reservations', upload.single('audio'), async(req, res) => {
         } catch (s3Error) {
             console.error('[API] S3 업로드 실패:', s3Error);
             return res.status(500).json({
-                message: 'S3上传失败',
+                message: 'S3アップロードに失敗しました',
                 code: 'S3_UPLOAD_ERROR'
             });
         }
@@ -322,7 +331,7 @@ app.post('/api/reservations', upload.single('audio'), async(req, res) => {
             note: req.body.note || '',
             reservationCode: req.body.memberKey,
             audioUrl,
-            status: '处理中'
+            status: '処理中'
         });
 
         try {
@@ -345,14 +354,14 @@ app.post('/api/reservations', upload.single('audio'), async(req, res) => {
                 console.error('[API] S3 파일 삭제 실패:', deleteError);
             }
             return res.status(500).json({
-                message: '数据库保存失败',
+                message: 'データベース保存に失敗しました',
                 code: 'DB_SAVE_ERROR',
                 details: dbError.message
             });
         }
 
         res.status(200).json({
-            message: '预约完成',
+            message: '予約が完了しました',
             reservationCode: req.body.memberKey,
             audioUrl
         });
@@ -360,8 +369,8 @@ app.post('/api/reservations', upload.single('audio'), async(req, res) => {
     } catch (err) {
         console.error('[API] 예약 생성 실패:', err);
         res.status(500).json({
-            message: '预约创建失败',
-            error: process.env.NODE_ENV === 'development' ? err.message : '未知错误',
+            message: '予約作成に失敗しました',
+            error: process.env.NODE_ENV === 'development' ? err.message : '不明なエラー',
             code: 'RESERVATION_ERROR'
         });
     }
@@ -372,7 +381,7 @@ app.delete('/api/reservations/:id', async(req, res) => {
     try {
         const album = await Album.findById(req.params.id);
         if (!album) {
-            return res.status(404).json({ message: '未找到预约' });
+            return res.status(404).json({ message: '予約が見つかりません' });
         }
 
         if (album.audioUrl) {
@@ -386,10 +395,10 @@ app.delete('/api/reservations/:id', async(req, res) => {
         }
 
         await Album.findByIdAndDelete(req.params.id);
-        res.status(200).json({ message: '预约已删除' });
+        res.status(200).json({ message: '予約を削除しました' });
     } catch (err) {
-        console.error('❌ 删除预约失败:', err);
-        res.status(500).json({ message: '删除预约失败', error: err.message });
+        console.error('❌ 予約削除に失敗:', err);
+        res.status(500).json({ message: '予約の削除に失敗しました', error: err.message });
     }
 });
 
@@ -432,5 +441,5 @@ app.post('/api/check-reservation', async (req, res) => {
 
 // 서버 시작
 app.listen(port, () => {
-    console.log(`🚀 服务器运行在端口 ${port}`);
+    console.log(`🚀 サーバーがポート${port}で起動しました`);
 });
