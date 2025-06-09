@@ -3,6 +3,8 @@ const multer = require('multer');
 const { S3Client, PutObjectCommand, GetObjectCommand, DeleteObjectCommand } = require('@aws-sdk/client-s3');
 const { v4: uuidv4 } = require('uuid');
 const Album = require('./models/Album');
+const path = require('path');
+const fs = require('fs');
 
 const router = express.Router();
 
@@ -16,8 +18,35 @@ const s3Client = new S3Client({
 });
 
 // ✅ Multer 메모리 저장소 설정
-const storage = multer.memoryStorage();
-const upload = multer({ storage });
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        const uploadPath = path.join(__dirname, 'uploads', file.fieldname === 'image' ? 'images' : 'audio');
+        if (!fs.existsSync(uploadPath)) {
+            fs.mkdirSync(uploadPath, { recursive: true });
+        }
+        cb(null, uploadPath);
+    },
+    filename: function (req, file, cb) {
+        const uniqueSuffix = uuidv4();
+        cb(null, uniqueSuffix + path.extname(file.originalname));
+    }
+});
+
+const upload = multer({ 
+    storage,
+    fileFilter: function (req, file, cb) {
+        if (file.fieldname === 'image') {
+            if (!file.originalname.match(/\.(jpg|jpeg)$/)) {
+                return cb(new Error('JPG 형식의 이미지만 업로드 가능합니다.'), false);
+            }
+        } else if (file.fieldname === 'audio') {
+            if (!file.originalname.match(/\.(wav)$/)) {
+                return cb(new Error('WAV 형식의 오디오 파일만 업로드 가능합니다.'), false);
+            }
+        }
+        cb(null, true);
+    }
+});
 
 // ✅ 중국어 날짜 형식 처리 함수
 function parseChineseDate(dateStr) {

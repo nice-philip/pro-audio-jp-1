@@ -93,11 +93,9 @@ app.options('*', cors(corsOptions)); // Preflight 지원
 // 미들웨어 설정
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(express.static('public'));
 
 // 정적 파일 제공
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
-app.use(express.static(path.join(__dirname, 'public')));
 
 // 업로드 라우트에 CORS 별도 적용
 app.use('/api/upload', cors(corsOptions), uploadRoutes);
@@ -446,7 +444,11 @@ app.post('/api/check-reservation', async (req, res) => {
 
 // HTML 파일 제공
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'application.html'));
+    res.sendFile(path.join(__dirname, 'application.html'));
+});
+
+app.get('/index', (req, res) => {
+    res.sendFile(path.join(__dirname, 'index.html'));
 });
 
 // 서버 시작
