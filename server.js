@@ -1,6 +1,7 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
+const path = require('path');
 const multer = require('multer');
 const { S3Client, PutObjectCommand, DeleteObjectCommand } = require('@aws-sdk/client-s3');
 require('dotenv').config();
@@ -15,7 +16,7 @@ console.log('Environment:', {
     AWS_SECRET_ACCESS_KEY: process.env.AWS_SECRET_ACCESS_KEY ? '(set)' : '(not set)'
 });
 
-const uploadRoutes = require('./upload');
+const uploadRoutes = require('./routes/upload');
 const Album = require('./models/Album');
 
 const app = express();
@@ -93,6 +94,10 @@ app.options('*', cors(corsOptions)); // Preflight 지원
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static('public'));
+
+// 정적 파일 제공
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use(express.static(path.join(__dirname, 'public')));
 
 // 업로드 라우트에 CORS 별도 적용
 app.use('/api/upload', cors(corsOptions), uploadRoutes);
@@ -437,6 +442,11 @@ app.post('/api/check-reservation', async (req, res) => {
             message: '서버 오류가 발생했습니다.'
         });
     }
+});
+
+// HTML 파일 제공
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'application.html'));
 });
 
 // 서버 시작

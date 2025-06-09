@@ -1,82 +1,75 @@
 const mongoose = require('mongoose');
 
-const albumSchema = new mongoose.Schema({
-    name: {
+const songSchema = new mongoose.Schema({
+    title: {
         type: String,
-        required: [true, '名前は必須項目です']
+        required: true
     },
-    age: {
-        type: Number,
-        required: [true, '年齢は必須項目です'],
-        min: [1, '年齢は0より大きい必要があります'],
-        max: [150, '年齢が範囲外です']
-    },
-    gender: {
+    titleEn: {
         type: String,
-        enum: ['男性', '女性', 'その他'],
-        required: [true, '性別は必須項目です']
-    },
-    email: {
-        type: String,
-        required: [true, 'メールアドレスは必須項目です'],
-        match: [/^\S+@\S+\.\S+$/, 'メールアドレスの形式が正しくありません']
+        required: true
     },
     date: {
         type: Date,
-        required: [true, '日付は必須項目です'],
-        validate: {
-            validator: function(value) {
-                const date = new Date(value);
-                if (isNaN(date.getTime())) {
-                    return false;
-                }
-                const year = date.getFullYear();
-                return year >= 1900 && year <= 2100;
-            },
-            message: '無効な日付形式または日付が範囲外です (1900-2100)'
-        },
-        set: function(value) {
-            if (typeof value === 'string' && value.match(/^\d{4}-\d{2}-\d{2}T/)) {
-                return new Date(value);
-            } else if (typeof value === 'string') {
-                const date = new Date(value);
-                if (isNaN(date.getTime())) {
-                    throw new Error('無効な日付形式です');
-                }
-                return date;
-            }
-            return value;
-        }
+        required: true
     },
-    albumLength: {
+    duration: {
         type: String,
-        required: [true, '時間は必須項目です'],
-        validate: {
-            validator: function(v) {
-                return /^([01]?[0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]$/.test(v);
-            },
-            message: '時間形式はHH:mm:ssである必要があります'
-        }
-    },
-    albumDescription: {
-        type: String,
-        maxlength: [1000, '説明は1000文字を超えることはできません']
-    },
-    note: {
-        type: String,
-        maxlength: [500, 'メモは500文字を超えることはできません']
-    },
-    reservationCode: {
-        type: String,
-        required: [true, '予約番号は必須項目です']
+        required: true
     },
     audioUrl: {
         type: String,
-        required: [true, '音声URLは必須項目です']
+        required: true
     },
+    isClassical: {
+        type: Boolean,
+        default: false
+    },
+    classicalInfo: {
+        composer: String,
+        opusNumber: String,
+        movement: String,
+        tempo: String
+    }
+});
+
+const albumSchema = new mongoose.Schema({
+    albumTitle: {
+        type: String,
+        required: true
+    },
+    nameEn: {
+        type: String,
+        required: true
+    },
+    nameKana: {
+        type: String,
+        required: true
+    },
+    artistInfo: {
+        type: String,
+        required: true
+    },
+    isReleased: {
+        type: Boolean,
+        default: false
+    },
+    imageUrl: {
+        type: String,
+        required: true
+    },
+    genre: {
+        type: String,
+        required: true
+    },
+    youtubeMonetize: {
+        type: Boolean,
+        required: true
+    },
+    songs: [songSchema],
     status: {
         type: String,
-        enum: ['処理中', '完了', 'キャンセル'],
+        enum: ['処理中', '完了', 'エラー'],
         default: '処理中'
     },
     createdAt: {

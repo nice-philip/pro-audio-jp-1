@@ -67,6 +67,130 @@
             overflow: hidden;
             transition: max-height 0.7s ease;
         }
+
+        /* About Section Styles */
+        .about-container {
+            max-width: 100%;
+            margin: 0 auto;
+            padding: 0 30px;
+        }
+
+        .about-content {
+            display: flex;
+            align-items: center;
+            gap: 50px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 40px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .about-image-container {
+            flex: 0 0 65%;
+            position: relative;
+            overflow: hidden;
+            border-radius: 10px;
+            height: 400px;
+        }
+
+        .about-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            transition: transform 0.3s ease;
+        }
+
+        .about-content:hover .about-img {
+            transform: scale(1.05);
+        }
+
+        .about-text {
+            flex: 0 0 35%;
+            padding: 20px;
+        }
+
+        .about-text p {
+            font-size: 16px;
+            line-height: 1.8;
+            color: #333;
+            margin: 0;
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .about-container {
+                padding: 0 15px;
+            }
+
+            .about-content {
+                flex-direction: column;
+                padding: 20px;
+            }
+
+            .about-image-container {
+                flex: none;
+                width: 100%;
+                height: 300px;
+                margin-bottom: 20px;
+            }
+
+            .about-text {
+                flex: none;
+                width: 100%;
+                padding: 0;
+            }
+
+            .about-text p {
+                text-align: center;
+            }
+        }
+
+        /* 원형 프로그레스 스타일 추가 */
+        .circular-progress-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        .circular-progress {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: conic-gradient(rgba(255, 102, 51, 0.3) 0deg, transparent 0deg);
+            transition: background 0.1s linear;
+        }
+
+        .templatemo-album-images {
+            position: relative;
+            display: inline-block;
+        }
+
+        /* 햄버거 메뉴 스타일 수정 */
+        .hamburger-lines {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 24px;
+            width: 30px;
+            position: relative;
+            gap: 6px;
+        }
+
+        .hamburger-lines span {
+            display: block;
+            height: 2px;
+            width: 100%;
+            background-color: white;
+            margin: 0;
+        }
     </style>
 </head>
 
@@ -78,10 +202,9 @@
             <nav class="hidden-xs text-center text-uppercase templatemo-nav">
                 <ul class="menu-holder">
                     <li class="active"><a href="#home">ホーム</a></li>
-                    <li><a href="#subscribe">予約申請</a></li>
+                    <li><a href="#about">サービス</a></li>
                     <li><a href="#albums">アルバム</a></li>
-                    <li><a href="#about">会社概要</a></li>
-                    <li><a href="#services">サービス</a></li>
+                    <li><a href="#subscribe">予約申請</a></li>
                     <li><a href="#contact">お問い合わせ</a></li>
                 </ul>
             </nav>
@@ -113,76 +236,37 @@
             </div>
         </section>
         <img src="images/border.png" alt="Border" class="templatemo-border">
-        <section id="subscribe" class="templatemo-section">
-            <h2 class="text-uppercase text-center">予約申請</h2>
-            <div class="upload-section margin-top-50">
-                <button onclick="openAccordion()" class="btn-pastel pink text-uppercase">📩 アルバム制作を申請</button>
-                <a href="reservation.html" class="btn-pastel green text-uppercase" style="margin-left: 20px;">🔍 予約確認</a>
-            </div>
-            <div id="accordionContent" style="max-height: 0; overflow: hidden; transition: max-height 0.7s ease;">
-                <div class="row margin-top-50">
-                    <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
-                        <form id="albumForm" class="tm-contact-form" onsubmit="handleSubmit(event)">
-                            <div class="form-group">
-                                <input type="text" id="name" name="name" class="form-control" placeholder="お名前..." required>
-                            </div>
-                            <div class="form-group">
-                                <input type="number" id="age" name="age" class="form-control" placeholder="年齢..." required>
-                            </div>
-                            <div class="form-group">
-                                <select id="gender" name="gender" class="form-control" required>
-                                    <option value="">性別を選択...</option>
-                                    <option value="男性">男性</option>
-                                    <option value="女性">女性</option>
-                                    <option value="その他">その他</option>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <input type="email" id="email" name="email" class="form-control" placeholder="メールアドレス..." required>
-                            </div>
-                            <div class="form-group">
-                                <input type="text" id="date" name="date" class="form-control" placeholder="日付を選択..." required>
-                            </div>
-                            <div class="form-group">
-                                <input type="text" id="time" name="time" class="form-control time-input" placeholder="時:分:秒" maxlength="8" required>
-                                <small class="text-muted time-display">時間を入力してください (24時間制)</small>
-                            </div>
-                            <div class="form-group">
-                                <textarea id="mainRequest" name="mainRequest" class="form-control" rows="6" placeholder="アルバム紹介 + 曲目名"></textarea>
-                            </div>
-                            <div class="form-group">
-                                <textarea id="note" name="note" class="form-control" rows="4" placeholder="備考"></textarea>
-                            </div>
-                            <div class="form-group">
-                                <input type="text" id="memberKey" name="memberKey" class="form-control" placeholder="予約番号(確認用)" required>
-                            </div>
-                            <div class="form-group">
-                                <div class="file-upload-wrapper">
-                                    <div class="file-select-button">ファイルを選択</div>
-                                    <input type="file" id="audio" name="audio" class="form-control custom-file-input" accept=".mp3,.wav" required>
-                                    <div class="file-status-wrapper">
-                                        <small class="text-muted file-status">選択されたファイルはありません</small>
-                                    </div>
-                                </div>
-                            </div>
-                            <!-- PayPal Payment Section -->
-                            <div class="form-group payment-section" style="margin-top: 30px;">
-                                <h4 class="text-center">お支払い方法</h4>
-                                <div class="price-display text-center" style="margin: 20px 0;">
-                                    <span class="amount">¥20,000</span>
-                                    <span class="currency">JPY</span>
-                                </div>
-                                <div class="payment-label text-center" style="margin-bottom: 10px;">
-                                    <span>PayPalで安全に支払う</span>
-                                </div>
-                                <div id="paypal-button-container" class="text-center"></div>
-                            </div>
-                            <div class="form-group" style="margin-top: 30px;">
-                                <button type="submit" id="submitButton" class="btn-pastel blue text-uppercase">申請完了</button>
-                            </div>
-                        </form>
+        <section id="about" class="templatemo-section">
+            <h2 class="text-uppercase text-center">サービス</h2>
+            <div class="about-container margin-top-50">
+                <div class="about-content">
+                    <div class="about-image-container">
+                        <img src="images/about.jpg" alt="About" class="about-img">
+                    </div>
+                    <div class="about-text">
+                        <p>Surroundioは、世界的に有名なブランドShutterstockと共同で立ち上げた新しいオーディオプラットフォームです。100万以上のプロフェッショナルマスタリングデータに基づき、あなたの音楽により明確で豊かなサウンド表現力を提供します。音声をアップロードすると、音声修復、ミキシング、マスタリングを完了し、世界160以上の音楽プラットフォームへの配信をサポートします。音声を一度アップロードするだけで、プロフェッショナルレベルの最終効果が得られます。さらに、Surroundioは成長中のミュージシャンに露出機会、協力リソース、ブランドプロモーションサポートを提供し、音楽の夢の実現をステップバイステップでサポートします。</p>
                     </div>
                 </div>
+            </div>
+        </section>
+        <img src="images/border.png" alt="Border" class="templatemo-border">
+        <section id="services" class="templatemo-section">
+            <div class="row margin-top-50">
+                <article class="col-lg-4 col-md-4 col-sm-4 col-xs-12 templatemo-product">
+                    <img src="images/services/1.png" alt="AI Analysis" class="center-block">
+                    <h3 class="text-uppercase text-center">AI精密分析</h3>
+                    <p class="text-center">100万以上のマスタリングデータベースに基づく革新的なAIエンジンが、あなたの音声を深く分析・比較し、音質の弱点を智能的に識別し、プロフェッショナルレベルの音質向上と最適化処理を行います。</p>
+                </article>
+                <article class="col-lg-4 col-md-4 col-sm-4 col-xs-12 templatemo-product">
+                    <img src="images/services/2.png" alt="Global Distribution" class="center-block">
+                    <h3 class="text-uppercase text-center">ワンクリックグローバル配信</h3>
+                    <p class="text-center">あなたの音楽は、Amazon Music、Spotify、テンセントミュージックなど、世界の主要プラットフォームに配信されます。Surroundioを通じて、あなたの作品は世界中のリスナーに届き、露出度を高め、真の国際化を実現します。海外配信チャネルを開拓し、時間とコストを節約し、あなたの創作により大きな影響力を与えます。</p>
+                </article>
+                <article class="col-lg-4 col-md-4 col-sm-4 col-xs-12 templatemo-product">
+                    <img src="images/services/3.png" alt="Professional Engineers" class="center-block">
+                    <h3 class="text-uppercase text-center">プロフェッショナルエンジニア</h3>
+                    <p class="text-center">経験豊富なプロフェッショナルマスタリングエンジニアを招き、各作品の詳細な審査とサウンド調整を行います。細部の磨き上げから全体的な音質コントロールまで、すべて人工による精密な修正を行い、業界最高水準を確保します。</p>
+                </article>
             </div>
         </section>
         <img src="images/border.png" alt="Border" class="templatemo-border">
@@ -196,7 +280,7 @@
                         <img src="images/circle_gray.png" alt="Album frame" class="templatemo-album-img-frame">
                         <audio id="audio1" src="audio\song1.mp3"></audio>
                         <audio id="audio2" src="audio\song2.mp3"></audio>
-                        <div class="audio-player" id="player1">
+                        <div class="audio-player" id="player1" style="display: none;">
                             <div class="play-pause-btn" onclick="togglePlay(1)">
                                 <i class="fa fa-play"></i>
                             </div>
@@ -204,7 +288,7 @@
                                 <div class="progress" id="progress1"></div>
                             </div>
                         </div>
-                        <div class="audio-player" id="player2">
+                        <div class="audio-player" id="player2" style="display: none;">
                             <div class="play-pause-btn" onclick="togglePlay(2)">
                                 <i class="fa fa-play"></i>
                             </div>
@@ -226,7 +310,7 @@
                         <img src="images/circle_gray.png" alt="Album frame" class="templatemo-album-img-frame">
                         <audio id="audio3" src="audio\song3.mp3"></audio>
                         <audio id="audio4" src="audio\song4.mp3"></audio>
-                        <div class="audio-player" id="player3">
+                        <div class="audio-player" id="player3" style="display: none;">
                             <div class="play-pause-btn" onclick="togglePlay(3)">
                                 <i class="fa fa-play"></i>
                             </div>
@@ -234,7 +318,7 @@
                                 <div class="progress" id="progress3"></div>
                             </div>
                         </div>
-                        <div class="audio-player" id="player4">
+                        <div class="audio-player" id="player4" style="display: none;">
                             <div class="play-pause-btn" onclick="togglePlay(4)">
                                 <i class="fa fa-play"></i>
                             </div>
@@ -256,7 +340,7 @@
                         <img src="images/circle_gray.png" alt="Album frame" class="templatemo-album-img-frame">
                         <audio id="audio5" src="audio\song5.mp3"></audio>
                         <audio id="audio6" src="audio\song6.mp3"></audio>
-                        <div class="audio-player" id="player5">
+                        <div class="audio-player" id="player5" style="display: none;">
                             <div class="play-pause-btn" onclick="togglePlay(5)">
                                 <i class="fa fa-play"></i>
                             </div>
@@ -264,7 +348,7 @@
                                 <div class="progress" id="progress5"></div>
                             </div>
                         </div>
-                        <div class="audio-player" id="player6">
+                        <div class="audio-player" id="player6" style="display: none;">
                             <div class="play-pause-btn" onclick="togglePlay(6)">
                                 <i class="fa fa-play"></i>
                             </div>
@@ -286,7 +370,7 @@
                         <img src="images/circle_gray.png" alt="Album frame" class="templatemo-album-img-frame">
                         <audio id="audio7" src="audio\song7.mp3"></audio>
                         <audio id="audio8" src="audio\song8.mp3"></audio>
-                        <div class="audio-player" id="player7">
+                        <div class="audio-player" id="player7" style="display: none;">
                             <div class="play-pause-btn" onclick="togglePlay(7)">
                                 <i class="fa fa-play"></i>
                             </div>
@@ -294,7 +378,7 @@
                                 <div class="progress" id="progress7"></div>
                             </div>
                         </div>
-                        <div class="audio-player" id="player8">
+                        <div class="audio-player" id="player8" style="display: none;">
                             <div class="play-pause-btn" onclick="togglePlay(8)">
                                 <i class="fa fa-play"></i>
                             </div>
@@ -312,33 +396,11 @@
             </div>
         </section>
         <img src="images/border.png" alt="Border" class="templatemo-border">
-        <section id="about" class="templatemo-section">
-            <h2 class="text-uppercase text-center">会社概要</h2>
-            <div class="tm-about-img-container">
-                <img src="images/about-frame.png" alt="About frame" class="tm-about-frame img-responsive">
-                <img src="images/about.jpg" alt="About" class="tm-about-img img-responsive">
-            </div>
-            <p class="margin-top-50 text-center">Surroundioは、世界的に有名なブランドShutterstockと共同で立ち上げた新しいオーディオプラットフォームです。100万以上のプロフェッショナルマスタリングデータに基づき、あなたの音楽により明確で豊かなサウンド表現力を提供します。音声をアップロードすると、音声修復、ミキシング、マスタリングを完了し、世界160以上の音楽プラットフォームへの配信をサポートします。音声を一度アップロードするだけで、プロフェッショナルレベルの最終効果が得られます。さらに、Surroundioは成長中のミュージシャンに露出機会、協力リソース、ブランドプロモーションサポートを提供し、音楽の夢の実現をステップバイステップでサポートします。</p>
-        </section>
-        <img src="images/border.png" alt="Border" class="templatemo-border">
-        <section id="services" class="templatemo-section">
-            <h2 class="text-uppercase text-center">サービス</h2>
-            <div class="row margin-top-50">
-                <article class="col-lg-4 col-md-4 col-sm-4 col-xs-12 templatemo-product">
-                    <img src="images/services/1.png" alt="AI Analysis" class="center-block">
-                    <h3 class="text-uppercase text-center">AI精密分析</h3>
-                    <p class="text-center">100万以上のマスタリングデータベースに基づく革新的なAIエンジンが、あなたの音声を深く分析・比較し、音質の弱点を智能的に識別し、プロフェッショナルレベルの音質向上と最適化処理を行います。</p>
-                </article>
-                <article class="col-lg-4 col-md-4 col-sm-4 col-xs-12 templatemo-product">
-                    <img src="images/services/2.png" alt="Global Distribution" class="center-block">
-                    <h3 class="text-uppercase text-center">ワンクリックグローバル配信</h3>
-                    <p class="text-center">あなたの音楽は、Amazon Music、Spotify、テンセントミュージックなど、世界の主要プラットフォームに配信されます。Surroundioを通じて、あなたの作品は世界中のリスナーに届き、露出度を高め、真の国際化を実現します。海外配信チャネルを開拓し、時間とコストを節約し、あなたの創作により大きな影響力を与えます。</p>
-                </article>
-                <article class="col-lg-4 col-md-4 col-sm-4 col-xs-12 templatemo-product">
-                    <img src="images/services/3.png" alt="Professional Engineers" class="center-block">
-                    <h3 class="text-uppercase text-center">プロフェッショナルエンジニア</h3>
-                    <p class="text-center">経験豊富なプロフェッショナルマスタリングエンジニアを招き、各作品の詳細な審査とサウンド調整を行います。細部の磨き上げから全体的な音質コントロールまで、すべて人工による精密な修正を行い、業界最高水準を確保します。</p>
-                </article>
+        <section id="subscribe" class="templatemo-section">
+            <h2 class="text-uppercase text-center">予約申請</h2>
+            <div class="upload-section margin-top-50">
+                <a href="application.html" class="btn-pastel pink text-uppercase">📩 アルバム制作を申請</a>
+                <a href="reservation.html" class="btn-pastel green text-uppercase" style="margin-left: 20px;">🔍 予約確認</a>
             </div>
         </section>
         <img src="images/border.png" alt="Border" class="templatemo-border">
@@ -371,19 +433,6 @@
     <footer class="templatemo-footer margin-top-50">
         <div class="container">
             <div class="footer-flex-container">
-                <nav class="footer-categories">
-                    <ul class="footer-menu">
-                        <li class="category-item">
-                            <a href="./terms-template.html?page=publish-rules">配信規定</a>
-                        </li>
-                        <li class="category-item">
-                            <a href="./terms-template.html?page=terms-of-use">利用規約</a>
-                        </li>
-                        <li class="category-item">
-                            <a href="./terms-template.html?page=copyright-management">著作権管理サービス利用規約</a>
-                        </li>
-                    </ul>
-                </nav>
                 <p class="text-uppercase small templatemo-copyright">Surroundio copyright © 2022 Nationalux Canada, All rights reserved.</p>
             </div>
             <img src="images/go-to-top.png" alt="Go to top" class="img-responsive tm-go-to-top">
@@ -392,10 +441,9 @@
     <div id="responsive-menu" class="visible-xs">
         <ul class="menu-holder">
             <li><a href="#home"><i class="fa fa-home"></i> ホーム</a></li>
-            <li><a href="#subscribe"><i class="fa fa-calendar"></i> 予約申請</a></li>
+            <li><a href="#about"><i class="fa fa-info-circle"></i> サービス</a></li>
             <li><a href="#albums"><i class="fa fa-music"></i> アルバム</a></li>
-            <li><a href="#about"><i class="fa fa-info-circle"></i> 会社概要</a></li>
-            <li><a href="#services"><i class="fa fa-cogs"></i> サービス</a></li>
+            <li><a href="#subscribe"><i class="fa fa-calendar"></i> 予約申請</a></li>
             <li><a href="#contact"><i class="fa fa-envelope"></i> お問い合わせ</a></li>
             <li class="menu-divider"></li>
             <li><a href="./terms-template.html?page=publish-rules"><i class="fa fa-file-text"></i> 配信規定</a></li>
@@ -403,6 +451,96 @@
             <li><a href="./terms-template.html?page=copyright-management"><i class="fa fa-file-text"></i> 著作権管理サービス利用規約</a></li>
         </ul>
     </div>
+    <div id="welcome-popup" class="popup-overlay">
+        <div class="popup-content">
+            <h2>ようこそ Surroundio へ！</h2>
+            <p>プロフェッショナルな音声処理サービスを提供する Surroundio へようこそ。</p>
+            <p>たった20,000円で、あなたの音楽を世界レベルの品質に高めます。</p>
+            <button class="popup-close btn-pastel blue">閉じる</button>
+        </div>
+    </div>
+    <style>
+        .popup-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 9999;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .popup-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            text-align: center;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            animation: slideIn 0.3s ease;
+        }
+
+        .popup-content h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 24px;
+        }
+
+        .popup-content p {
+            color: #666;
+            margin-bottom: 15px;
+            font-size: 16px;
+            line-height: 1.6;
+        }
+
+        .popup-close {
+            margin-top: 20px;
+            padding: 10px 30px;
+            font-size: 16px;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translate(-50%, -60%);
+                opacity: 0;
+            }
+            to {
+                transform: translate(-50%, -50%);
+                opacity: 1;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .popup-content {
+                padding: 30px;
+                width: 85%;
+            }
+
+            .popup-content h2 {
+                font-size: 20px;
+            }
+
+            .popup-content p {
+                font-size: 14px;
+            }
+        }
+    </style>
     <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
     <script src="js/templatemo_script.js"></script>
     <script type="module" src="js/config.js"></script>
@@ -412,390 +550,6 @@
     <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
     <!-- PayPal SDK -->
     <script src="https://www.paypal.com/sdk/js?client-id=AUAys9sigvI9TtgDkQMRtQxfrXspOUiEp9CUafMtSagb2r_Av6rYByXOrkRkQIg7weOtYlGKfJMxRuK_&currency=JPY"></script>
-    <style>
-        .audio-player {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            display: none;
-            width: 80%;
-            text-align: center;
-            z-index: 10;
-        }
-        
-        .play-pause-btn {
-            background: rgba(255, 255, 255, 0.8);
-            border-radius: 50%;
-            width: 50px;
-            height: 50px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            margin: 0 auto 10px;
-            position: relative;
-        }
-
-        .circular-progress {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            border-radius: 50%;
-            background: conic-gradient(rgba(255, 102, 51, 0.3) 0deg, transparent 0deg);
-            transition: background 0.1s linear;
-        }
-        
-        .progress-bar {
-            background: rgba(255, 255, 255, 0.3);
-            height: 5px;
-            border-radius: 3px;
-            overflow: hidden;
-        }
-        
-        .progress {
-            background: #fff;
-            height: 100%;
-            width: 0;
-            transition: width 0.1s linear;
-        }
-        
-        .templatemo-album-images {
-            position: relative;
-        }
-        
-        .circular-progress-container {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 5;
-            pointer-events: none;
-        }
-        
-        .templatemo-album-name,
-        .templatemo-album-artist {
-            transition: color 0.3s ease;
-        }
-        
-        .templatemo-album-name:hover,
-        .templatemo-album-artist:hover {
-            color: #ff6633;
-        }
-        
-        .templatemo-album-date {
-            transition: color 0.3s ease;
-        }
-        
-        .templatemo-album-date:hover {
-            color: #ff6633;
-        }
-        /* モバイル最適化スタイル */
-        
-        @media (max-width: 767px) {
-            .upload-section {
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                gap: 15px;
-            }
-            .upload-section .btn {
-                width: 100%;
-                max-width: 300px;
-                margin-left: 0 !important;
-            }
-            .templatemo-album {
-                margin-bottom: 30px;
-            }
-            .form-group {
-                margin-bottom: 15px;
-            }
-            #accordionContent .row {
-                margin: 0;
-            }
-            #albumForm {
-                padding: 0 15px;
-            }
-            .templatemo-header-image {
-                height: 200px;
-            }
-            .templatemo-site-name {
-                font-size: 24px;
-                padding: 10px 0;
-            }
-            #responsive-menu {
-                display: none;
-                background: rgba(255, 255, 245, 0.9);
-                position: fixed;
-                width: 250px;
-                height: 100%;
-                z-index: 5500;
-                right: -1500px;
-                overflow: auto;
-            }
-            
-            #responsive-menu ul {
-                padding: 20px 10px;
-                margin: 0;
-                list-style: none;
-                background-color: #111;
-                border-radius: 8px;
-            }
-            
-            #responsive-menu ul li {
-                display: block;
-                margin-bottom: 10px;
-                border-radius: 8px;
-                background-color: #222;
-                box-shadow: 0 2px 4px rgba(0,0,0,0.3);
-                transition: background 0.3s;
-            }
-            
-            #responsive-menu ul li:last-child {
-                margin-bottom: 0;
-            }
-            
-            #responsive-menu ul li:hover {
-                background-color: #333;
-            }
-            
-            #responsive-menu ul li a {
-                display: flex;
-                align-items: center;
-                padding: 12px 18px;
-                color: #fff;
-                font-size: 16px;
-                text-decoration: none;
-            }
-            
-            #responsive-menu ul li a i {
-                margin-right: 10px;
-                font-size: 18px;
-                width: 24px;
-                text-align: center;
-            }
-
-            #mobile_menu {
-                display: block;
-                position: fixed;
-                right: 15px;
-                top: 15px;
-                width: 50px;
-                height: 50px;
-                background-color: rgba(39, 167, 255, 0.8);
-                border-radius: 4px;
-                z-index: 5500;
-                cursor: pointer;
-            }
-
-            #mobile_menu .hamburger-lines {
-                position: absolute;
-                top: 50%;
-                left: 50%;
-                transform: translate(-50%, -50%);
-                width: 25px;
-                height: 20px;
-                display: flex;
-                flex-direction: column;
-                justify-content: space-between;
-            }
-
-            #mobile_menu .hamburger-lines span {
-                display: block;
-                width: 100%;
-                height: 3px;
-                background-color: white;
-                border-radius: 2px;
-            }
-        }
-        /* 時間入力スタイル */
-        
-        .time-input::-webkit-datetime-edit-ampm-field {
-            display: none !important;
-        }
-        
-        .time-input::-webkit-clear-button {
-            display: none !important;
-        }
-        
-        .time-input::-webkit-inner-spin-button {
-            display: none !important;
-        }
-        
-        .time-input::-webkit-calendar-picker-indicator {
-            display: none !important;
-        }
-        /* 日付選択スタイル */
-        
-        #ui-datepicker-div {
-            font-family: 'Open Sans', Arial, sans-serif !important;
-        }
-        
-        .ui-datepicker-title select {
-            font-family: 'Open Sans', Arial, sans-serif !important;
-        }
-        /* ファイルアップロード領域スタイル */
-        
-        .file-upload-wrapper {
-            position: relative;
-            min-height: 38px;
-            margin-bottom: 30px;
-            padding-top: 40px;
-        }
-        
-        /* PayPal Payment Section Styles */
-        .payment-section {
-            background: #f8f9fa;
-            border-radius: 8px;
-            padding: 20px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        
-        .payment-section h4 {
-            color: #333;
-            margin-bottom: 20px;
-        }
-        
-        .price-display {
-            font-size: 24px;
-            font-weight: bold;
-            color: #2d3436;
-        }
-        
-        .price-display .currency {
-            font-size: 16px;
-            margin-left: 5px;
-            color: #636e72;
-        }
-        
-        .payment-label {
-            color: #636e72;
-            font-size: 14px;
-        }
-        
-        #paypal-button-container {
-            max-width: 300px;
-            margin: 0 auto;
-        }
-        /* 基本カレンダー隠し */
-        
-        input[type="date"]::-webkit-calendar-picker-indicator {
-            display: none;
-        }
-        
-        input[type="date"]::-webkit-inner-spin-button {
-            display: none;
-        }
-        
-        input[type="date"]::-webkit-clear-button {
-            display: none;
-        }
-        /* jQuery UIカレンダースタイルカスタマイズ */
-        
-        .ui-datepicker {
-            font-family: 'Open Sans', Arial, sans-serif;
-            font-size: 14px;
-            background: #fff;
-            border: 1px solid #ddd;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-        }
-        
-        .ui-datepicker-header {
-            background: #f8f9fa;
-            border: none;
-            padding: 10px;
-        }
-        
-        .ui-datepicker-title {
-            color: #333;
-        }
-        
-        .ui-datepicker-calendar th {
-            color: #666;
-        }
-        
-        .ui-datepicker-calendar td {
-            padding: 3px;
-        }
-        
-        .ui-datepicker-calendar td a {
-            text-align: center;
-        }
-
-        #map-canvas {
-            width: 100%;
-            height: 400px;
-            border-radius: 4px;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-            margin-bottom: 20px;
-        }
-
-        .footer-categories {
-            width: 100%;
-            text-align: left;
-            margin-bottom: 30px;
-            margin-top: 100px;
-        }
-
-        .footer-menu {
-            display: flex;
-            flex-direction: row;
-            justify-content: flex-start;
-            list-style: none;
-            padding: 0;
-            margin: 0;
-            gap: 30px;
-        }
-
-        .footer-categories {
-            width: 100%;
-            text-align: left;
-            margin-bottom: 30px;
-        }
-
-        @media (max-width: 768px) {
-            .footer-menu {
-                flex-direction: column;
-                align-items: center;
-                text-align: center;
-            }
-            
-            .footer-categories {
-                text-align: center;
-            }
-        }
-
-        .footer-flex-container {
-            display: flex;
-            justify-content: flex-end;
-            width: 100%;
-            margin-bottom: 20px;
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-            padding-top: 20px;
-        }
-
-        .templatemo-copyright {
-            margin: 0;
-            text-align: right;
-        }
-
-        @media (max-width: 768px) {
-            .templatemo-copyright {
-                text-align: center;
-            }
-        }
-
-        @media (max-width: 768px) {
-            .menu-divider {
-                height: 1px;
-                background: rgba(255, 255, 255, 0.1);
-                margin: 10px 0;
-            }
-        }
-    </style>
     <script>
         function openAccordion() {
             const content = document.getElementById('accordionContent');
@@ -906,6 +660,7 @@
         const players = {};
 
         function updateCircularProgress(audio, albumImage) {
+            if (!audio.duration) return;
             const progress = (audio.currentTime / audio.duration) * 360;
             const circularProgress = albumImage.querySelector('.circular-progress');
             if (circularProgress) {
@@ -977,37 +732,30 @@
             }
 
             if (currentlyPlaying && currentlyPlaying !== audio) {
-                // Store current time of the playing audio
                 lastPlaybackTime[currentlyPlaying.id] = currentlyPlaying.currentTime;
-                
-                // Stop the current audio
                 currentlyPlaying.pause();
                 const oldPlayer = currentPlayer;
                 const oldPlayIcon = oldPlayer.querySelector('.play-pause-btn i');
                 oldPlayIcon.className = 'fa fa-play';
                 oldPlayer.style.display = 'none';
                 
-                // Hide previous circular progress
                 const oldAlbumImage = oldPlayer.closest('.templatemo-album-images');
                 const oldCircularProgress = oldAlbumImage.querySelector('.circular-progress');
                 if (oldCircularProgress) {
                     oldCircularProgress.style.background = 'conic-gradient(rgba(255, 102, 51, 0.3) 0deg, transparent 0deg)';
                 }
 
-                // Set the new audio's time to match where the previous one left off
                 if (lastPlaybackTime[audio.id]) {
                     audio.currentTime = lastPlaybackTime[audio.id];
                 }
             }
 
             if (audio.paused) {
-                // If we have a stored time for this audio, use it
                 if (lastPlaybackTime[audio.id]) {
                     audio.currentTime = lastPlaybackTime[audio.id];
                 }
                 
                 audio.play();
-                player.style.display = 'block';
                 playIcon.className = 'fa fa-pause';
                 currentlyPlaying = audio;
                 currentPlayer = player;
@@ -1015,7 +763,6 @@
             } else {
                 audio.pause();
                 lastPlaybackTime[audio.id] = audio.currentTime;
-                player.style.display = 'none';
                 playIcon.className = 'fa fa-play';
                 const circularProgress = albumImage.querySelector('.circular-progress');
                 if (circularProgress) {
@@ -1034,7 +781,6 @@
                 });
 
                 audio.addEventListener('ended', () => {
-                    player.style.display = 'none';
                     playIcon.className = 'fa fa-play';
                     progress.style.width = '0%';
                     const circularProgress = albumImage.querySelector('.circular-progress');
@@ -1214,7 +960,6 @@
                 },
                 onError: function(err) {
                     // エラー発生時の処理
-                    alert('お支払い処理中にエラーが発生しました。もう一度お試しください。');
                     console.error('PayPal Error:', err);
                 }
             }).render('#paypal-button-container');
@@ -1279,6 +1024,30 @@
 
         // ページロード時地図初期化
         google.maps.event.addDomListener(window, 'load', initMap);
+
+        // Welcome Popup
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check if the popup has been shown before
+            if (!localStorage.getItem('popupShown')) {
+                setTimeout(function() {
+                    document.getElementById('welcome-popup').style.display = 'block';
+                    // Set the flag in localStorage
+                    localStorage.setItem('popupShown', 'true');
+                }, 1000); // Show popup after 1 second
+            }
+        });
+
+        // Close popup when clicking the close button
+        document.querySelector('.popup-close').addEventListener('click', function() {
+            document.getElementById('welcome-popup').style.display = 'none';
+        });
+
+        // Close popup when clicking outside
+        document.getElementById('welcome-popup').addEventListener('click', function(e) {
+            if (e.target === this) {
+                this.style.display = 'none';
+            }
+        });
     </script>
 </body>
 

@@ -11,16 +11,19 @@
     // Anchors corresponding to menu items
     scrollItems = menuItems.map(function(){
         var href = $(this).attr("href");
-        if (!href || href === "#") return null;
-        var item = $(href);
-        return item.length ? item : null;
-    }).get();
+        if(!href) return null;
+        if(href.startsWith('#')) {
+            var item = $(href);
+            return item.length ? item : null;
+        }
+        return null;
+    }).get().filter(Boolean);
 
     // Bind click handler to menu items
 	  // so we can get a fancy scroll animation
     menuItems.click(function(e){
         var href = $(this).attr("href");
-        if (href && href !== "#") {
+        if (href && href.startsWith('#')) {
             var offsetTop = $(href).offset().top - topMenuHeight + 1;
             $('html, body').stop().animate({ 
                 scrollTop: offsetTop
@@ -63,21 +66,23 @@
    });
 
     //mobile menu and desktop menu
-    $("#responsive-menu").css({"right":-1500});
-    $("#mobile_menu").click(function(){
-        $("#responsive-menu").show();
-        $("#responsive-menu").animate({"right":0});
-        return false;
+    var $responsiveMenu = $("#responsive-menu");
+    $responsiveMenu.hide().css({"right":-1500});
+    $("#mobile_menu").click(function(e){
+        e.preventDefault();
+        $responsiveMenu.show().animate({"right":0}, 300);
     });
     $(window).on("load resize", function(){
-        if($(window).width()>768){
-            $("#responsive-menu").css({"right":-1500});
+        if($(window).width() > 768){
+            $responsiveMenu.hide().css({"right":-1500});
         }
     });
 
     $("#responsive-menu a").click(function(){
-      $("#responsive-menu").hide();
-  });
+        $responsiveMenu.animate({"right":-1500}, 300, function() {
+            $(this).hide();
+        });
+    });
 
 })(jQuery);
 
@@ -96,7 +101,9 @@ function initialize() {
 }
 
 function calculateCenter() {
-  center = map.getCenter();
+    if (map && typeof map.getCenter === 'function') {
+        center = map.getCenter();
+    }
 }
 
 function loadGoogleMap() {
@@ -113,8 +120,7 @@ $(function(){
   -----------------------------------*/
   $('.templatemo-album').mouseover(function(){
     $('.templatemo-album-img-frame', this).attr('src', 'images/circle_blue.png');
-  });
-  $('.templatemo-album').mouseout(function(){
+  }).mouseout(function(){
     $('.templatemo-album-img-frame', this).attr('src', 'images/circle_gray.png');
   });
 
@@ -127,5 +133,9 @@ $(function(){
   -----------------------------------*/
   loadGoogleMap();
   // Make sure map's height is the same as form height in all browsers
-  $('#map-canvas').height($('.tm-contact-form').height());
+  var $mapCanvas = $('#map-canvas');
+  var $contactForm = $('.tm-contact-form');
+  if ($mapCanvas.length && $contactForm.length) {
+    $mapCanvas.height($contactForm.height());
+  }
 });

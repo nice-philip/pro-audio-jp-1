@@ -1,0 +1,129 @@
+body {
+    background-color: #f8f9fa;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+.container {
+    max-width: 1000px;
+}
+
+.form-section {
+    background: #fff;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 0 15px rgba(0,0,0,0.1);
+    margin-bottom: 30px;
+}
+
+h1 {
+    color: #333;
+    margin-bottom: 40px;
+}
+
+h3 {
+    color: #444;
+    font-size: 1.5rem;
+    margin-bottom: 20px;
+}
+
+.form-label {
+    font-weight: 500;
+    color: #555;
+}
+
+.form-control:focus {
+    border-color: #80bdff;
+    box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
+}
+
+.btn-primary {
+    background-color: #007bff;
+    border-color: #007bff;
+    padding: 10px 30px;
+    font-size: 1.1rem;
+}
+
+.btn-primary:hover {
+    background-color: #0069d9;
+    border-color: #0062cc;
+}
+
+.youtube-terms {
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    padding: 15px;
+    margin-bottom: 20px;
+    font-size: 0.9rem;
+    line-height: 1.6;
+}
+
+.image-upload-guide {
+    color: #6c757d;
+    font-size: 0.875rem;
+    margin-top: 5px;
+}
+
+.audio-specs-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+}
+
+.audio-specs-table th,
+.audio-specs-table td {
+    border: 1px solid #dee2e6;
+    padding: 12px;
+    text-align: left;
+}
+
+.audio-specs-table th {
+    background-color: #f8f9fa;
+    font-weight: 500;
+}
+
+.audio-specs-table tr:nth-child(even) {
+    background-color: #f8f9fa;
+}
+
+.form-check {
+    margin-bottom: 10px;
+}
+
+.form-check-input:checked {
+    background-color: #007bff;
+    border-color: #007bff;
+}
+
+.required-label::after {
+    content: "*";
+    color: #dc3545;
+    margin-left: 4px;
+}
+
+@media (max-width: 768px) {
+    .container {
+        padding: 15px;
+    }
+    
+    .form-section {
+        padding: 20px;
+    }
+    
+    h1 {
+        font-size: 1.8rem;
+    }
+    
+    h3 {
+        font-size: 1.3rem;
+    }
+    
+    .audio-specs-table {
+        font-size: 0.9rem;
+    }
+    
+    .audio-specs-table th,
+    .audio-specs-table td {
+        padding: 8px;
+    }
+} 
