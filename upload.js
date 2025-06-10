@@ -36,48 +36,17 @@ const upload = multer({
         cb(null, true);
     },
     limits: {
-        fileSize: 300 * 1024 * 1024 // 300MB 제한
+        fileSize: 100 * 1024 * 1024 // 100MB 제한으로 수정
     }
 });
 
 // ✅ 중국어 날짜 형식 처리 함수
 function parseChineseDate(dateStr) {
-    // ISO 형식 확인 (예: "2024-03-21T00:00:00.000Z")
-    if (dateStr.match(/^\d{4}-\d{2}-\d{2}T/)) {
-        const date = new Date(dateStr);
-        if (isNaN(date.getTime())) {
-            throw new Error('Invalid ISO date format');
-        }
-        return date;
+    const match = dateStr.match(/(\d{4})年(\d{1,2})月(\d{1,2})日/);
+    if (!match) {
+        throw new Error('日付フォーマットが正しくありません (例: 2024年3月15日)');
     }
-
-    // 중국어/일본어 형식 처리
-    const matches = dateStr.match(/(\d{4})年(\d{1,2})月(\d{1,2})日/);
-    if (!matches) {
-        throw new Error(`Invalid date format: ${dateStr}. Expected: YYYY年MM月DD日 or ISO format`);
-    }
-    const [, yearStr, monthStr, dayStr] = matches;
-    const year = parseInt(yearStr, 10);
-    const month = parseInt(monthStr, 10);
-    const day = parseInt(dayStr, 10);
-
-    // 날짜 유효성 검사
-    if (isNaN(year) || year < 1900 || year > 2100) {
-        throw new Error(`Invalid year: ${year}. Must be between 1900 and 2100`);
-    }
-    if (isNaN(month) || month < 1 || month > 12) {
-        throw new Error(`Invalid month: ${month}. Must be between 1 and 12`);
-    }
-    if (isNaN(day) || day < 1 || day > 31) {
-        throw new Error(`Invalid day: ${day}. Must be between 1 and 31`);
-    }
-
-    // 월별 일수 검사
-    const daysInMonth = new Date(year, month, 0).getDate();
-    if (day > daysInMonth) {
-        throw new Error(`Invalid day: ${day}. ${month} month has ${daysInMonth} days`);
-    }
-
+    const [_, year, month, day] = match;
     return new Date(year, month - 1, day);
 }
 
@@ -92,10 +61,10 @@ router.post('/', upload.fields([
     console.log('Request files:', req.files);
 
     try {
-        if (!req.files || !req.files.audio) {
-            console.log('❌ No audio file uploaded');
+        if (!req.files || !req.files.audio || !req.files.image) {
+            console.log('❌ Required files missing');
             return res.status(400).json({ 
-                message: '音声ファイルが必要です',
+                message: '音声ファイルとジャケット画像が必要です',
                 code: 'FILE_REQUIRED' 
             });
         }
@@ -110,7 +79,7 @@ router.post('/', upload.fields([
         if (missingFields.length > 0) {
             console.log('❌ Missing required fields:', missingFields);
             return res.status(400).json({
-                message: '必須項目が不足しています',
+                message: '必須項目が不足しています: ' + missingFields.join(', '),
                 fields: missingFields,
                 code: 'MISSING_FIELDS'
             });
@@ -124,8 +93,7 @@ router.post('/', upload.fields([
         } catch (e) {
             console.error('❌ Date parsing failed:', e.message);
             return res.status(400).json({
-                message: '日付フォーマットが正しくありません',
-                error: e.message,
+                message: e.message,
                 code: 'DATE_PARSE_ERROR'
             });
         }

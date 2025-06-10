@@ -132,7 +132,7 @@ app.get('/api/reservations', async(req, res) => {
 // ✅ 에러 핸들러
 app.use((err, req, res, next) => {
     console.error('❌ Server error:', err);
-    
+
     if (err instanceof multer.MulterError) {
         if (err.code === 'LIMIT_FILE_SIZE') {
             return res.status(400).json({
@@ -146,7 +146,7 @@ app.use((err, req, res, next) => {
             error: err.message
         });
     }
-    
+
     res.status(500).json({
         message: 'サーバーエラーが発生しました',
         code: 'SERVER_ERROR',

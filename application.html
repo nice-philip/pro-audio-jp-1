@@ -508,39 +508,48 @@
             }
 
             const formData = new FormData();
-
-            // テキストフィールド追加
-            formData.append('nameEn', document.getElementById('nameEn').value);
-            formData.append('nameKana', document.getElementById('nameKana').value);
-            formData.append('albumTitle', document.getElementById('albumTitle').value);
-            formData.append('songTitle', document.getElementById('songTitle').value);
-            formData.append('songTitleEn', document.getElementById('songTitleEn').value);
-            formData.append('date', document.getElementById('date').value);
-            formData.append('time', document.getElementById('time').value);
-            formData.append('composer', document.getElementById('composer').value);
-            formData.append('opusNumber', document.getElementById('opusNumber').value);
-            formData.append('movement', document.getElementById('movement').value);
-            formData.append('tempo', document.getElementById('tempo').value);
-            formData.append('artistInfo', document.getElementById('artistInfo').value);
-            formData.append('genre', document.getElementById('genre').value);
-
-            // チェックボックス / ラジオボタン
-            formData.append('isClassical', document.getElementById('isClassical').checked);
-            formData.append('isReleased', document.getElementById('isReleased').checked);
-            formData.append('youtubeMonetize', document.getElementById('youtubeYes').checked ? 'yes' : 'no');
-            formData.append('youtubeAgree', document.getElementById('youtubeAgree').checked);
-
-            // ファイルアップロード
-            const imageFile = document.getElementById('imageUpload').files[0];
-            const audioFile = document.getElementById('audioUpload').files[0];
-            if (imageFile) formData.append('image', imageFile);
-            if (audioFile) formData.append('audio', audioFile);
+            const submitButton = document.querySelector('button[type="submit"]');
 
             try {
-                const submitButton = document.querySelector('button[type="submit"]');
                 submitButton.disabled = true;
                 submitButton.innerHTML = '送信中...';
 
+                // テキストフィールド追加
+                formData.append('nameEn', document.getElementById('nameEn').value);
+                formData.append('nameKana', document.getElementById('nameKana').value);
+                formData.append('albumTitle', document.getElementById('albumTitle').value);
+                formData.append('songTitle', document.getElementById('songTitle').value);
+                formData.append('songTitleEn', document.getElementById('songTitleEn').value);
+                formData.append('date', document.getElementById('date').value);
+                formData.append('time', document.getElementById('time').value);
+                formData.append('composer', document.getElementById('composer').value);
+                formData.append('opusNumber', document.getElementById('opusNumber').value);
+                formData.append('movement', document.getElementById('movement').value);
+                formData.append('tempo', document.getElementById('tempo').value);
+                formData.append('artistInfo', document.getElementById('artistInfo').value);
+                formData.append('genre', document.getElementById('genre').value);
+
+                // チェックボックス / ラジオボタン
+                formData.append('isClassical', document.getElementById('isClassical').checked);
+                formData.append('isReleased', document.getElementById('isReleased').checked);
+                formData.append('youtubeMonetize', document.getElementById('youtubeYes').checked ? 'yes' : 'no');
+                formData.append('youtubeAgree', document.getElementById('youtubeAgree').checked);
+
+                // ファイルアップロード
+                const imageFile = document.getElementById('imageUpload').files[0];
+                const audioFile = document.getElementById('audioUpload').files[0];
+                
+                if (!imageFile) {
+                    throw new Error('ジャケット画像を選択してください');
+                }
+                if (!audioFile) {
+                    throw new Error('音源ファイルを選択してください');
+                }
+
+                formData.append('image', imageFile);
+                formData.append('audio', audioFile);
+
+                console.log('Sending form data to server...');
                 const response = await fetch("https://pro-audio-jp-1.onrender.com/api/reservations", {
                     method: 'POST',
                     body: formData
@@ -552,15 +561,20 @@
                     throw new Error(result.message || 'アップロードに失敗しました');
                 }
 
+                console.log('Upload successful:', result);
                 alert("✅ アップロードが完了しました！");
                 this.reset();
                 document.getElementById('classicalFields').style.display = 'none';
 
             } catch (error) {
                 console.error("❌ アップロード失敗:", error);
-                alert("❌ " + (error.message || 'アップロードに失敗しました。もう一度お試しください。'));
+                let errorMessage = error.message;
+                if (error.response) {
+                    const errorData = await error.response.json();
+                    errorMessage = errorData.message || errorMessage;
+                }
+                alert("❌ " + errorMessage);
             } finally {
-                const submitButton = document.querySelector('button[type="submit"]');
                 submitButton.disabled = false;
                 submitButton.innerHTML = '申請する';
             }
