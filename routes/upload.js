@@ -106,7 +106,8 @@ router.post('/', upload.fields([
         // Parse songs data from the request body
         let songs = [];
         try {
-            songs = JSON.parse(req.body.songs);
+            // Each song is already a JSON string in the array
+            songs = req.body.songs.map(songStr => JSON.parse(songStr));
         } catch (error) {
             throw new Error('楽曲データの解析に失敗しました。');
         }
@@ -127,7 +128,7 @@ router.post('/', upload.fields([
             const songData = {
                 title: song.songTitle,
                 titleEn: song.songTitleEn,
-                duration: song.time,
+                duration: song.duration,
                 audioUrl: audioUrl,
                 isClassical: song.isClassical
             };
