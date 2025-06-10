@@ -127,11 +127,24 @@ router.post('/', upload.fields([
             const songData = {
                 title: song.songTitle,
                 titleEn: song.songTitleEn,
-                date: new Date(song.date),
                 duration: song.time,
                 audioUrl: audioUrl,
                 isClassical: song.isClassical
             };
+
+            // 날짜 문자열이 유효한 경우에만 date 필드 추가
+            if (song.date && song.date !== 'Invalid Date') {
+                try {
+                    // 일본어 날짜 형식(yyyy年mm月dd日)을 ISO 형식으로 변환
+                    const dateStr = song.date.replace(/年|月|日/g, '-').slice(0, -1);
+                    const parsedDate = new Date(dateStr);
+                    if (!isNaN(parsedDate.getTime())) {
+                        songData.date = parsedDate;
+                    }
+                } catch (error) {
+                    console.warn('Invalid date format:', song.date);
+                }
+            }
 
             if (song.isClassical) {
                 songData.classicalInfo = {
@@ -197,7 +210,6 @@ router.post('/:albumId/song', upload.single('audio'), async (req, res) => {
         const songData = {
             title: req.body.songTitle,
             titleEn: req.body.songTitleEn,
-            date: req.body.date,
             duration: req.body.time,
             audioUrl: req.file.path,
             isClassical: req.body.isClassical === 'true'
