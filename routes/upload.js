@@ -163,6 +163,8 @@ router.post('/', upload.fields([
             albumTitle: req.body.albumTitle,
             nameEn: req.body.nameEn,
             nameKana: req.body.nameKana,
+            email: req.body.email,
+            password: req.body.password,
             artistInfo: req.body.artistInfo,
             isReleased: req.body.isReleased === 'true',
             imageUrl: imageUrl,
