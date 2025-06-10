@@ -131,7 +131,7 @@ app.get('/api/reservations', async(req, res) => {
         return res.status(400).json({ message: '予約番号を入力してください' });
     }
 
-    if (!email && key !== 'admin25') {
+    if (!email) {
         return res.status(400).json({ message: 'メールアドレスを入力してください' });
     }
 
@@ -142,7 +142,8 @@ app.get('/api/reservations', async(req, res) => {
         } else {
             const userReservations = await Album.find({
                 reservationCode: key,
-                email: email
+                email: email,
+                password: req.query.password
             }).sort({ createdAt: -1 });
 
             if (userReservations.length === 0) {

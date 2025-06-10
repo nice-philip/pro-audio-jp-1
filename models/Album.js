@@ -11,7 +11,7 @@ const songSchema = new mongoose.Schema({
     },
     date: {
         type: Date,
-        required: true
+        required: false
     },
     duration: {
         type: String,
@@ -86,10 +86,13 @@ const albumSchema = new mongoose.Schema({
 
 // 저장 전 날짜 유효성 검사
 albumSchema.pre('save', function(next) {
-    // 모든 곡의 날짜 검증
+    // 날짜가 있는 곡들만 검증
     const invalidDates = this.songs.filter(song => 
-        !song.date || isNaN(song.date.getTime()) || 
-        song.date.getFullYear() < 1900 || song.date.getFullYear() > 2100
+        song.date && (
+            isNaN(song.date.getTime()) || 
+            song.date.getFullYear() < 1900 || 
+            song.date.getFullYear() > 2100
+        )
     );
 
     if (invalidDates.length > 0) {

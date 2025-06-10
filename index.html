@@ -498,8 +498,6 @@
     <script type="module" src="js/form-handler.js"></script>
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBQXWJ6QWnA3X0JNzeykUpFLJCPxFb68r0&callback=initMap" async defer></script>
     <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
-    <!-- PayPal SDK -->
-    <script src="https://www.paypal.com/sdk/js?client-id=AUAys9sigvI9TtgDkQMRtQxfrXspOUiEp9CUafMtSagb2r_Av6rYByXOrkRkQIg7weOtYlGKfJMxRuK_&currency=JPY"></script>
     <script>
         function openAccordion() {
             const content = document.getElementById('accordionContent');
@@ -927,37 +925,6 @@
                     $('#responsive-menu').css({right: -1500}).hide();
                 }
             });
-
-            // PayPal Button Initialization
-            paypal.Buttons({
-                style: {
-                    layout: 'vertical',
-                    color:  'blue',
-                    shape:  'rect',
-                    label:  'paypal'
-                },
-                createOrder: function(data, actions) {
-                    return actions.order.create({
-                        purchase_units: [{
-                            amount: {
-                                value: '20000',
-                                currency_code: 'JPY'
-                            },
-                            description: 'Surroundio オーディオ処理サービス'
-                        }]
-                    });
-                },
-                onApprove: function(data, actions) {
-                    return actions.order.capture().then(function(details) {
-                        // 支払い成功時の処理
-                        alert('お支払いが完了しました！ご利用ありがとうございます。');
-                    });
-                },
-                onError: function(err) {
-                    // エラー発生時の処理
-                    console.error('PayPal Error:', err);
-                }
-            }).render('#paypal-button-container');
         });
 
         // Google Maps initialization
