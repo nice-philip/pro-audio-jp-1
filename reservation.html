@@ -168,10 +168,10 @@
                     <table class="table table-bordered">
                         <thead>
                             <tr>
-                                <th>予約番号</th>
+                                <th>アルバム名</th>
                                 <th>お名前</th>
-                                <th>予約日</th>
-                                <th>時間</th>
+                                <th>申請日</th>
+                                <th>曲数</th>
                                 <th>状態</th>
                                 <th>操作</th>
                             </tr>
@@ -269,15 +269,15 @@
                 reservations.forEach(reservation => {
                     if (!reservation) return;
                     
-                    const date = new Date(reservation.date);
+                    const date = new Date(reservation.createdAt);
                     const formattedDate = `${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}日`;
                     
                     const row = document.createElement('tr');
                     row.innerHTML = `
-                        <td>${reservation.reservationCode || ''}</td>
-                        <td>${reservation.name || ''}</td>
+                        <td>${reservation.albumTitle || ''}</td>
+                        <td>${reservation.nameKana || ''} (${reservation.nameEn || ''})</td>
                         <td>${formattedDate}</td>
-                        <td>${reservation.albumLength || ''}</td>
+                        <td>${reservation.songs?.length || 0}曲</td>
                         <td>${reservation.status || '処理中'}</td>
                         <td>
                             ${isAdmin ? `<button onclick="deleteReservation('${reservation._id}')" class="delete-btn">
