@@ -438,36 +438,37 @@
             }
 
             const formData = new FormData();
-
-            // メインフォームから基本情報を取得
-            formData.append('nameEn', document.getElementById('nameEn').value);
-            formData.append('nameKana', document.getElementById('nameKana').value);
-            formData.append('albumTitle', document.getElementById('albumTitle').value);
-
-            // 追加曲の情報
-            formData.append('songTitle', document.getElementById('addSongTitle').value);
-            formData.append('songTitleEn', document.getElementById('addSongTitleEn').value);
-            formData.append('date', document.getElementById('addDate').value);
-            formData.append('time', document.getElementById('addTime').value);
-
-            // クラシック情報
-            const isClassical = document.getElementById('addIsClassical').checked;
-            formData.append('isClassical', isClassical);
-            if (isClassical) {
-                formData.append('composer', document.getElementById('addComposer').value);
-                formData.append('opusNumber', document.getElementById('addOpusNumber').value);
-                formData.append('movement', document.getElementById('addMovement').value);
-                formData.append('tempo', document.getElementById('addTempo').value);
-            }
-
-            // オーディオファイル
-            const audioFile = document.getElementById('addAudioUpload').files[0];
-            if (audioFile) formData.append('audio', audioFile);
+            const submitButton = document.querySelector('.modal-footer .btn-primary');
+            const modal = bootstrap.Modal.getInstance(document.getElementById('addSongModal'));
 
             try {
-                const submitButton = document.querySelector('.modal-footer .btn-primary');
                 submitButton.disabled = true;
                 submitButton.innerHTML = '送信中...';
+
+                // メインフォームから基本情報を取得
+                formData.append('nameEn', document.getElementById('nameEn').value);
+                formData.append('nameKana', document.getElementById('nameKana').value);
+                formData.append('albumTitle', document.getElementById('albumTitle').value);
+
+                // 追加曲の情報
+                formData.append('songTitle', document.getElementById('addSongTitle').value);
+                formData.append('songTitleEn', document.getElementById('addSongTitleEn').value);
+                formData.append('date', document.getElementById('addDate').value);
+                formData.append('time', document.getElementById('addTime').value);
+
+                // クラシック情報
+                const isClassical = document.getElementById('addIsClassical').checked;
+                formData.append('isClassical', isClassical);
+                if (isClassical) {
+                    formData.append('composer', document.getElementById('addComposer').value);
+                    formData.append('opusNumber', document.getElementById('addOpusNumber').value);
+                    formData.append('movement', document.getElementById('addMovement').value);
+                    formData.append('tempo', document.getElementById('addTempo').value);
+                }
+
+                // オーディオファイル
+                const audioFile = document.getElementById('addAudioUpload').files[0];
+                if (audioFile) formData.append('audio', audioFile);
 
                 const response = await fetch("https://pro-audio-jp-1.onrender.com/api/reservations", {
                     method: 'POST',
@@ -480,19 +481,19 @@
                     throw new Error(result.message || 'アップロードに失敗しました');
                 }
 
-                // モーダルを閉じる
-                const modal = bootstrap.Modal.getInstance(document.getElementById('addSongModal'));
-                modal.hide();
-                
+                // 成功時の処理
                 alert("✅ 曲が追加されました！");
                 form.reset();
                 document.getElementById('addClassicalFields').style.display = 'none';
+                
+                // モーダルを閉じる前に少し待機
+                await new Promise(resolve => setTimeout(resolve, 100));
+                modal.hide();
 
             } catch (error) {
                 console.error("❌ アップロード失敗:", error);
                 alert("❌ " + (error.message || '曲の追加に失敗しました。もう一度お試しください。'));
             } finally {
-                const submitButton = document.querySelector('.modal-footer .btn-primary');
                 submitButton.disabled = false;
                 submitButton.innerHTML = '追加';
             }
@@ -509,6 +510,7 @@
 
             const formData = new FormData();
             const submitButton = document.querySelector('button[type="submit"]');
+            let uploadComplete = false;
 
             try {
                 submitButton.disabled = true;
@@ -562,7 +564,11 @@
                 }
 
                 console.log('Upload successful:', result);
+                uploadComplete = true;
                 alert("✅ アップロードが完了しました！");
+                
+                // フォームリセット前に少し待機
+                await new Promise(resolve => setTimeout(resolve, 100));
                 this.reset();
                 document.getElementById('classicalFields').style.display = 'none';
 
@@ -570,13 +576,19 @@
                 console.error("❌ アップロード失敗:", error);
                 let errorMessage = error.message;
                 if (error.response) {
-                    const errorData = await error.response.json();
-                    errorMessage = errorData.message || errorMessage;
+                    try {
+                        const errorData = await error.response.json();
+                        errorMessage = errorData.message || errorMessage;
+                    } catch (e) {
+                        console.error('Error parsing error response:', e);
+                    }
                 }
                 alert("❌ " + errorMessage);
             } finally {
-                submitButton.disabled = false;
-                submitButton.innerHTML = '申請する';
+                if (!uploadComplete) {
+                    submitButton.disabled = false;
+                    submitButton.innerHTML = '申請する';
+                }
             }
         });
 
