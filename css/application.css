@@ -126,4 +126,12 @@ h3 {
     .audio-specs-table td {
         padding: 8px;
     }
+
+    .btn-outline-primary .fa-home {
+        font-size: 24px;
+    }
+
+    .btn-outline-primary span {
+        display: none;
+    }
 } 

@@ -56,7 +56,7 @@
     <div class="container my-5">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <a href="/index" class="btn btn-outline-primary">
-                <i class="fa fa-home"></i> ホームへ戻る
+                <i class="fa fa-home"></i> <span>ホームへ戻る</span>
             </a>
             <h1 class="mb-0">アルバム申請</h1>
             <div style="width: 100px;"></div>
@@ -501,7 +501,16 @@
 
             } catch (error) {
                 console.error("❌ アップロード失敗:", error);
-                alert("❌ " + (error.message || '曲の追加に失敗しました。もう一度お試しください。'));
+                let errorMessage = error.message;
+                if (error.response) {
+                    try {
+                        const errorData = await error.response.json();
+                        errorMessage = errorData.message || errorMessage;
+                    } catch (e) {
+                        console.error('Error parsing error response:', e);
+                    }
+                }
+                alert("❌ " + errorMessage);
             } finally {
                 submitButton.disabled = false;
                 submitButton.innerHTML = '追加';
@@ -523,7 +532,7 @@
 
             try {
                 submitButton.disabled = true;
-                submitButton.innerHTML = '送信中...';
+                submitButton.innerHTML = '提出中...';
 
                 // 날짜를 ISO 형식으로 변환
                 const japaneseDate = document.getElementById('date').value;
@@ -597,15 +606,15 @@
                 const result = await response.json();
                 console.log('Upload successful:', result);
                 uploadComplete = true;
-                alert("✅ 업로드가 완료되었습니다!");
+                alert("✅ ファイルのアップロードが完了しました！");
                 
-                // 폼 리셋 전에 잠시 대기
+                // フォームリセット前に少し待機
                 await new Promise(resolve => setTimeout(resolve, 100));
                 this.reset();
                 document.getElementById('classicalFields').style.display = 'none';
 
             } catch (error) {
-                console.error("❌ 업로드 실패:", error);
+                console.error("❌ アップロード失敗:", error);
                 let errorMessage = error.message;
                 if (error.response) {
                     try {
@@ -619,7 +628,7 @@
             } finally {
                 if (!uploadComplete) {
                     submitButton.disabled = false;
-                    submitButton.innerHTML = '신청하기';
+                    submitButton.innerHTML = '提出する';
                 }
             }
         });

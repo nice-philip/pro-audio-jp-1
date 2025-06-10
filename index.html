@@ -485,14 +485,6 @@
             <li><a href="./terms-template.html?page=copyright-management"><i class="fa fa-file-text"></i> 著作権管理サービス利用規約</a></li>
         </ul>
     </div>
-    <div id="welcome-popup" class="popup-overlay">
-        <div class="popup-content">
-            <h2>ようこそ Surroundio へ！</h2>
-            <p>プロフェッショナルな音声処理サービスを提供する Surroundio へようこそ。</p>
-            <p>たった20,000円で、あなたの音楽を世界レベルの品質に高めます。</p>
-            <button class="popup-close btn-pastel blue">閉じる</button>
-        </div>
-    </div>
     <div class="loading-overlay" id="loadingOverlay">
         <div style="text-align: center;">
             <div class="loading-spinner"></div>
@@ -968,12 +960,9 @@
             }).render('#paypal-button-container');
         });
 
-        // Google Maps初期化
+        // Google Maps initialization
         function initMap() {
-            // 希望する位置の緯度と経度を設定
-            const location = { lat: 37.5665, lng: 126.9780 }; // 例座標 (ソウル)
-            
-            // 地図スタイル設定
+            const location = { lat: 37.5665, lng: 126.9780 };
             const mapStyles = [
                 {
                     "featureType": "all",
@@ -987,7 +976,6 @@
                 }
             ];
 
-            // 地図オプション設定
             const mapOptions = {
                 center: location,
                 zoom: 15,
@@ -996,10 +984,7 @@
                 zoomControl: true
             };
 
-            // 地図生成
             const map = new google.maps.Map(document.getElementById('map-canvas'), mapOptions);
-
-            // マーカー追加
             const marker = new google.maps.Marker({
                 position: location,
                 map: map,
@@ -1007,19 +992,16 @@
                 title: 'Surroundio'
             });
 
-            // 情報ウィンドウ内容
             const contentString = 
                 '<div style="padding: 15px; max-width: 200px;">' +
                 '<h4 style="margin: 0 0 10px;">Surroundio</h4>' +
                 '<p style="margin: 0;">プロフェッショナルオーディオ処理と配信サービス</p>' +
                 '</div>';
 
-            // 情報ウィンドウ生成
             const infowindow = new google.maps.InfoWindow({
                 content: contentString
             });
 
-            // マーカークリック時情報ウィンドウ表示
             marker.addListener('click', () => {
                 infowindow.open(map, marker);
             });
@@ -1027,30 +1009,6 @@
 
         // ページロード時地図初期化
         google.maps.event.addDomListener(window, 'load', initMap);
-
-        // Welcome Popup
-        document.addEventListener('DOMContentLoaded', function() {
-            // Check if the popup has been shown before
-            if (!localStorage.getItem('popupShown')) {
-                setTimeout(function() {
-                    document.getElementById('welcome-popup').style.display = 'block';
-                    // Set the flag in localStorage
-                    localStorage.setItem('popupShown', 'true');
-                }, 1000); // Show popup after 1 second
-            }
-        });
-
-        // Close popup when clicking the close button
-        document.querySelector('.popup-close').addEventListener('click', function() {
-            document.getElementById('welcome-popup').style.display = 'none';
-        });
-
-        // Close popup when clicking outside
-        document.getElementById('welcome-popup').addEventListener('click', function(e) {
-            if (e.target === this) {
-                this.style.display = 'none';
-            }
-        });
     </script>
 </body>
 
