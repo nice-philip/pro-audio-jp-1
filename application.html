@@ -536,7 +536,6 @@
                     formData.append(`songs[${index}]`, JSON.stringify(songData));
                 });
 
-                formData.append('songs', JSON.stringify(songs));
                 formData.append('artistInfo', document.getElementById('artistInfo').value);
                 formData.append('genre', document.getElementById('genre').value);
                 formData.append('isReleased', document.getElementById('isReleased').checked);
@@ -594,6 +593,7 @@
                     container.removeChild(container.lastChild);
                 }
                 document.getElementById('addSongButton').disabled = false;
+                document.getElementById('removeSongButton').style.display = 'none';
 
             } catch (error) {
                 console.error("❌ アップロード失敗:", error);
