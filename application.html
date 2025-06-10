@@ -119,7 +119,7 @@
                         </div>
 
                         <!-- 日付と時間 -->
-                        <div class="row">
+                        <div class="row date-time-fields" id="dateTimeFields_0">
                             <div class="col-md-6 mb-3">
                                 <label for="date_0" class="form-label required-label">日付</label>
                                 <input type="text" class="form-control datepicker" id="date_0" name="date[]" required>
@@ -347,14 +347,14 @@
                 // Cancel the event
                 e.preventDefault();
                 // Chrome requires returnValue to be set
-                e.returnValue = '今ページを離れると、入力内容が破棄されます。';
+                e.returnValue = 'ページを離れると、入力した内容が失われます。';
             });
 
             // Remove beforeunload event handler when form is submitted successfully
             document.getElementById('albumForm').addEventListener('submit', function() {
                 window.removeEventListener('beforeunload', function(e) {
                     e.preventDefault();
-                    e.returnValue = '今ページを離れると、入力内容が破棄されます。';
+                    e.returnValue = 'ページを離れると、入力した内容が失われます。';
                 });
             });
 
@@ -396,6 +396,13 @@
             
             // Update IDs and names
             template.setAttribute('data-song-index', songCount);
+            
+            // Remove date and time fields for additional songs
+            const dateTimeFields = template.querySelector('.date-time-fields');
+            if (dateTimeFields && songCount > 0) {
+                dateTimeFields.remove();
+            }
+            
             const elements = template.querySelectorAll('[id]');
             elements.forEach(element => {
                 const oldId = element.id;
@@ -510,12 +517,15 @@
                     const songData = {
                         songTitle: document.getElementById(`songTitle_${index}`).value,
                         songTitleEn: document.getElementById(`songTitleEn_${index}`).value,
-                        date: document.getElementById(`date_${index}`).value,
-                        time: document.getElementById(`time_${index}`).value,
-                        isClassical: document.getElementById(`isClassical_${index}`).checked
                     };
 
-                    if (songData.isClassical) {
+                    // Only add date and time for the first song
+                    if (index === 0) {
+                        songData.date = document.getElementById(`date_${index}`).value;
+                        songData.time = document.getElementById(`time_${index}`).value;
+                    }
+
+                    if (document.getElementById(`isClassical_${index}`).checked) {
                         songData.composer = document.getElementById(`composer_${index}`).value;
                         songData.opusNumber = document.getElementById(`opusNumber_${index}`).value;
                         songData.movement = document.getElementById(`movement_${index}`).value;
