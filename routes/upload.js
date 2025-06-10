@@ -86,22 +86,62 @@ async function uploadToS3(file, type) {
 // 메인 앨범 업로드
 router.post('/', upload.fields([
     { name: 'image', maxCount: 1 },
-    { name: 'audio', maxCount: 1 }
+    { name: 'audio_0', maxCount: 1 },
+    { name: 'audio_1', maxCount: 1 },
+    { name: 'audio_2', maxCount: 1 }
 ]), async (req, res) => {
     try {
         console.log('Received files:', req.files);
         console.log('Received body:', req.body);
 
-        if (!req.files || !req.files['image'] || !req.files['audio']) {
-            throw new Error('画像と音声ファイルは必須です。');
+        if (!req.files || !req.files['image']) {
+            throw new Error('画像ファイルは必須です。');
         }
 
         const imageFile = req.files['image'][0];
-        const audioFile = req.files['audio'][0];
-
-        // S3에 파일 업로드
         const imageUrl = await uploadToS3(imageFile, 'images');
-        const audioUrl = await uploadToS3(audioFile, 'audio');
+
+        // Parse songs data from the request body
+        let songs = [];
+        try {
+            songs = JSON.parse(req.body.songs);
+        } catch (error) {
+            throw new Error('楽曲データの解析に失敗しました。');
+        }
+
+        if (songs.length === 0 || songs.length > 3) {
+            throw new Error('楽曲は1曲から3曲までアップロード可能です。');
+        }
+
+        // Process each song and its audio file
+        const processedSongs = await Promise.all(songs.map(async (song, index) => {
+            const audioFile = req.files[`audio_${index}`]?.[0];
+            if (!audioFile) {
+                throw new Error(`${index + 1}曲目の音声ファイルが見つかりません。`);
+            }
+
+            const audioUrl = await uploadToS3(audioFile, 'audio');
+
+            const songData = {
+                title: song.songTitle,
+                titleEn: song.songTitleEn,
+                date: new Date(song.date),
+                duration: song.time,
+                audioUrl: audioUrl,
+                isClassical: song.isClassical
+            };
+
+            if (song.isClassical) {
+                songData.classicalInfo = {
+                    composer: song.composer,
+                    opusNumber: song.opusNumber,
+                    movement: song.movement,
+                    tempo: song.tempo
+                };
+            }
+
+            return songData;
+        }));
 
         const albumData = {
             albumTitle: req.body.albumTitle,
@@ -113,32 +153,8 @@ router.post('/', upload.fields([
             genre: req.body.genre,
             youtubeMonetize: req.body.youtubeMonetize,
             youtubeAgree: req.body.youtubeAgree === 'true',
-            songs: [{
-                title: req.body.songTitle,
-                titleEn: req.body.songTitleEn,
-                date: new Date(req.body.date),
-                duration: req.body.time,
-                audioUrl: audioUrl,
-                isClassical: req.body.isClassical === 'true'
-            }]
+            songs: processedSongs
         };
-
-        // 디버깅을 위한 로그 추가
-        console.log('Processing album data:', {
-            youtubeMonetize: req.body.youtubeMonetize,
-            youtubeAgree: req.body.youtubeAgree,
-            processedYoutubeAgree: albumData.youtubeAgree
-        });
-
-        // 클래식 음악의 경우 추가 정보
-        if (req.body.isClassical === 'true') {
-            albumData.songs[0].classicalInfo = {
-                composer: req.body.composer,
-                opusNumber: req.body.opusNumber,
-                movement: req.body.movement,
-                tempo: req.body.tempo
-            };
-        }
 
         const album = new Album(albumData);
         await album.save();
