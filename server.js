@@ -87,6 +87,26 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 // ✅ 업로드 API 라우트 연결
 app.use('/api/reservations', uploadRoutes);
 
+// ✅ API 경로에 대한 404 핸들러
+app.use('/api/*', (req, res) => {
+    res.status(404).json({
+        message: 'APIエンドポイントが見つかりません',
+        code: 'NOT_FOUND'
+    });
+});
+
+// ✅ 일반 경로에 대한 404 핸들러
+app.use((req, res) => {
+    if (req.accepts('html')) {
+        res.status(404).sendFile(path.join(__dirname, '404.html'));
+    } else {
+        res.status(404).json({
+            message: 'ページが見つかりません',
+            code: 'NOT_FOUND'
+        });
+    }
+});
+
 // ✅ 예약 조회 API
 app.get('/api/reservations', async(req, res) => {
     const key = req.query.key;
@@ -125,25 +145,31 @@ app.get('/api/reservations', async(req, res) => {
 app.use((err, req, res, next) => {
     console.error('❌ Server error:', err);
 
-    if (err instanceof multer.MulterError) {
-        if (err.code === 'LIMIT_FILE_SIZE') {
+    // API 경로에 대한 에러 처리
+    if (req.path.startsWith('/api/')) {
+        if (err instanceof multer.MulterError) {
+            if (err.code === 'LIMIT_FILE_SIZE') {
+                return res.status(400).json({
+                    message: 'ファイルサイズが大きすぎます (最大100MB)',
+                    code: 'FILE_TOO_LARGE'
+                });
+            }
             return res.status(400).json({
-                message: 'ファイルサイズが大きすぎます (最大100MB)',
-                code: 'FILE_TOO_LARGE'
+                message: 'ファイルアップロードに失敗しました',
+                code: 'UPLOAD_ERROR',
+                error: err.message
             });
         }
-        return res.status(400).json({
-            message: 'ファイルアップロードに失敗しました',
-            code: 'UPLOAD_ERROR',
-            error: err.message
+
+        return res.status(500).json({
+            message: 'サーバーエラーが発生しました',
+            code: 'SERVER_ERROR',
+            error: process.env.NODE_ENV === 'development' ? err.message : undefined
         });
     }
 
-    res.status(500).json({
-        message: 'サーバーエラーが発生しました',
-        code: 'SERVER_ERROR',
-        error: process.env.NODE_ENV === 'development' ? err.message : undefined
-    });
+    // 일반 경로에 대한 에러 처리
+    res.status(500).sendFile(path.join(__dirname, '500.html'));
 });
 
 // ✅ 예약 확인 API

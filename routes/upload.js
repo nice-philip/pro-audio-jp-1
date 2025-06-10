@@ -34,23 +34,33 @@ const upload = multer({
     fileFilter: function (req, file, cb) {
         if (file.fieldname === 'image') {
             if (!file.originalname.match(/\.(jpg|jpeg)$/)) {
-                return cb(new Error('JPG 형식의 이미지만 업로드 가능합니다.'), false);
+                return cb(new Error('JPG 形式の画像のみアップロード可能です。'), false);
             }
         } else if (file.fieldname === 'audio') {
             if (!file.originalname.match(/\.(wav)$/)) {
-                return cb(new Error('WAV 형식의 오디오 파일만 업로드 가능합니다.'), false);
+                return cb(new Error('WAV 形式の音声ファイルのみアップロード可能です。'), false);
             }
         }
         cb(null, true);
+    },
+    limits: {
+        fileSize: 100 * 1024 * 1024 // 100MB
     }
 });
 
-// 메인 앨범 업로드
-router.post('/album', upload.fields([
+// メインアルバムアップロード
+router.post('/', upload.fields([
     { name: 'image', maxCount: 1 },
     { name: 'audio', maxCount: 1 }
 ]), async (req, res) => {
     try {
+        console.log('Received files:', req.files);
+        console.log('Received body:', req.body);
+
+        if (!req.files || !req.files['image'] || !req.files['audio']) {
+            throw new Error('画像と音声ファイルは必須です。');
+        }
+
         const imageFile = req.files['image'][0];
         const audioFile = req.files['audio'][0];
 
@@ -62,18 +72,18 @@ router.post('/album', upload.fields([
             isReleased: req.body.isReleased === 'true',
             imageUrl: imageFile.path,
             genre: req.body.genre,
-            youtubeMonetize: req.body.youtubeMonetize === 'true',
+            youtubeMonetize: req.body.youtubeMonetize === 'yes',
             songs: [{
                 title: req.body.songTitle,
                 titleEn: req.body.songTitleEn,
-                date: new Date(req.body.date),
+                date: req.body.date,
                 duration: req.body.time,
                 audioUrl: audioFile.path,
                 isClassical: req.body.isClassical === 'true'
             }]
         };
 
-        // 클래식 음악인 경우 추가 정보
+        // クラシック音楽の場合の追加情報
         if (req.body.isClassical === 'true') {
             albumData.songs[0].classicalInfo = {
                 composer: req.body.composer,
@@ -87,38 +97,42 @@ router.post('/album', upload.fields([
         await album.save();
 
         res.status(201).json({
-            message: '앨범이 성공적으로 등록되었습니다.',
+            message: 'アップロードが完了しました。',
             album: album
         });
     } catch (error) {
-        // 에러 발생 시 업로드된 파일 삭제
+        console.error('Upload error:', error);
+        
+        // エラー発生時にアップロードされたファイルを削除
         if (req.files) {
             Object.values(req.files).forEach(files => {
                 files.forEach(file => {
-                    fs.unlinkSync(file.path);
+                    if (fs.existsSync(file.path)) {
+                        fs.unlinkSync(file.path);
+                    }
                 });
             });
         }
         
         res.status(400).json({
-            message: '앨범 등록에 실패했습니다.',
+            message: error.message || 'アップロードに失敗しました。',
             error: error.message
         });
     }
 });
 
-// 추가 곡 업로드
-router.post('/album/:albumId/song', upload.single('audio'), async (req, res) => {
+// 追加曲アップロード
+router.post('/:albumId/song', upload.single('audio'), async (req, res) => {
     try {
         const album = await Album.findById(req.params.albumId);
         if (!album) {
-            throw new Error('앨범을 찾을 수 없습니다.');
+            throw new Error('アルバムが見つかりません。');
         }
 
         const songData = {
             title: req.body.songTitle,
             titleEn: req.body.songTitleEn,
-            date: new Date(req.body.date),
+            date: req.body.date,
             duration: req.body.time,
             audioUrl: req.file.path,
             isClassical: req.body.isClassical === 'true'
@@ -137,17 +151,17 @@ router.post('/album/:albumId/song', upload.single('audio'), async (req, res) => 
         await album.save();
 
         res.status(201).json({
-            message: '곡이 성공적으로 추가되었습니다.',
+            message: '曲が追加されました。',
             song: songData
         });
     } catch (error) {
-        // 에러 발생 시 업로드된 파일 삭제
-        if (req.file) {
+        // エラー発生時にアップロードされたファイルを削除
+        if (req.file && fs.existsSync(req.file.path)) {
             fs.unlinkSync(req.file.path);
         }
         
         res.status(400).json({
-            message: '곡 추가에 실패했습니다.',
+            message: error.message || '曲の追加に失敗しました。',
             error: error.message
         });
     }
