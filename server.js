@@ -4,6 +4,7 @@ const cors = require('cors');
 const path = require('path');
 const multer = require('multer');
 const { S3Client, PutObjectCommand, DeleteObjectCommand } = require('@aws-sdk/client-s3');
+const fs = require('fs');
 require('dotenv').config();
 
 console.log('🚀 Starting server...');
@@ -21,7 +22,7 @@ const uploadRoutes = require('./routes/upload');
 const Album = require('./models/Album');
 
 const app = express();
-const port = process.env.PORT || 8080;
+const port = process.env.PORT || 3000;
 
 // ✅ MongoDB 연결
 mongoose.connect(process.env.MONGODB_URI, {
@@ -71,18 +72,9 @@ const allowedOrigins = [
 
 // ✅ CORS 전역 적용
 app.use(cors({
-    origin: function(origin, callback) {
-        console.log('Incoming request from origin:', origin);
-        if (!origin || allowedOrigins.includes(origin)) {
-            callback(null, true);
-        } else {
-            console.error('CORS blocked. Origin not allowed:', origin);
-            callback(new Error('CORS blocked: Origin not allowed'));
-        }
-    },
+    origin: '*', // 모든 도메인 허용
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
-    credentials: true
+    allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
 // ✅ Body parser
@@ -193,14 +185,15 @@ app.post('/api/check-reservation', async(req, res) => {
 
 // ✅ HTML 파일 라우팅
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'application.html'));
+    res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-app.get('/index', (req, res) => {
-    res.sendFile(path.join(__dirname, 'index.html'));
+app.get('/application', (req, res) => {
+    res.sendFile(path.join(__dirname, 'application.html'));
 });
 
 // ✅ 서버 실행
 app.listen(port, () => {
     console.log(`✅ Server is running on port ${port}`);
+    console.log(`CORS is enabled for all origins`);
 });
