@@ -548,8 +548,18 @@
                 // 체크박스/라디오 버튼 값을 올바른 형식으로 변환
                 formData.append('isClassical', document.getElementById('isClassical').checked);
                 formData.append('isReleased', document.getElementById('isReleased').checked);
-                formData.append('youtubeMonetize', document.getElementById('youtubeYes').checked ? 'yes' : 'no');
-                formData.append('youtubeAgree', document.getElementById('youtubeAgree').checked);
+                
+                // YouTube 관련 필드 처리
+                const youtubeMonetize = document.getElementById('youtubeYes').checked ? 'yes' : 'no';
+                const youtubeAgree = document.getElementById('youtubeAgree').checked;
+                
+                formData.append('youtubeMonetize', youtubeMonetize);
+                formData.append('youtubeAgree', youtubeAgree);
+
+                console.log('Form data values:', {
+                    youtubeMonetize,
+                    youtubeAgree
+                });
 
                 // 파일 업로드
                 const imageFile = document.getElementById('imageUpload').files[0];
