@@ -157,7 +157,7 @@
                             <input type="email" id="userEmail" class="form-control" placeholder="メールアドレスを入力してください..." required />
                         </div>
                         <div class="form-group">
-                            <input type="text" id="memberKey" class="form-control" placeholder="予約番号を入力してください..." required />
+                            <input type="password" id="memberKey" class="form-control" placeholder="パスワードを入力してください..." required />
                         </div>
                         <button type="button" onclick="checkReservation()" class="btn text-uppercase tm-dark-bg tm-orange-text tm-send-btn btn-gradient center-block">予約を確認</button>
                     </form>
@@ -214,6 +214,7 @@
             async function checkReservation() {
                 const memberKey = document.getElementById('memberKey')?.value?.trim() || '';
                 const userEmail = document.getElementById('userEmail')?.value?.trim() || '';
+                const password = document.getElementById('password')?.value?.trim() || '';
                 const reservationResults = document.getElementById('reservationResults');
 
                 if (!memberKey) {
@@ -226,13 +227,18 @@
                     return;
                 }
 
+                if (!password) {
+                    alert('パスワードを入力してください');
+                    return;
+                }
+
                 if (!userEmail.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
                     alert('有効なメールアドレスを入力してください');
                     return;
                 }
 
                 try {
-                    const response = await fetch(`https://pro-audio-jp-1.onrender.com/api/reservations?key=${memberKey}&email=${encodeURIComponent(userEmail)}`);
+                    const response = await fetch(`https://pro-audio-jp-1.onrender.com/api/reservations?key=${memberKey}&email=${encodeURIComponent(userEmail)}&password=${encodeURIComponent(password)}`);
                     const result = await response.json();
 
                     if (response.ok) {
