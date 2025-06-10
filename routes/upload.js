@@ -72,16 +72,24 @@ router.post('/', upload.fields([
             isReleased: req.body.isReleased === 'true',
             imageUrl: imageFile.path,
             genre: req.body.genre,
-            youtubeMonetize: req.body.youtubeMonetize === 'yes',
+            youtubeMonetize: req.body.youtubeMonetize,
+            youtubeAgree: req.body.youtubeAgree === 'true',
             songs: [{
                 title: req.body.songTitle,
                 titleEn: req.body.songTitleEn,
-                date: req.body.date,
+                date: new Date(req.body.date),
                 duration: req.body.time,
                 audioUrl: audioFile.path,
                 isClassical: req.body.isClassical === 'true'
             }]
         };
+
+        // 디버깅을 위한 로그 추가
+        console.log('Processing album data:', {
+            youtubeMonetize: req.body.youtubeMonetize,
+            youtubeAgree: req.body.youtubeAgree,
+            processedYoutubeAgree: albumData.youtubeAgree
+        });
 
         // クラシック音楽の場合の追加情報
         if (req.body.isClassical === 'true') {
