@@ -430,26 +430,140 @@
         }
 
         // 追加曲の送信
-        function submitAdditionalSong() {
-            // ここで追加曲のデータを処理
-            const formData = new FormData(document.getElementById('additionalSongForm'));
-            // APIへの送信処理を実装
-            
-            // モーダルを閉じる
-            const modal = bootstrap.Modal.getInstance(document.getElementById('addSongModal'));
-            modal.hide();
-            
-            // 成功メッセージ
-            alert('曲が追加されました');
+        async function submitAdditionalSong() {
+            const form = document.getElementById('additionalSongForm');
+            if (!form.checkValidity()) {
+                form.classList.add('was-validated');
+                return;
+            }
+
+            const formData = new FormData();
+
+            // メインフォームから基本情報を取得
+            formData.append('nameEn', document.getElementById('nameEn').value);
+            formData.append('nameKana', document.getElementById('nameKana').value);
+            formData.append('albumTitle', document.getElementById('albumTitle').value);
+
+            // 追加曲の情報
+            formData.append('songTitle', document.getElementById('addSongTitle').value);
+            formData.append('songTitleEn', document.getElementById('addSongTitleEn').value);
+            formData.append('date', document.getElementById('addDate').value);
+            formData.append('time', document.getElementById('addTime').value);
+
+            // クラシック情報
+            const isClassical = document.getElementById('addIsClassical').checked;
+            formData.append('isClassical', isClassical);
+            if (isClassical) {
+                formData.append('composer', document.getElementById('addComposer').value);
+                formData.append('opusNumber', document.getElementById('addOpusNumber').value);
+                formData.append('movement', document.getElementById('addMovement').value);
+                formData.append('tempo', document.getElementById('addTempo').value);
+            }
+
+            // オーディオファイル
+            const audioFile = document.getElementById('addAudioUpload').files[0];
+            if (audioFile) formData.append('audio', audioFile);
+
+            try {
+                const submitButton = document.querySelector('.modal-footer .btn-primary');
+                submitButton.disabled = true;
+                submitButton.innerHTML = '送信中...';
+
+                const response = await fetch("https://pro-audio-jp-1.onrender.com/api/reservations", {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(result.message || 'アップロードに失敗しました');
+                }
+
+                // モーダルを閉じる
+                const modal = bootstrap.Modal.getInstance(document.getElementById('addSongModal'));
+                modal.hide();
+                
+                alert("✅ 曲が追加されました！");
+                form.reset();
+                document.getElementById('addClassicalFields').style.display = 'none';
+
+            } catch (error) {
+                console.error("❌ アップロード失敗:", error);
+                alert("❌ " + (error.message || '曲の追加に失敗しました。もう一度お試しください。'));
+            } finally {
+                const submitButton = document.querySelector('.modal-footer .btn-primary');
+                submitButton.disabled = false;
+                submitButton.innerHTML = '追加';
+            }
         }
 
         // フォームバリデーション
-        document.getElementById('albumForm').addEventListener('submit', function(event) {
+        document.getElementById('albumForm').addEventListener('submit', async function(event) {
+            event.preventDefault();
             if (!this.checkValidity()) {
-                event.preventDefault();
                 event.stopPropagation();
+                this.classList.add('was-validated');
+                return;
             }
-            this.classList.add('was-validated');
+
+            const formData = new FormData();
+
+            // テキストフィールド追加
+            formData.append('nameEn', document.getElementById('nameEn').value);
+            formData.append('nameKana', document.getElementById('nameKana').value);
+            formData.append('albumTitle', document.getElementById('albumTitle').value);
+            formData.append('songTitle', document.getElementById('songTitle').value);
+            formData.append('songTitleEn', document.getElementById('songTitleEn').value);
+            formData.append('date', document.getElementById('date').value);
+            formData.append('time', document.getElementById('time').value);
+            formData.append('composer', document.getElementById('composer').value);
+            formData.append('opusNumber', document.getElementById('opusNumber').value);
+            formData.append('movement', document.getElementById('movement').value);
+            formData.append('tempo', document.getElementById('tempo').value);
+            formData.append('artistInfo', document.getElementById('artistInfo').value);
+            formData.append('genre', document.getElementById('genre').value);
+
+            // チェックボックス / ラジオボタン
+            formData.append('isClassical', document.getElementById('isClassical').checked);
+            formData.append('isReleased', document.getElementById('isReleased').checked);
+            formData.append('youtubeMonetize', document.getElementById('youtubeYes').checked ? 'yes' : 'no');
+            formData.append('youtubeAgree', document.getElementById('youtubeAgree').checked);
+
+            // ファイルアップロード
+            const imageFile = document.getElementById('imageUpload').files[0];
+            const audioFile = document.getElementById('audioUpload').files[0];
+            if (imageFile) formData.append('image', imageFile);
+            if (audioFile) formData.append('audio', audioFile);
+
+            try {
+                const submitButton = document.querySelector('button[type="submit"]');
+                submitButton.disabled = true;
+                submitButton.innerHTML = '送信中...';
+
+                const response = await fetch("https://pro-audio-jp-1.onrender.com/api/reservations", {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(result.message || 'アップロードに失敗しました');
+                }
+
+                alert("✅ アップロードが完了しました！");
+                this.reset();
+                document.getElementById('classicalFields').style.display = 'none';
+
+            } catch (error) {
+                console.error("❌ アップロード失敗:", error);
+                alert("❌ " + (error.message || 'アップロードに失敗しました。もう一度お試しください。'));
+            } finally {
+                const submitButton = document.querySelector('button[type="submit"]');
+                submitButton.disabled = false;
+                submitButton.innerHTML = '申請する';
+            }
         });
 
         // ファイルアップロードバリデーション

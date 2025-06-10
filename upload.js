@@ -17,7 +17,7 @@ const s3Client = new S3Client({
     }
 });
 
-// ✅ Multer 메모리 저장소 설정으로 변경
+// ✅ Multer 메모리 저장소 설정
 const storage = multer.memoryStorage();
 
 const upload = multer({ 
@@ -26,11 +26,11 @@ const upload = multer({
         console.log('✅ File upload attempt:', file.fieldname, file.originalname);
         if (file.fieldname === 'image') {
             if (!file.originalname.match(/\.(jpg|jpeg)$/)) {
-                return cb(new Error('JPG 형식의 이미지만 업로드 가능합니다.'), false);
+                return cb(new Error('JPG 形式の画像のみアップロード可能です。'), false);
             }
         } else if (file.fieldname === 'audio') {
             if (!file.originalname.match(/\.(wav)$/)) {
-                return cb(new Error('WAV 형식의 오디오 파일만 업로드 가능합니다.'), false);
+                return cb(new Error('WAV 形式の音声ファイルのみアップロード可能です。'), false);
             }
         }
         cb(null, true);
@@ -51,7 +51,7 @@ function parseChineseDate(dateStr) {
         return date;
     }
 
-    // 중국어 형식 처리
+    // 중국어/일본어 형식 처리
     const matches = dateStr.match(/(\d{4})年(\d{1,2})月(\d{1,2})日/);
     if (!matches) {
         throw new Error(`Invalid date format: ${dateStr}. Expected: YYYY年MM月DD日 or ISO format`);
@@ -81,20 +81,6 @@ function parseChineseDate(dateStr) {
     return new Date(year, month - 1, day);
 }
 
-// ✅ 성별 값 변환 함수
-function normalizeGender(gender, language) {
-    if (language === 'ja') {
-        // Japanese gender values
-        const genderMap = {
-            'male': '男性',
-            'female': '女性',
-            'other': 'その他'
-        };
-        return genderMap[gender] || gender;
-    }
-    return gender; // Return as-is for other languages
-}
-
 // ✅ 오디오와 이미지 업로드 처리 라우터
 router.post('/', upload.fields([
     { name: 'audio', maxCount: 1 },
@@ -109,30 +95,18 @@ router.post('/', upload.fields([
         if (!req.files || !req.files.audio) {
             console.log('❌ No audio file uploaded');
             return res.status(400).json({ 
-                message: 'オーディオファイルが必要です',
+                message: '音声ファイルが必要です',
                 code: 'FILE_REQUIRED' 
             });
         }
 
-        const {
-            name,
-            age,
-            gender,
-            email,
-            date,
-            time,
-            mainRequest,
-            note,
-            memberKey,
-            language
-        } = req.body;
+        // 필수 필드 검증
+        const requiredFields = [
+            'albumTitle', 'nameEn', 'nameKana', 'artistInfo',
+            'songTitle', 'songTitleEn', 'date', 'time', 'genre'
+        ];
 
-        // 필수 항목 확인
-        const required = [name, age, gender, email, date, time, memberKey];
-        const missingFields = required.map((value, index) => 
-            !value ? ['name', 'age', 'gender', 'email', 'date', 'time', 'memberKey'][index] : null
-        ).filter(Boolean);
-
+        const missingFields = requiredFields.filter(field => !req.body[field]);
         if (missingFields.length > 0) {
             console.log('❌ Missing required fields:', missingFields);
             return res.status(400).json({
@@ -142,14 +116,10 @@ router.post('/', upload.fields([
             });
         }
 
-        // 성별 값 정규화
-        const normalizedGender = normalizeGender(gender, language);
-        console.log('Normalized gender:', normalizedGender);
-
         // 날짜 파싱
         let parsedDate;
         try {
-            parsedDate = parseChineseDate(date);
+            parsedDate = parseChineseDate(req.body.date);
             console.log('✅ Date parsed successfully:', parsedDate.toISOString());
         } catch (e) {
             console.error('❌ Date parsing failed:', e.message);
@@ -162,54 +132,41 @@ router.post('/', upload.fields([
 
         // S3 업로드 - 오디오 파일
         const audioFile = req.files.audio[0];
-        console.log('Processing audio file:', {
-            originalname: audioFile.originalname,
-            mimetype: audioFile.mimetype,
-            size: audioFile.size
-        });
-
         const audioFilename = `${uuidv4()}_${audioFile.originalname}`;
         const audioUploadParams = {
-            Bucket: 'pro-audio-jp',
+            Bucket: process.env.AWS_BUCKET_NAME,
             Key: `audio/${audioFilename}`,
             Body: audioFile.buffer,
             ContentType: audioFile.mimetype,
         };
 
         console.log('Attempting S3 upload for audio:', audioFilename);
+        let audioUrl;
         try {
             await s3Client.send(new PutObjectCommand(audioUploadParams));
             console.log('✅ S3 audio upload success');
+            audioUrl = `https://${process.env.AWS_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/audio/${audioFilename}`;
         } catch (error) {
             console.error('❌ S3 audio upload failed:', error);
             throw error;
         }
 
-        const audioUrl = `https://pro-audio-jp.s3.${process.env.AWS_REGION}.amazonaws.com/audio/${audioFilename}`;
-
-        // S3 업로드 - 이미지 파일 (있는 경우)
-        let imageUrl = null;
+        // S3 업로드 - 이미지 파일
+        let imageUrl;
         if (req.files.image) {
             const imageFile = req.files.image[0];
-            console.log('Processing image file:', {
-                originalname: imageFile.originalname,
-                mimetype: imageFile.mimetype,
-                size: imageFile.size
-            });
-
             const imageFilename = `${uuidv4()}_${imageFile.originalname}`;
             const imageUploadParams = {
-                Bucket: 'pro-audio-jp',
+                Bucket: process.env.AWS_BUCKET_NAME,
                 Key: `images/${imageFilename}`,
                 Body: imageFile.buffer,
                 ContentType: imageFile.mimetype,
             };
 
-            console.log('Attempting S3 upload for image:', imageFilename);
             try {
                 await s3Client.send(new PutObjectCommand(imageUploadParams));
                 console.log('✅ S3 image upload success');
-                imageUrl = `https://pro-audio-jp.s3.${process.env.AWS_REGION}.amazonaws.com/images/${imageFilename}`;
+                imageUrl = `https://${process.env.AWS_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/images/${imageFilename}`;
             } catch (error) {
                 console.error('❌ S3 image upload failed:', error);
                 throw error;
@@ -218,17 +175,30 @@ router.post('/', upload.fields([
 
         // MongoDB 저장
         const newAlbum = new Album({
-            name,
-            age: Number(age),
-            gender: normalizedGender,
-            email,
-            date: parsedDate,
-            albumLength: time,
-            albumDescription: mainRequest || '',
-            note: note || '',
-            reservationCode: memberKey,
-            audioUrl,
-            imageUrl
+            albumTitle: req.body.albumTitle,
+            nameEn: req.body.nameEn,
+            nameKana: req.body.nameKana,
+            artistInfo: req.body.artistInfo,
+            isReleased: req.body.isReleased === 'true',
+            imageUrl,
+            genre: req.body.genre,
+            youtubeMonetize: req.body.youtubeMonetize,
+            youtubeAgree: req.body.youtubeAgree === 'true',
+            songs: [{
+                title: req.body.songTitle,
+                titleEn: req.body.songTitleEn,
+                date: parsedDate,
+                duration: req.body.time,
+                audioUrl,
+                isClassical: req.body.isClassical === 'true',
+                classicalInfo: {
+                    composer: req.body.composer || '',
+                    opusNumber: req.body.opusNumber || '',
+                    movement: req.body.movement || '',
+                    tempo: req.body.tempo || ''
+                }
+            }],
+            status: '処理中'
         });
 
         console.log('Attempting to save to MongoDB:', newAlbum);

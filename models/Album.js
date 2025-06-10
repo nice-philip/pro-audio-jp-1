@@ -60,9 +60,15 @@ const albumSchema = new mongoose.Schema({
     },
     genre: {
         type: String,
-        required: true
+        required: true,
+        enum: ['pop', 'rock', 'jazz', 'classical', 'electronic', 'hiphop', 'rb', 'folk', 'world', 'ambient', 'metal', 'blues', 'country', 'experimental', 'fusion']
     },
     youtubeMonetize: {
+        type: String,
+        required: true,
+        enum: ['yes', 'no']
+    },
+    youtubeAgree: {
         type: Boolean,
         required: true
     },
@@ -80,13 +86,14 @@ const albumSchema = new mongoose.Schema({
 
 // 저장 전 날짜 유효성 검사
 albumSchema.pre('save', function(next) {
-    if (!this.date || isNaN(this.date.getTime())) {
-        return next(new Error('保存に失敗：無効な日付です'));
-    }
-    
-    const year = this.date.getFullYear();
-    if (year < 1900 || year > 2100) {
-        return next(new Error('保存に失敗：日付が範囲外です (1900-2100)'));
+    // 모든 곡의 날짜 검증
+    const invalidDates = this.songs.filter(song => 
+        !song.date || isNaN(song.date.getTime()) || 
+        song.date.getFullYear() < 1900 || song.date.getFullYear() > 2100
+    );
+
+    if (invalidDates.length > 0) {
+        return next(new Error('保存に失敗：無効な日付があります'));
     }
     
     next();

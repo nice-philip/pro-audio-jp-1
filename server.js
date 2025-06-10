@@ -92,7 +92,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // 업로드 라우트에 CORS 별도 적용
-app.use('/api/upload', cors(corsOptions), uploadRoutes);
+app.use('/api/upload', uploadRoutes);
 
 // AWS S3 설정
 const s3Client = new S3Client({
