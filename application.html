@@ -533,6 +533,11 @@
                         formData.append(`audio_${index}`, audioFile);
                     }
 
+                    // Add each song data separately to FormData
+                    Object.keys(songData).forEach(key => {
+                        formData.append(`songs[${index}][${key}]`, songData[key]);
+                    });
+
                     songs.push(songData);
                 });
 
