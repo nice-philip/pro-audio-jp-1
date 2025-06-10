@@ -191,6 +191,40 @@
             background-color: white;
             margin: 0;
         }
+
+        /* 로딩 상태 표시를 위한 스타일 추가 */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            color: white;
+            margin-top: 10px;
+            font-size: 1.2em;
+        }
     </style>
 </head>
 
@@ -459,88 +493,12 @@
             <button class="popup-close btn-pastel blue">閉じる</button>
         </div>
     </div>
-    <style>
-        .popup-overlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.7);
-            z-index: 9999;
-            animation: fadeIn 0.3s ease;
-        }
-
-        .popup-content {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: white;
-            padding: 40px;
-            border-radius: 15px;
-            text-align: center;
-            max-width: 500px;
-            width: 90%;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-            animation: slideIn 0.3s ease;
-        }
-
-        .popup-content h2 {
-            color: #333;
-            margin-bottom: 20px;
-            font-size: 24px;
-        }
-
-        .popup-content p {
-            color: #666;
-            margin-bottom: 15px;
-            font-size: 16px;
-            line-height: 1.6;
-        }
-
-        .popup-close {
-            margin-top: 20px;
-            padding: 10px 30px;
-            font-size: 16px;
-            cursor: pointer;
-            border: none;
-            border-radius: 5px;
-            transition: all 0.3s ease;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-
-        @keyframes slideIn {
-            from {
-                transform: translate(-50%, -60%);
-                opacity: 0;
-            }
-            to {
-                transform: translate(-50%, -50%);
-                opacity: 1;
-            }
-        }
-
-        @media (max-width: 768px) {
-            .popup-content {
-                padding: 30px;
-                width: 85%;
-            }
-
-            .popup-content h2 {
-                font-size: 20px;
-            }
-
-            .popup-content p {
-                font-size: 14px;
-            }
-        }
-    </style>
+    <div class="loading-overlay" id="loadingOverlay">
+        <div style="text-align: center;">
+            <div class="loading-spinner"></div>
+            <div class="loading-text">送信中...</div>
+        </div>
+    </div>
     <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
     <script src="js/templatemo_script.js"></script>
     <script type="module" src="js/config.js"></script>
@@ -568,13 +526,15 @@
 
             const form = document.getElementById('albumForm');
             const submitButton = form.querySelector('button[type="submit"]');
+            const loadingOverlay = document.getElementById('loadingOverlay');
             const formData = new FormData(form);
 
             try {
+                // 로딩 상태 표시
                 submitButton.disabled = true;
-                submitButton.textContent = '送信中...';
+                loadingOverlay.style.display = 'flex';
 
-                // 日付フォーマット確認
+                // 날짜 포맷 처리
                 const dateValue = $("#date").datepicker("getDate");
                 if (dateValue) {
                     const year = dateValue.getFullYear();
@@ -583,35 +543,54 @@
                     formData.set('date', `${year}年${month}月${day}日`);
                 }
 
-                // 言語設定
+                // 언어 설정
                 formData.append('language', 'ja');
 
-                const response = await fetch('https://pro-audio-jp-1.onrender.com/api/upload', {
+                console.log('Sending form data:', {
+                    name: formData.get('name'),
+                    email: formData.get('email'),
+                    date: formData.get('date'),
+                    audio: formData.get('audio'),
+                    image: formData.get('image')
+                });
+
+                const response = await fetch('https://pro-audio-jp-1.onrender.com/upload', {
                     method: 'POST',
                     body: formData
                 });
 
+                const result = await response.json();
+                
                 if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
+                    throw new Error(result.message || 'アップロードに失敗しました');
                 }
 
-                const result = await response.json();
+                // 성공 시
                 alert('アップロードが完了しました！');
                 form.reset();
                 document.querySelector('.file-status').textContent = '選択されたファイルはありません';
                 document.querySelector('.file-select-button').textContent = 'ファイルを選択';
                 
-                // アコーディオンを閉じる
+                // 아코디언 닫기
                 document.getElementById('accordionContent').style.maxHeight = '0px';
 
             } catch (error) {
                 console.error('Error:', error);
-                alert('エラーが発生しました。もう一度お試しください。');
+                alert(error.message || 'エラーが発生しました。もう一度お試しください。');
             } finally {
+                // 로딩 상태 해제
                 submitButton.disabled = false;
-                submitButton.textContent = '申請完了';
+                loadingOverlay.style.display = 'none';
             }
         }
+
+        // 폼 제출 이벤트 리스너 등록
+        document.addEventListener('DOMContentLoaded', () => {
+            const form = document.getElementById('albumForm');
+            if (form) {
+                form.addEventListener('submit', handleSubmit);
+            }
+        });
 
         // Contact Form Submission
         document.getElementById('contactForm').addEventListener('submit', function(e) {
