@@ -125,8 +125,8 @@
                                 <input type="text" class="form-control datepicker" id="date_0" name="date[]" required>
                             </div>
                             <div class="col-md-6 mb-3">
-                                <label for="time_0" class="form-label required-label">時間</label>
-                                <input type="text" class="form-control time-input" id="time_0" name="time[]" placeholder="HH:mm:ss" required>
+                                <label for="duration_0" class="form-label required-label">再生時間</label>
+                                <input type="text" class="form-control time-input" id="duration_0" name="duration[]" placeholder="HH:mm:ss" required>
                                 <small class="text-muted time-display">時間を入力してください (24時間制)</small>
                             </div>
                         </div>
@@ -397,10 +397,13 @@
             // Update IDs and names
             template.setAttribute('data-song-index', songCount);
             
-            // Remove date and time fields for additional songs
+            // Remove date fields for additional songs but keep duration
             const dateTimeFields = template.querySelector('.date-time-fields');
             if (dateTimeFields && songCount > 0) {
-                dateTimeFields.remove();
+                const dateField = dateTimeFields.querySelector('[name="date[]"]').parentElement;
+                dateField.remove();
+                dateTimeFields.classList.remove('row');
+                dateTimeFields.firstElementChild.classList.remove('col-md-6');
             }
             
             const elements = template.querySelectorAll('[id]');
@@ -517,15 +520,12 @@
                     const songData = {
                         songTitle: document.getElementById(`songTitle_${index}`).value,
                         songTitleEn: document.getElementById(`songTitleEn_${index}`).value,
+                        duration: document.getElementById(`duration_${index}`).value
                     };
 
                     // Only add date for the first song
                     if (index === 0) {
                         songData.date = document.getElementById(`date_${index}`).value;
-                        songData.duration = document.getElementById(`time_${index}`).value;
-                    } else {
-                        // For additional songs, use the time input as duration
-                        songData.duration = "00:00:00"; // 기본값 설정
                     }
 
                     if (document.getElementById(`isClassical_${index}`).checked) {
