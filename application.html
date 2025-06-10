@@ -75,105 +75,96 @@
                         <input type="text" class="form-control" id="nameKana" required>
                     </div>
                 </div>
+                <div class="row">
+                    <div class="col-md-12 mb-3">
+                        <label for="email" class="form-label required-label">メールアドレス</label>
+                        <input type="email" class="form-control" id="email" required>
+                        <div class="invalid-feedback">
+                            有効なメールアドレスを入力してください（@を含む必要があります）
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <!-- 楽曲情報 -->
             <div class="form-section">
                 <h3 class="mb-4">楽曲情報</h3>
-                <div class="row">
-                    <div class="col-md-12 mb-3">
-                        <label for="albumTitle" class="form-label required-label">アルバムタイトル</label>
-                        <input type="text" class="form-control" id="albumTitle" required>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <label for="songTitle" class="form-label required-label">曲名</label>
-                        <input type="text" class="form-control" id="songTitle" required>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <label for="songTitleEn" class="form-label required-label">曲名（英語）</label>
-                        <input type="text" class="form-control" id="songTitleEn" required>
-                    </div>
-                </div>
-
-                <!-- 日付と時間 -->
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <label for="date" class="form-label required-label">日付</label>
-                        <input type="text" class="form-control" id="date" required>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <label for="time" class="form-label required-label">時間</label>
-                        <input type="text" class="form-control time-input" id="time" placeholder="HH:mm:ss" required>
-                        <small class="text-muted time-display">時間を入力してください (24時間制)</small>
-                    </div>
-                </div>
-
-                <!-- クラシック楽曲情報 -->
-                <div class="mb-3">
-                    <div class="form-check">
-                        <input class="form-check-input" type="checkbox" id="isClassical" onchange="toggleClassicalFields()">
-                        <label class="form-check-label" for="isClassical">クラシック楽曲</label>
-                    </div>
-                </div>
-
-                <div id="classicalFields" style="display: none;">
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label for="composer" class="form-label">作曲家</label>
-                            <input type="text" class="form-control" id="composer">
+                <div id="songs-container">
+                    <div class="song-entry" data-song-index="0">
+                        <div class="row">
+                            <div class="col-md-12 mb-3">
+                                <label for="albumTitle" class="form-label required-label">アルバムタイトル</label>
+                                <input type="text" class="form-control" id="albumTitle" required>
+                            </div>
                         </div>
-                        <div class="col-md-6 mb-3">
-                            <label for="opusNumber" class="form-label">作品番号</label>
-                            <input type="text" class="form-control" id="opusNumber">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="songTitle_0" class="form-label required-label">曲名</label>
+                                <input type="text" class="form-control" id="songTitle_0" name="songTitle[]" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="songTitleEn_0" class="form-label required-label">曲名（英語）</label>
+                                <input type="text" class="form-control" id="songTitleEn_0" name="songTitleEn[]" required>
+                            </div>
                         </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label for="movement" class="form-label">楽章</label>
-                            <input type="text" class="form-control" id="movement">
+
+                        <!-- 日付と時間 -->
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="date_0" class="form-label required-label">日付</label>
+                                <input type="text" class="form-control datepicker" id="date_0" name="date[]" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="time_0" class="form-label required-label">時間</label>
+                                <input type="text" class="form-control time-input" id="time_0" name="time[]" placeholder="HH:mm:ss" required>
+                                <small class="text-muted time-display">時間を入力してください (24時間制)</small>
+                            </div>
                         </div>
-                        <div class="col-md-6 mb-3">
-                            <label for="tempo" class="form-label">速度記号</label>
-                            <input type="text" class="form-control" id="tempo">
+
+                        <div class="mb-3">
+                            <label for="audioUpload_0" class="form-label required-label">音源ファイル（WAV形式）</label>
+                            <input type="file" class="form-control" id="audioUpload_0" name="audio[]" accept=".wav" required>
                         </div>
+
+                        <!-- クラシック楽曲情報 -->
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input classical-check" type="checkbox" id="isClassical_0" name="isClassical[]" data-index="0">
+                                <label class="form-check-label" for="isClassical_0">クラシック楽曲</label>
+                            </div>
+                        </div>
+
+                        <div id="classicalFields_0" class="classical-fields" style="display: none;">
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="composer_0" class="form-label">作曲家</label>
+                                    <input type="text" class="form-control" id="composer_0" name="composer[]">
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="opusNumber_0" class="form-label">作品番号</label>
+                                    <input type="text" class="form-control" id="opusNumber_0" name="opusNumber[]">
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="movement_0" class="form-label">楽章</label>
+                                    <input type="text" class="form-control" id="movement_0" name="movement[]">
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="tempo_0" class="form-label">速度記号</label>
+                                    <input type="text" class="form-control" id="tempo_0" name="tempo[]">
+                                </div>
+                            </div>
+                        </div>
+                        <hr class="mt-4 mb-4">
                     </div>
                 </div>
-            </div>
-
-            <!-- アーティスト情報 -->
-            <div class="form-section">
-                <h3 class="mb-4">アーティスト情報</h3>
-                <div class="mb-3">
-                    <label for="artistInfo" class="form-label required-label">アーティスト情報</label>
-                    <textarea class="form-control" id="artistInfo" rows="3" required></textarea>
-                </div>
-                <div class="mb-3">
-                    <div class="form-check">
-                        <input class="form-check-input" type="checkbox" id="isReleased">
-                        <label class="form-check-label" for="isReleased">アルバムリリース済み</label>
-                    </div>
-                </div>
-            </div>
-
-            <!-- ファイルアップロード -->
-            <div class="form-section">
-                <h3 class="mb-4">ファイルアップロード</h3>
-                <div class="mb-3">
-                    <label for="imageUpload" class="form-label required-label">ジャケット画像（JPG形式、3000x3000）</label>
-                    <input type="file" class="form-control" id="imageUpload" accept=".jpg,.jpeg" required>
-                    <div class="image-upload-guide">
-                        推奨サイズ: 3000x3000ピクセル
-                    </div>
+                <div class="text-center mt-3">
+                    <button type="button" class="btn btn-secondary" onclick="addSongEntry()" id="addSongButton">曲を追加</button>
+                    <button type="button" class="btn btn-danger ms-2" onclick="removeSongEntry()" id="removeSongButton" style="display: none;">削除</button>
                 </div>
 
-                <div class="mb-3">
-                    <label for="audioUpload" class="form-label required-label">音源ファイル（WAV形式）</label>
-                    <input type="file" class="form-control" id="audioUpload" accept=".wav" required>
-                </div>
-
-                <table class="audio-specs-table">
+                <table class="audio-specs-table mt-5">
                     <thead>
                         <tr>
                             <th>種類</th>
@@ -203,6 +194,33 @@
                         </tr>
                     </tbody>
                 </table>
+            </div>
+
+            <!-- アーティスト情報 -->
+            <div class="form-section">
+                <h3 class="mb-4">アーティスト情報</h3>
+                <div class="mb-3">
+                    <label for="artistInfo" class="form-label required-label">アーティスト情報</label>
+                    <textarea class="form-control" id="artistInfo" rows="3" required></textarea>
+                </div>
+                <div class="mb-3">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="isReleased">
+                        <label class="form-check-label" for="isReleased">アルバムリリース済み</label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ファイルアップロード -->
+            <div class="form-section">
+                <h3 class="mb-4">ファイルアップロード</h3>
+                <div class="mb-3">
+                    <label for="imageUpload" class="form-label required-label">ジャケット画像（JPG形式、3000x3000）</label>
+                    <input type="file" class="form-control" id="imageUpload" accept=".jpg,.jpeg" required>
+                    <div class="image-upload-guide">
+                        推奨サイズ: 3000x3000ピクセル
+                    </div>
+                </div>
             </div>
 
             <!-- ジャンル選択 -->
@@ -287,90 +305,8 @@
             <!-- 送信ボタン -->
             <div class="text-center mt-4">
                 <button type="submit" class="btn btn-primary btn-lg">申請する</button>
-                <button type="button" class="btn btn-secondary btn-lg ms-2" onclick="addMoreSongs()">曲を追加</button>
             </div>
         </form>
-
-        <!-- 追加曲フォーム用モーダル -->
-        <div class="modal fade" id="addSongModal" tabindex="-1">
-            <div class="modal-dialog modal-lg">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title">曲を追加</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                    </div>
-                    <div class="modal-body">
-                        <form id="additionalSongForm">
-                            <!-- 曲情報 -->
-                            <div class="row">
-                                <div class="col-md-6 mb-3">
-                                    <label for="addSongTitle" class="form-label required-label">曲名</label>
-                                    <input type="text" class="form-control" id="addSongTitle" required>
-                                </div>
-                                <div class="col-md-6 mb-3">
-                                    <label for="addSongTitleEn" class="form-label required-label">曲名（英語）</label>
-                                    <input type="text" class="form-control" id="addSongTitleEn" required>
-                                </div>
-                            </div>
-
-                            <!-- 日付と時間 -->
-                            <div class="row">
-                                <div class="col-md-6 mb-3">
-                                    <label for="addDate" class="form-label required-label">日付</label>
-                                    <input type="text" class="form-control" id="addDate" required>
-                                </div>
-                                <div class="col-md-6 mb-3">
-                                    <label for="addTime" class="form-label required-label">時間</label>
-                                    <input type="text" class="form-control time-input" id="addTime" placeholder="HH:mm:ss" required>
-                                    <small class="text-muted time-display">時間を入力してください (24時間制)</small>
-                                </div>
-                            </div>
-
-                            <!-- 音源ファイル -->
-                            <div class="mb-3">
-                                <label for="addAudioUpload" class="form-label required-label">音源ファイル（WAV形式）</label>
-                                <input type="file" class="form-control" id="addAudioUpload" accept=".wav" required>
-                            </div>
-
-                            <!-- クラシック楽曲情報 -->
-                            <div class="mb-3">
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" id="addIsClassical" onchange="toggleAddClassicalFields()">
-                                    <label class="form-check-label" for="addIsClassical">クラシック楽曲</label>
-                                </div>
-                            </div>
-
-                            <div id="addClassicalFields" style="display: none;">
-                                <div class="row">
-                                    <div class="col-md-6 mb-3">
-                                        <label for="addComposer" class="form-label">作曲家</label>
-                                        <input type="text" class="form-control" id="addComposer">
-                                    </div>
-                                    <div class="col-md-6 mb-3">
-                                        <label for="addOpusNumber" class="form-label">作品番号</label>
-                                        <input type="text" class="form-control" id="addOpusNumber">
-                                    </div>
-                                </div>
-                                <div class="row">
-                                    <div class="col-md-6 mb-3">
-                                        <label for="addMovement" class="form-label">楽章</label>
-                                        <input type="text" class="form-control" id="addMovement">
-                                    </div>
-                                    <div class="col-md-6 mb-3">
-                                        <label for="addTempo" class="form-label">速度記号</label>
-                                        <input type="text" class="form-control" id="addTempo">
-                                    </div>
-                                </div>
-                            </div>
-                        </form>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">キャンセル</button>
-                        <button type="button" class="btn btn-primary" onclick="submitAdditionalSong()">追加</button>
-                    </div>
-                </div>
-            </div>
-        </div>
     </div>
 
     <div class="container">
@@ -384,22 +320,25 @@
     <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
     <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
     <script>
-        // クラシック楽曲フィールドの表示/非表示
-        function toggleClassicalFields() {
-            const classicalFields = document.getElementById('classicalFields');
-            const isClassical = document.getElementById('isClassical').checked;
-            classicalFields.style.display = isClassical ? 'block' : 'none';
-        }
-
-        function toggleAddClassicalFields() {
-            const addClassicalFields = document.getElementById('addClassicalFields');
-            const isClassical = document.getElementById('addIsClassical').checked;
-            addClassicalFields.style.display = isClassical ? 'block' : 'none';
-        }
-
-        // 日付ピッカーの初期化
+        // Initialize datepicker and time input for the first song
         $(document).ready(function() {
-            $("#date, #addDate").datepicker({
+            // Add beforeunload event handler
+            window.addEventListener('beforeunload', function(e) {
+                // Cancel the event
+                e.preventDefault();
+                // Chrome requires returnValue to be set
+                e.returnValue = '今ページを離れると、入力内容が破棄されます。';
+            });
+
+            // Remove beforeunload event handler when form is submitted successfully
+            document.getElementById('albumForm').addEventListener('submit', function() {
+                window.removeEventListener('beforeunload', function(e) {
+                    e.preventDefault();
+                    e.returnValue = '今ページを離れると、入力内容が破棄されます。';
+                });
+            });
+
+            $("#date_0").datepicker({
                 dateFormat: 'yy年mm月dd日',
                 monthNames: ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'],
                 dayNames: ['日曜日', '月曜日', '火曜日', '水曜日', '木曜日', '金曜日', '土曜日'],
@@ -407,70 +346,188 @@
                 showMonthAfterYear: true,
                 yearSuffix: '年'
             });
+
+            // Time input formatting
+            $(document).on('input', '.time-input', function() {
+                let value = $(this).val().replace(/\D/g, '');
+                if (value.length > 6) {
+                    value = value.substr(0, 6);
+                }
+                if (value.length >= 4) {
+                    value = value.substr(0, 2) + ':' + value.substr(2, 2) + ':' + value.substr(4);
+                } else if (value.length >= 2) {
+                    value = value.substr(0, 2) + ':' + value.substr(2);
+                }
+                $(this).val(value);
+            });
         });
 
-        // 時間入力のフォーマット
-        $('.time-input').on('input', function() {
-            let value = $(this).val().replace(/\D/g, '');
-            if (value.length > 6) {
-                value = value.substr(0, 6);
-            }
-            if (value.length >= 4) {
-                value = value.substr(0, 2) + ':' + value.substr(2, 2) + ':' + value.substr(4);
-            } else if (value.length >= 2) {
-                value = value.substr(0, 2) + ':' + value.substr(2);
-            }
-            $(this).val(value);
-        });
+        let songCount = 1;
+        const MAX_SONGS = 3;
 
-        // 追加曲モーダルを表示
-        function addMoreSongs() {
-            const modal = new bootstrap.Modal(document.getElementById('addSongModal'));
-            modal.show();
+        function addSongEntry() {
+            if (songCount >= MAX_SONGS) {
+                alert('最大3曲までアップロード可能です');
+                return;
+            }
+
+            const container = document.getElementById('songs-container');
+            const template = document.querySelector('.song-entry').cloneNode(true);
+            
+            // Update IDs and names
+            template.setAttribute('data-song-index', songCount);
+            const elements = template.querySelectorAll('[id]');
+            elements.forEach(element => {
+                const oldId = element.id;
+                const newId = oldId.replace(/_\d+$/, `_${songCount}`);
+                element.id = newId;
+                if (element.getAttribute('name')) {
+                    element.setAttribute('name', element.getAttribute('name'));
+                }
+                if (element.classList.contains('classical-check')) {
+                    element.setAttribute('data-index', songCount);
+                }
+            });
+
+            // Update labels
+            template.querySelectorAll('label[for]').forEach(label => {
+                const oldFor = label.getAttribute('for');
+                const newFor = oldFor.replace(/_\d+$/, `_${songCount}`);
+                label.setAttribute('for', newFor);
+            });
+
+            // Clear input values
+            template.querySelectorAll('input').forEach(input => {
+                if (input.type === 'text' || input.type === 'file') {
+                    input.value = '';
+                } else if (input.type === 'checkbox') {
+                    input.checked = false;
+                }
+            });
+
+            // Update classical fields container ID
+            const classicalFields = template.querySelector('.classical-fields');
+            classicalFields.id = `classicalFields_${songCount}`;
+            classicalFields.style.display = 'none';
+
+            container.appendChild(template);
+            songCount++;
+
+            // Initialize datepicker for the new entry
+            $(`#date_${songCount-1}`).datepicker({
+                dateFormat: 'yy年mm月dd日',
+                monthNames: ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'],
+                dayNames: ['日曜日', '月曜日', '火曜日', '水曜日', '木曜日', '金曜日', '土曜日'],
+                dayNamesMin: ['日', '月', '火', '水', '木', '金', '土'],
+                showMonthAfterYear: true,
+                yearSuffix: '年'
+            });
+
+            // Update add button state
+            if (songCount >= MAX_SONGS) {
+                document.getElementById('addSongButton').disabled = true;
+            }
+
+            // Show remove button if more than one song
+            document.getElementById('removeSongButton').style.display = songCount > 1 ? 'inline-block' : 'none';
         }
 
-        // 追加曲の送信
-        async function submitAdditionalSong() {
-            const form = document.getElementById('additionalSongForm');
-            if (!form.checkValidity()) {
-                form.classList.add('was-validated');
+        function removeSongEntry() {
+            if (songCount <= 1) {
+                return;
+            }
+
+            const container = document.getElementById('songs-container');
+            container.removeChild(container.lastChild);
+            songCount--;
+
+            // Update button states
+            document.getElementById('addSongButton').disabled = false;
+            document.getElementById('removeSongButton').style.display = songCount > 1 ? 'inline-block' : 'none';
+        }
+
+        // Update classical fields toggle function
+        document.addEventListener('change', function(e) {
+            if (e.target.classList.contains('classical-check')) {
+                const index = e.target.getAttribute('data-index');
+                const fields = document.getElementById(`classicalFields_${index}`);
+                fields.style.display = e.target.checked ? 'block' : 'none';
+            }
+        });
+
+        // Remove old functions that are no longer needed
+        function addMoreSongs() {}
+        function toggleClassicalFields() {}
+        function toggleAddClassicalFields() {}
+        function submitAdditionalSong() {}
+
+        // Update form submission to handle multiple songs
+        document.getElementById('albumForm').addEventListener('submit', async function(event) {
+            event.preventDefault();
+            if (!this.checkValidity()) {
+                event.stopPropagation();
+                this.classList.add('was-validated');
                 return;
             }
 
             const formData = new FormData();
-            const submitButton = document.querySelector('.modal-footer .btn-primary');
-            const modal = bootstrap.Modal.getInstance(document.getElementById('addSongModal'));
+            const submitButton = document.querySelector('button[type="submit"]');
+            let uploadComplete = false;
 
             try {
                 submitButton.disabled = true;
-                submitButton.innerHTML = '送信中...';
+                submitButton.innerHTML = '提出中...';
 
-                // メインフォームから基本情報を取得
+                // Basic information
                 formData.append('nameEn', document.getElementById('nameEn').value);
                 formData.append('nameKana', document.getElementById('nameKana').value);
+                formData.append('email', document.getElementById('email').value);
                 formData.append('albumTitle', document.getElementById('albumTitle').value);
 
-                // 追加曲の情報
-                formData.append('songTitle', document.getElementById('addSongTitle').value);
-                formData.append('songTitleEn', document.getElementById('addSongTitleEn').value);
-                formData.append('date', document.getElementById('addDate').value);
-                formData.append('time', document.getElementById('addTime').value);
+                // Collect all songs data
+                const songs = [];
+                document.querySelectorAll('.song-entry').forEach((songEntry, index) => {
+                    const songData = {
+                        songTitle: document.getElementById(`songTitle_${index}`).value,
+                        songTitleEn: document.getElementById(`songTitleEn_${index}`).value,
+                        date: document.getElementById(`date_${index}`).value,
+                        time: document.getElementById(`time_${index}`).value,
+                        isClassical: document.getElementById(`isClassical_${index}`).checked
+                    };
 
-                // クラシック情報
-                const isClassical = document.getElementById('addIsClassical').checked;
-                formData.append('isClassical', isClassical);
-                if (isClassical) {
-                    formData.append('composer', document.getElementById('addComposer').value);
-                    formData.append('opusNumber', document.getElementById('addOpusNumber').value);
-                    formData.append('movement', document.getElementById('addMovement').value);
-                    formData.append('tempo', document.getElementById('addTempo').value);
+                    if (songData.isClassical) {
+                        songData.composer = document.getElementById(`composer_${index}`).value;
+                        songData.opusNumber = document.getElementById(`opusNumber_${index}`).value;
+                        songData.movement = document.getElementById(`movement_${index}`).value;
+                        songData.tempo = document.getElementById(`tempo_${index}`).value;
+                    }
+
+                    const audioFile = document.getElementById(`audioUpload_${index}`).files[0];
+                    if (audioFile) {
+                        formData.append(`audio_${index}`, audioFile);
+                    }
+
+                    songs.push(songData);
+                });
+
+                formData.append('songs', JSON.stringify(songs));
+                formData.append('artistInfo', document.getElementById('artistInfo').value);
+                formData.append('genre', document.getElementById('genre').value);
+                formData.append('isReleased', document.getElementById('isReleased').checked);
+                
+                // YouTube related fields
+                const youtubeMonetize = document.getElementById('youtubeYes').checked ? 'yes' : 'no';
+                const youtubeAgree = document.getElementById('youtubeAgree').checked;
+                
+                formData.append('youtubeMonetize', youtubeMonetize);
+                formData.append('youtubeAgree', youtubeAgree);
+
+                // Cover image
+                const imageFile = document.getElementById('imageUpload').files[0];
+                if (imageFile) {
+                    formData.append('image', imageFile);
                 }
 
-                // オーディオファイル
-                const audioFile = document.getElementById('addAudioUpload').files[0];
-                if (audioFile) formData.append('audio', audioFile);
-
-                console.log('Sending form data to server...');
                 const response = await fetch("https://pro-audio-jp-1.onrender.com/api/reservations", {
                     method: 'POST',
                     body: formData,
@@ -491,127 +548,22 @@
 
                 const result = await response.json();
                 console.log('Upload successful:', result);
-                alert("✅ アップロードが完了しました！");
-                
-                // フォームリセット前に少し待機
-                await new Promise(resolve => setTimeout(resolve, 100));
-                form.reset();
-                document.getElementById('addClassicalFields').style.display = 'none';
-                modal.hide();
-
-            } catch (error) {
-                console.error("❌ アップロード失敗:", error);
-                let errorMessage = error.message;
-                if (error.response) {
-                    try {
-                        const errorData = await error.response.json();
-                        errorMessage = errorData.message || errorMessage;
-                    } catch (e) {
-                        console.error('Error parsing error response:', e);
-                    }
-                }
-                alert("❌ " + errorMessage);
-            } finally {
-                submitButton.disabled = false;
-                submitButton.innerHTML = '追加';
-            }
-        }
-
-        // フォームバリデーション
-        document.getElementById('albumForm').addEventListener('submit', async function(event) {
-            event.preventDefault();
-            if (!this.checkValidity()) {
-                event.stopPropagation();
-                this.classList.add('was-validated');
-                return;
-            }
-
-            const formData = new FormData();
-            const submitButton = document.querySelector('button[type="submit"]');
-            let uploadComplete = false;
-
-            try {
-                submitButton.disabled = true;
-                submitButton.innerHTML = '提出中...';
-
-                // 날짜를 ISO 형식으로 변환
-                const japaneseDate = document.getElementById('date').value;
-                const dateMatch = japaneseDate.match(/(\d{4})年(\d{2})月(\d{2})日/);
-                const isoDate = dateMatch ? `${dateMatch[1]}-${dateMatch[2]}-${dateMatch[3]}` : japaneseDate;
-
-                // 폼 데이터 구성
-                formData.append('nameEn', document.getElementById('nameEn').value);
-                formData.append('nameKana', document.getElementById('nameKana').value);
-                formData.append('albumTitle', document.getElementById('albumTitle').value);
-                formData.append('songTitle', document.getElementById('songTitle').value);
-                formData.append('songTitleEn', document.getElementById('songTitleEn').value);
-                formData.append('date', isoDate);
-                formData.append('time', document.getElementById('time').value);
-                formData.append('composer', document.getElementById('composer').value);
-                formData.append('opusNumber', document.getElementById('opusNumber').value);
-                formData.append('movement', document.getElementById('movement').value);
-                formData.append('tempo', document.getElementById('tempo').value);
-                formData.append('artistInfo', document.getElementById('artistInfo').value);
-                formData.append('genre', document.getElementById('genre').value);
-
-                // 체크박스/라디오 버튼 값을 올바른 형식으로 변환
-                formData.append('isClassical', document.getElementById('isClassical').checked);
-                formData.append('isReleased', document.getElementById('isReleased').checked);
-                
-                // YouTube 관련 필드 처리
-                const youtubeMonetize = document.getElementById('youtubeYes').checked ? 'yes' : 'no';
-                const youtubeAgree = document.getElementById('youtubeAgree').checked;
-                
-                formData.append('youtubeMonetize', youtubeMonetize);
-                formData.append('youtubeAgree', youtubeAgree);
-
-                console.log('Form data values:', {
-                    youtubeMonetize,
-                    youtubeAgree
-                });
-
-                // 파일 업로드
-                const imageFile = document.getElementById('imageUpload').files[0];
-                const audioFile = document.getElementById('audioUpload').files[0];
-                
-                if (!imageFile) {
-                    throw new Error('커버 이미지를 선택해주세요');
-                }
-                if (!audioFile) {
-                    throw new Error('오디오 파일을 선택해주세요');
-                }
-
-                formData.append('image', imageFile);
-                formData.append('audio', audioFile);
-
-                console.log('Sending form data to server...');
-                const response = await fetch("https://pro-audio-jp-1.onrender.com/api/reservations", {
-                    method: 'POST',
-                    body: formData,
-                    headers: {
-                        'Accept': 'application/json'
-                    }
-                });
-
-                if (!response.ok) {
-                    const contentType = response.headers.get('content-type');
-                    if (contentType && contentType.includes('application/json')) {
-                        const result = await response.json();
-                        throw new Error(result.message || '업로드에 실패했습니다');
-                    } else {
-                        throw new Error('서버 오류가 발생했습니다');
-                    }
-                }
-
-                const result = await response.json();
-                console.log('Upload successful:', result);
                 uploadComplete = true;
-                alert("✅ ファイルのアップロードが完了しました！");
+                alert("✅ アップロードが完了しました");
                 
-                // フォームリセット前に少し待機
                 await new Promise(resolve => setTimeout(resolve, 100));
                 this.reset();
-                document.getElementById('classicalFields').style.display = 'none';
+                document.querySelectorAll('.classical-fields').forEach(field => {
+                    field.style.display = 'none';
+                });
+                
+                // Reset song count and remove additional song entries
+                songCount = 1;
+                const container = document.getElementById('songs-container');
+                while (container.children.length > 1) {
+                    container.removeChild(container.lastChild);
+                }
+                document.getElementById('addSongButton').disabled = false;
 
             } catch (error) {
                 console.error("❌ アップロード失敗:", error);
@@ -640,7 +592,7 @@
                 const img = new Image();
                 img.onload = function() {
                     if (img.width !== 3000 || img.height !== 3000) {
-                        alert('이미지 크기는 3000x3000 픽셀이어야 합니다.');
+                        alert('画像サイズは3000x3000ピクセルである必要があります');
                         event.target.value = '';
                     }
                 };
