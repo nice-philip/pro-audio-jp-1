@@ -17,24 +17,13 @@ const s3Client = new S3Client({
     }
 });
 
-// ✅ Multer 메모리 저장소 설정
-const storage = multer.diskStorage({
-    destination: function (req, file, cb) {
-        const uploadPath = path.join(__dirname, 'uploads', file.fieldname === 'image' ? 'images' : 'audio');
-        if (!fs.existsSync(uploadPath)) {
-            fs.mkdirSync(uploadPath, { recursive: true });
-        }
-        cb(null, uploadPath);
-    },
-    filename: function (req, file, cb) {
-        const uniqueSuffix = uuidv4();
-        cb(null, uniqueSuffix + path.extname(file.originalname));
-    }
-});
+// ✅ Multer 메모리 저장소 설정으로 변경
+const storage = multer.memoryStorage();
 
 const upload = multer({ 
     storage,
     fileFilter: function (req, file, cb) {
+        console.log('✅ File upload attempt:', file.fieldname, file.originalname);
         if (file.fieldname === 'image') {
             if (!file.originalname.match(/\.(jpg|jpeg)$/)) {
                 return cb(new Error('JPG 형식의 이미지만 업로드 가능합니다.'), false);
@@ -45,6 +34,9 @@ const upload = multer({
             }
         }
         cb(null, true);
+    },
+    limits: {
+        fileSize: 300 * 1024 * 1024 // 300MB 제한
     }
 });
 
@@ -103,10 +95,16 @@ function normalizeGender(gender, language) {
     return gender; // Return as-is for other languages
 }
 
-// ✅ 오디오 업로드 및 DB 저장 라우터
-router.post('/', upload.single('audio'), async(req, res) => {
+// ✅ 오디오와 이미지 업로드 처리 라우터
+router.post('/', upload.fields([
+    { name: 'audio', maxCount: 1 },
+    { name: 'image', maxCount: 1 }
+]), async(req, res) => {
     try {
-        if (!req.file) {
+        console.log('✅ Request received:', req.body);
+        console.log('✅ Files received:', req.files);
+
+        if (!req.files || !req.files.audio) {
             console.log('❌ 音声ファイルがアップロードされていません');
             return res.status(400).json({ message: 'ファイルがありません', code: 'FILE_REQUIRED' });
         }
@@ -127,6 +125,7 @@ router.post('/', upload.single('audio'), async(req, res) => {
         // 필수 항목 확인
         const required = [name, age, gender, email, date, time, memberKey];
         if (required.some(val => !val)) {
+            console.log('❌ Missing required fields:', required.filter(val => !val));
             return res.status(400).json({ message: '必須項目が不足しています', code: 'MISSING_FIELDS' });
         }
 
@@ -147,18 +146,38 @@ router.post('/', upload.single('audio'), async(req, res) => {
             });
         }
 
-        // S3 업로드
-        const filename = `${uuidv4()}_${req.file.originalname}`;
-        const uploadParams = {
-            Bucket: process.env.AWS_BUCKET_NAME,
-            Key: `audio/${filename}`,
-            Body: req.file.buffer,
-            ContentType: req.file.mimetype,
+        // S3 업로드 - 오디오 파일
+        const audioFile = req.files.audio[0];
+        const audioFilename = `${uuidv4()}_${audioFile.originalname}`;
+        const audioUploadParams = {
+            Bucket: 'pro-audio-jp',
+            Key: `audio/${audioFilename}`,
+            Body: audioFile.buffer,
+            ContentType: audioFile.mimetype,
         };
 
-        await s3Client.send(new PutObjectCommand(uploadParams));
-        const audioUrl = `https://${process.env.AWS_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/audio/${filename}`;
-        console.log('✅ S3アップロード成功:', audioUrl);
+        console.log('✅ Attempting S3 upload for audio:', audioFilename);
+        await s3Client.send(new PutObjectCommand(audioUploadParams));
+        const audioUrl = `https://pro-audio-jp.s3.${process.env.AWS_REGION}.amazonaws.com/audio/${audioFilename}`;
+        console.log('✅ S3 audio upload success:', audioUrl);
+
+        // S3 업로드 - 이미지 파일 (있는 경우)
+        let imageUrl = null;
+        if (req.files.image) {
+            const imageFile = req.files.image[0];
+            const imageFilename = `${uuidv4()}_${imageFile.originalname}`;
+            const imageUploadParams = {
+                Bucket: 'pro-audio-jp',
+                Key: `images/${imageFilename}`,
+                Body: imageFile.buffer,
+                ContentType: imageFile.mimetype,
+            };
+
+            console.log('✅ Attempting S3 upload for image:', imageFilename);
+            await s3Client.send(new PutObjectCommand(imageUploadParams));
+            imageUrl = `https://pro-audio-jp.s3.${process.env.AWS_REGION}.amazonaws.com/images/${imageFilename}`;
+            console.log('✅ S3 image upload success:', imageUrl);
+        }
 
         // MongoDB 저장
         const newAlbum = new Album({
@@ -172,16 +191,27 @@ router.post('/', upload.single('audio'), async(req, res) => {
             note: note || '',
             reservationCode: memberKey,
             audioUrl,
+            imageUrl
         });
 
+        console.log('✅ Attempting to save to MongoDB');
         await newAlbum.save();
-        console.log('✅ MongoDB保存成功:', newAlbum._id);
+        console.log('✅ MongoDB save success:', newAlbum._id);
 
-        res.status(200).json({ message: '保存完了', url: audioUrl });
+        res.status(200).json({ 
+            message: '保存完了', 
+            audioUrl,
+            imageUrl,
+            albumId: newAlbum._id 
+        });
 
     } catch (err) {
         console.error('❌ アップロード処理エラー:', err);
-        res.status(500).json({ message: '予約作成に失敗しました', error: err.message });
+        res.status(500).json({ 
+            message: '予約作成に失敗しました', 
+            error: err.message,
+            stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
+        });
     }
 });
 
