@@ -525,13 +525,18 @@
                 submitButton.disabled = true;
                 submitButton.innerHTML = '送信中...';
 
-                // テキストフィールド追加
+                // 날짜를 ISO 형식으로 변환
+                const japaneseDate = document.getElementById('date').value;
+                const dateMatch = japaneseDate.match(/(\d{4})年(\d{2})月(\d{2})日/);
+                const isoDate = dateMatch ? `${dateMatch[1]}-${dateMatch[2]}-${dateMatch[3]}` : japaneseDate;
+
+                // 폼 데이터 구성
                 formData.append('nameEn', document.getElementById('nameEn').value);
                 formData.append('nameKana', document.getElementById('nameKana').value);
                 formData.append('albumTitle', document.getElementById('albumTitle').value);
                 formData.append('songTitle', document.getElementById('songTitle').value);
                 formData.append('songTitleEn', document.getElementById('songTitleEn').value);
-                formData.append('date', document.getElementById('date').value);
+                formData.append('date', isoDate);
                 formData.append('time', document.getElementById('time').value);
                 formData.append('composer', document.getElementById('composer').value);
                 formData.append('opusNumber', document.getElementById('opusNumber').value);
@@ -540,21 +545,21 @@
                 formData.append('artistInfo', document.getElementById('artistInfo').value);
                 formData.append('genre', document.getElementById('genre').value);
 
-                // チェックボックス / ラジオボタン
+                // 체크박스/라디오 버튼 값을 올바른 형식으로 변환
                 formData.append('isClassical', document.getElementById('isClassical').checked);
                 formData.append('isReleased', document.getElementById('isReleased').checked);
                 formData.append('youtubeMonetize', document.getElementById('youtubeYes').checked ? 'yes' : 'no');
                 formData.append('youtubeAgree', document.getElementById('youtubeAgree').checked);
 
-                // ファイルアップロード
+                // 파일 업로드
                 const imageFile = document.getElementById('imageUpload').files[0];
                 const audioFile = document.getElementById('audioUpload').files[0];
                 
                 if (!imageFile) {
-                    throw new Error('ジャケット画像を選択してください');
+                    throw new Error('커버 이미지를 선택해주세요');
                 }
                 if (!audioFile) {
-                    throw new Error('音源ファイルを選択してください');
+                    throw new Error('오디오 파일을 선택해주세요');
                 }
 
                 formData.append('image', imageFile);
@@ -573,24 +578,24 @@
                     const contentType = response.headers.get('content-type');
                     if (contentType && contentType.includes('application/json')) {
                         const result = await response.json();
-                        throw new Error(result.message || 'アップロードに失敗しました');
+                        throw new Error(result.message || '업로드에 실패했습니다');
                     } else {
-                        throw new Error('サーバーエラーが発生しました');
+                        throw new Error('서버 오류가 발생했습니다');
                     }
                 }
 
                 const result = await response.json();
                 console.log('Upload successful:', result);
                 uploadComplete = true;
-                alert("✅ アップロードが完了しました！");
+                alert("✅ 업로드가 완료되었습니다!");
                 
-                // フォームリセット前に少し待機
+                // 폼 리셋 전에 잠시 대기
                 await new Promise(resolve => setTimeout(resolve, 100));
                 this.reset();
                 document.getElementById('classicalFields').style.display = 'none';
 
             } catch (error) {
-                console.error("❌ アップロード失敗:", error);
+                console.error("❌ 업로드 실패:", error);
                 let errorMessage = error.message;
                 if (error.response) {
                     try {
@@ -604,19 +609,19 @@
             } finally {
                 if (!uploadComplete) {
                     submitButton.disabled = false;
-                    submitButton.innerHTML = '申請する';
+                    submitButton.innerHTML = '신청하기';
                 }
             }
         });
 
-        // ファイルアップロードバリデーション
+        // 파일 업로드 유효성 검사
         document.getElementById('imageUpload').addEventListener('change', function(event) {
             const file = event.target.files[0];
             if (file) {
                 const img = new Image();
                 img.onload = function() {
                     if (img.width !== 3000 || img.height !== 3000) {
-                        alert('画像サイズは3000x3000ピクセルである必要があります。');
+                        alert('이미지 크기는 3000x3000 픽셀이어야 합니다.');
                         event.target.value = '';
                     }
                 };
