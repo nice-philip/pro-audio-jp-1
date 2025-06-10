@@ -519,10 +519,13 @@
                         songTitleEn: document.getElementById(`songTitleEn_${index}`).value,
                     };
 
-                    // Only add date and time for the first song
+                    // Only add date for the first song
                     if (index === 0) {
                         songData.date = document.getElementById(`date_${index}`).value;
-                        songData.time = document.getElementById(`time_${index}`).value;
+                        songData.duration = document.getElementById(`time_${index}`).value;
+                    } else {
+                        // For additional songs, use the time input as duration
+                        songData.duration = "00:00:00"; // 기본값 설정
                     }
 
                     if (document.getElementById(`isClassical_${index}`).checked) {
