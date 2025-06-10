@@ -118,7 +118,7 @@ app.get('/api/reservations', async(req, res) => {
             return res.status(200).json(all);
         } else {
             const userReservations = await Album.find({
-                nameEn: key,
+                password: key,
                 email: email
             }).sort({ createdAt: -1 });
 
