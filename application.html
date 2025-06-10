@@ -520,7 +520,7 @@
                     const songData = {
                         songTitle: document.getElementById(`songTitle_${index}`).value,
                         songTitleEn: document.getElementById(`songTitleEn_${index}`).value,
-                        duration: document.getElementById(`duration_${index}`).value
+                        duration: document.getElementById(`duration_${index}`).value || "00:00:00"
                     };
 
                     // Only add date for the first song
