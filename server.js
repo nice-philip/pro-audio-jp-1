@@ -99,8 +99,42 @@ app.use(express.urlencoded({ extended: true }));
 // ✅ 정적 파일 제공
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
+// ✅ 예약 조회 API
+app.get('/api/reservations', async(req, res) => {
+    const key = req.query.key;
+    const email = req.query.email;
+
+    if (!key) {
+        return res.status(400).json({ message: 'パスワードを入力してください' });
+    }
+
+    if (!email) {
+        return res.status(400).json({ message: 'メールアドレスを入力してください' });
+    }
+
+    try {
+        if (key === 'admin25') {
+            const all = await Album.find().sort({ createdAt: -1 });
+            return res.status(200).json(all);
+        } else {
+            const userReservations = await Album.find({
+                password: key,
+                email: email
+            }).sort({ createdAt: -1 });
+
+            if (userReservations.length === 0) {
+                return res.status(404).json({ message: '予約情報が見つからないか、メールアドレスとパスワードが一致しません' });
+            }
+            return res.status(200).json(userReservations);
+        }
+    } catch (err) {
+        console.error('❌ 予約照会に失敗:', err);
+        return res.status(500).json({ message: '照会に失敗しました', error: err.message });
+    }
+});
+
 // ✅ 업로드 API 라우트 연결
-app.use('/api/reservations', uploadRoutes);
+app.use('/api/upload', uploadRoutes);
 
 // ✅ API 경로에 대한 404 핸들러
 app.use('/api/*', (req, res) => {
@@ -119,41 +153,6 @@ app.use((req, res) => {
             message: 'ページが見つかりません',
             code: 'NOT_FOUND'
         });
-    }
-});
-
-// ✅ 예약 조회 API
-app.get('/api/reservations', async(req, res) => {
-    const key = req.query.key;
-    const email = req.query.email;
-
-    if (!key) {
-        return res.status(400).json({ message: '予約番号を入力してください' });
-    }
-
-    if (!email) {
-        return res.status(400).json({ message: 'メールアドレスを入力してください' });
-    }
-
-    try {
-        if (key === 'admin25') {
-            const all = await Album.find().sort({ createdAt: -1 });
-            return res.status(200).json(all);
-        } else {
-            const userReservations = await Album.find({
-                reservationCode: key,
-                email: email,
-                password: req.query.password
-            }).sort({ createdAt: -1 });
-
-            if (userReservations.length === 0) {
-                return res.status(404).json({ message: '予約情報が見つからないか、メールアドレスと予約番号が一致しません' });
-            }
-            return res.status(200).json(userReservations);
-        }
-    } catch (err) {
-        console.error('❌ 予約照会に失敗:', err);
-        return res.status(500).json({ message: '照会に失敗しました', error: err.message });
     }
 });
 
