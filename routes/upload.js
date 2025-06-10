@@ -19,17 +19,19 @@ const s3Client = new S3Client({
 // Multer 설정
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
-        let uploadPath;
+        let uploadPath = 'uploads/';
+        
+        // 파일 타입에 따른 서브디렉토리 설정
         if (file.fieldname === 'image') {
-            uploadPath = 'uploads/images/';
-        } else if (file.fieldname === 'audio') {
-            uploadPath = 'uploads/audio/';
+            uploadPath += 'images/';
+        } else if (file.fieldname.startsWith('audio_')) {
+            uploadPath += 'audio/';
+        } else {
+            return cb(new Error('Invalid file field'));
         }
         
         // 디렉토리가 없으면 생성
-        if (!fs.existsSync(uploadPath)) {
-            fs.mkdirSync(uploadPath, { recursive: true });
-        }
+        fs.mkdirSync(uploadPath, { recursive: true });
         
         cb(null, uploadPath);
     },
