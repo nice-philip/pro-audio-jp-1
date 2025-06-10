@@ -508,7 +508,6 @@
                 formData.append('albumTitle', document.getElementById('albumTitle').value);
 
                 // Collect all songs data
-                const songs = [];
                 document.querySelectorAll('.song-entry').forEach((songEntry, index) => {
                     const songData = {
                         songTitle: document.getElementById(`songTitle_${index}`).value,
@@ -533,12 +532,8 @@
                         formData.append(`audio_${index}`, audioFile);
                     }
 
-                    // Add each song data separately to FormData
-                    Object.keys(songData).forEach(key => {
-                        formData.append(`songs[${index}][${key}]`, songData[key]);
-                    });
-
-                    songs.push(songData);
+                    // Add song data as JSON string for each song
+                    formData.append(`songs[${index}]`, JSON.stringify(songData));
                 });
 
                 formData.append('songs', JSON.stringify(songs));
