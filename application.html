@@ -397,42 +397,45 @@
             // Update IDs and names
             template.setAttribute('data-song-index', songCount);
             
-            // Remove date fields for additional songs but keep duration
+            // Remove date field but keep duration for additional songs
             const dateTimeFields = template.querySelector('.date-time-fields');
             if (dateTimeFields && songCount > 0) {
                 const dateField = dateTimeFields.querySelector('[name="date[]"]').parentElement;
                 dateField.remove();
+                
+                // Update duration field container classes
+                const durationField = dateTimeFields.querySelector('[name="duration[]"]').parentElement;
                 dateTimeFields.classList.remove('row');
-                dateTimeFields.firstElementChild.classList.remove('col-md-6');
+                durationField.classList.remove('col-md-6');
+                durationField.classList.add('col-md-12');
             }
             
-            const elements = template.querySelectorAll('[id]');
-            elements.forEach(element => {
+            // Update IDs and clear values
+            template.querySelectorAll('[id]').forEach(element => {
                 const oldId = element.id;
                 const newId = oldId.replace(/_\d+$/, `_${songCount}`);
                 element.id = newId;
-                if (element.getAttribute('name')) {
-                    element.setAttribute('name', element.getAttribute('name'));
+                
+                // Clear input values
+                if (element.tagName === 'INPUT') {
+                    if (element.type === 'text' || element.type === 'file') {
+                        element.value = '';
+                    } else if (element.type === 'checkbox') {
+                        element.checked = false;
+                    }
                 }
+                
+                // Update data-index for classical-check
                 if (element.classList.contains('classical-check')) {
                     element.setAttribute('data-index', songCount);
                 }
             });
 
-            // Update labels
+            // Update label for attributes
             template.querySelectorAll('label[for]').forEach(label => {
                 const oldFor = label.getAttribute('for');
                 const newFor = oldFor.replace(/_\d+$/, `_${songCount}`);
                 label.setAttribute('for', newFor);
-            });
-
-            // Clear input values
-            template.querySelectorAll('input').forEach(input => {
-                if (input.type === 'text' || input.type === 'file') {
-                    input.value = '';
-                } else if (input.type === 'checkbox') {
-                    input.checked = false;
-                }
             });
 
             // Update classical fields container ID
@@ -442,16 +445,6 @@
 
             container.appendChild(template);
             songCount++;
-
-            // Initialize datepicker for the new entry
-            $(`#date_${songCount-1}`).datepicker({
-                dateFormat: 'yy年mm月dd日',
-                monthNames: ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'],
-                dayNames: ['日曜日', '月曜日', '火曜日', '水曜日', '木曜日', '金曜日', '土曜日'],
-                dayNamesMin: ['日', '月', '火', '水', '木', '金', '土'],
-                showMonthAfterYear: true,
-                yearSuffix: '年'
-            });
 
             // Update add button state
             if (songCount >= MAX_SONGS) {
