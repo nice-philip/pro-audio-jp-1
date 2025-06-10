@@ -32,6 +32,7 @@ mongoose.connect(process.env.MONGODB_URI, {
     console.log('✅ MongoDB 接続完了');
 }).catch((err) => {
     console.error('❌ MongoDB 接続失敗:', err);
+    process.exit(1); // MongoDB 연결 실패 시 서버 종료
 });
 
 mongoose.connection.on('error', (err) => {
@@ -91,8 +92,8 @@ app.use(express.urlencoded({ extended: true }));
 // ✅ 정적 파일 제공
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-// ✅ 업로드 API 라우트 연결 (✔️ 수정된 부분)
-app.use('/api/upload', uploadRoutes);
+// ✅ 업로드 API 라우트 연결
+app.use('/api/reservations', uploadRoutes);
 
 // ✅ 예약 조회 API
 app.get('/api/reservations', async(req, res) => {
@@ -130,28 +131,27 @@ app.get('/api/reservations', async(req, res) => {
 
 // ✅ 에러 핸들러
 app.use((err, req, res, next) => {
-    console.error('Global error handler:', err);
-    res.status(500).json({
-        message: 'サーバーエラーが発生しました',
-        error: process.env.NODE_ENV === 'development' ? err.message : undefined
-    });
-});
-
-// ✅ 업로드 에러 핸들러
-app.use((err, req, res, next) => {
+    console.error('❌ Server error:', err);
+    
     if (err instanceof multer.MulterError) {
         if (err.code === 'LIMIT_FILE_SIZE') {
             return res.status(400).json({
-                message: 'ファイルサイズが制限を超えています',
+                message: 'ファイルサイズが大きすぎます (最大100MB)',
                 code: 'FILE_TOO_LARGE'
             });
         }
         return res.status(400).json({
             message: 'ファイルアップロードに失敗しました',
-            code: 'UPLOAD_ERROR'
+            code: 'UPLOAD_ERROR',
+            error: err.message
         });
     }
-    next(err);
+    
+    res.status(500).json({
+        message: 'サーバーエラーが発生しました',
+        code: 'SERVER_ERROR',
+        error: process.env.NODE_ENV === 'development' ? err.message : undefined
+    });
 });
 
 // ✅ 예약 확인 API
@@ -202,5 +202,5 @@ app.get('/index', (req, res) => {
 
 // ✅ 서버 실행
 app.listen(port, () => {
-    console.log(`🚀 サーバーがポート${port}で起動しました`);
+    console.log(`✅ Server is running on port ${port}`);
 });
