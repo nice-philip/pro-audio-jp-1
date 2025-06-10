@@ -68,9 +68,10 @@ const allowedOrigins = [
     'http://127.0.0.1:5500'
 ];
 
-const corsOptions = {
+// CORS 설정
+app.use(cors({
     origin: function(origin, callback) {
-        // Allow requests with no origin (like mobile apps or curl requests)
+        console.log('Incoming request from origin:', origin);
         if (!origin || allowedOrigins.includes(origin)) {
             callback(null, true);
         } else {
@@ -79,18 +80,11 @@ const corsOptions = {
         }
     },
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'X-Language', 'Referer'],
-    exposedHeaders: ['ETag', 'x-amz-server-side-encryption', 'x-amz-request-id', 'x-amz-id-2'],
-    credentials: false,
-    preflightContinue: false,
-    optionsSuccessStatus: 204,
-    maxAge: 3600
-};
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    credentials: true
+}));
 
-app.use(cors(corsOptions));
-app.options('*', cors(corsOptions)); // Preflight 지원
-
-// 미들웨어 설정
+// Body parser 설정
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -157,10 +151,10 @@ app.get('/api/reservations', async(req, res) => {
 
 // 전역 에러 핸들러 추가
 app.use((err, req, res, next) => {
-    console.error('Server Error:', err);
+    console.error('Global error handler:', err);
     res.status(500).json({
-        message: 'サーバーエラー',
-        error: process.env.NODE_ENV === 'development' ? err.message : '不明なエラー'
+        message: 'サーバーエラーが発生しました',
+        error: process.env.NODE_ENV === 'development' ? err.message : undefined
     });
 });
 

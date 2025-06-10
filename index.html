@@ -523,6 +523,7 @@
 
         async function handleSubmit(event) {
             event.preventDefault();
+            console.log('Form submission started');
 
             const form = document.getElementById('albumForm');
             const submitButton = form.querySelector('button[type="submit"]');
@@ -530,9 +531,24 @@
             const formData = new FormData(form);
 
             try {
+                console.log('Form data:', {
+                    name: formData.get('name'),
+                    age: formData.get('age'),
+                    gender: formData.get('gender'),
+                    email: formData.get('email'),
+                    date: formData.get('date'),
+                    time: formData.get('time'),
+                    mainRequest: formData.get('mainRequest'),
+                    note: formData.get('note'),
+                    memberKey: formData.get('memberKey'),
+                    audio: formData.get('audio'),
+                    image: formData.get('image')
+                });
+
                 // 로딩 상태 표시
                 submitButton.disabled = true;
                 loadingOverlay.style.display = 'flex';
+                console.log('Loading state activated');
 
                 // 날짜 포맷 처리
                 const dateValue = $("#date").datepicker("getDate");
@@ -541,25 +557,25 @@
                     const month = String(dateValue.getMonth() + 1).padStart(2, '0');
                     const day = String(dateValue.getDate()).padStart(2, '0');
                     formData.set('date', `${year}年${month}月${day}日`);
+                    console.log('Date formatted:', formData.get('date'));
                 }
 
                 // 언어 설정
                 formData.append('language', 'ja');
 
-                console.log('Sending form data:', {
-                    name: formData.get('name'),
-                    email: formData.get('email'),
-                    date: formData.get('date'),
-                    audio: formData.get('audio'),
-                    image: formData.get('image')
-                });
-
+                console.log('Sending request to:', 'https://pro-audio-jp-1.onrender.com/upload');
                 const response = await fetch('https://pro-audio-jp-1.onrender.com/upload', {
                     method: 'POST',
                     body: formData
                 });
 
+                console.log('Response received:', {
+                    status: response.status,
+                    statusText: response.statusText
+                });
+
                 const result = await response.json();
+                console.log('Response data:', result);
                 
                 if (!response.ok) {
                     throw new Error(result.message || 'アップロードに失敗しました');
@@ -575,20 +591,28 @@
                 document.getElementById('accordionContent').style.maxHeight = '0px';
 
             } catch (error) {
-                console.error('Error:', error);
+                console.error('Error details:', {
+                    message: error.message,
+                    stack: error.stack
+                });
                 alert(error.message || 'エラーが発生しました。もう一度お試しください。');
             } finally {
                 // 로딩 상태 해제
                 submitButton.disabled = false;
                 loadingOverlay.style.display = 'none';
+                console.log('Form submission completed');
             }
         }
 
         // 폼 제출 이벤트 리스너 등록
         document.addEventListener('DOMContentLoaded', () => {
+            console.log('DOM Content Loaded');
             const form = document.getElementById('albumForm');
             if (form) {
+                console.log('Form found, attaching submit event listener');
                 form.addEventListener('submit', handleSubmit);
+            } else {
+                console.error('Form not found!');
             }
         });
 

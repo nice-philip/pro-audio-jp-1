@@ -100,13 +100,18 @@ router.post('/', upload.fields([
     { name: 'audio', maxCount: 1 },
     { name: 'image', maxCount: 1 }
 ]), async(req, res) => {
-    try {
-        console.log('✅ Request received:', req.body);
-        console.log('✅ Files received:', req.files);
+    console.log('Upload route accessed');
+    console.log('Request headers:', req.headers);
+    console.log('Request body:', req.body);
+    console.log('Request files:', req.files);
 
+    try {
         if (!req.files || !req.files.audio) {
-            console.log('❌ 音声ファイルがアップロードされていません');
-            return res.status(400).json({ message: 'ファイルがありません', code: 'FILE_REQUIRED' });
+            console.log('❌ No audio file uploaded');
+            return res.status(400).json({ 
+                message: 'オーディオファイルが必要です',
+                code: 'FILE_REQUIRED' 
+            });
         }
 
         const {
@@ -124,21 +129,30 @@ router.post('/', upload.fields([
 
         // 필수 항목 확인
         const required = [name, age, gender, email, date, time, memberKey];
-        if (required.some(val => !val)) {
-            console.log('❌ Missing required fields:', required.filter(val => !val));
-            return res.status(400).json({ message: '必須項目が不足しています', code: 'MISSING_FIELDS' });
+        const missingFields = required.map((value, index) => 
+            !value ? ['name', 'age', 'gender', 'email', 'date', 'time', 'memberKey'][index] : null
+        ).filter(Boolean);
+
+        if (missingFields.length > 0) {
+            console.log('❌ Missing required fields:', missingFields);
+            return res.status(400).json({
+                message: '必須項目が不足しています',
+                fields: missingFields,
+                code: 'MISSING_FIELDS'
+            });
         }
 
         // 성별 값 정규화
         const normalizedGender = normalizeGender(gender, language);
+        console.log('Normalized gender:', normalizedGender);
 
         // 날짜 파싱
         let parsedDate;
         try {
             parsedDate = parseChineseDate(date);
-            console.log('✅ 日付パース成功:', parsedDate.toISOString());
+            console.log('✅ Date parsed successfully:', parsedDate.toISOString());
         } catch (e) {
-            console.error('[日付変換失敗]', e.message);
+            console.error('❌ Date parsing failed:', e.message);
             return res.status(400).json({
                 message: '日付フォーマットが正しくありません',
                 error: e.message,
@@ -148,6 +162,12 @@ router.post('/', upload.fields([
 
         // S3 업로드 - 오디오 파일
         const audioFile = req.files.audio[0];
+        console.log('Processing audio file:', {
+            originalname: audioFile.originalname,
+            mimetype: audioFile.mimetype,
+            size: audioFile.size
+        });
+
         const audioFilename = `${uuidv4()}_${audioFile.originalname}`;
         const audioUploadParams = {
             Bucket: 'pro-audio-jp',
@@ -156,15 +176,27 @@ router.post('/', upload.fields([
             ContentType: audioFile.mimetype,
         };
 
-        console.log('✅ Attempting S3 upload for audio:', audioFilename);
-        await s3Client.send(new PutObjectCommand(audioUploadParams));
+        console.log('Attempting S3 upload for audio:', audioFilename);
+        try {
+            await s3Client.send(new PutObjectCommand(audioUploadParams));
+            console.log('✅ S3 audio upload success');
+        } catch (error) {
+            console.error('❌ S3 audio upload failed:', error);
+            throw error;
+        }
+
         const audioUrl = `https://pro-audio-jp.s3.${process.env.AWS_REGION}.amazonaws.com/audio/${audioFilename}`;
-        console.log('✅ S3 audio upload success:', audioUrl);
 
         // S3 업로드 - 이미지 파일 (있는 경우)
         let imageUrl = null;
         if (req.files.image) {
             const imageFile = req.files.image[0];
+            console.log('Processing image file:', {
+                originalname: imageFile.originalname,
+                mimetype: imageFile.mimetype,
+                size: imageFile.size
+            });
+
             const imageFilename = `${uuidv4()}_${imageFile.originalname}`;
             const imageUploadParams = {
                 Bucket: 'pro-audio-jp',
@@ -173,10 +205,15 @@ router.post('/', upload.fields([
                 ContentType: imageFile.mimetype,
             };
 
-            console.log('✅ Attempting S3 upload for image:', imageFilename);
-            await s3Client.send(new PutObjectCommand(imageUploadParams));
-            imageUrl = `https://pro-audio-jp.s3.${process.env.AWS_REGION}.amazonaws.com/images/${imageFilename}`;
-            console.log('✅ S3 image upload success:', imageUrl);
+            console.log('Attempting S3 upload for image:', imageFilename);
+            try {
+                await s3Client.send(new PutObjectCommand(imageUploadParams));
+                console.log('✅ S3 image upload success');
+                imageUrl = `https://pro-audio-jp.s3.${process.env.AWS_REGION}.amazonaws.com/images/${imageFilename}`;
+            } catch (error) {
+                console.error('❌ S3 image upload failed:', error);
+                throw error;
+            }
         }
 
         // MongoDB 저장
@@ -194,19 +231,19 @@ router.post('/', upload.fields([
             imageUrl
         });
 
-        console.log('✅ Attempting to save to MongoDB');
+        console.log('Attempting to save to MongoDB:', newAlbum);
         await newAlbum.save();
         console.log('✅ MongoDB save success:', newAlbum._id);
 
         res.status(200).json({ 
-            message: '保存完了', 
+            message: '保存完了',
+            albumId: newAlbum._id,
             audioUrl,
-            imageUrl,
-            albumId: newAlbum._id 
+            imageUrl 
         });
 
     } catch (err) {
-        console.error('❌ アップロード処理エラー:', err);
+        console.error('❌ Upload process error:', err);
         res.status(500).json({ 
             message: '予約作成に失敗しました', 
             error: err.message,
