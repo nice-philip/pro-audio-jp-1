@@ -5,6 +5,16 @@ const path = require('path');
 const Album = require('../models/Album');
 const fs = require('fs');
 const { v4: uuidv4 } = require('uuid');
+const { S3Client, PutObjectCommand } = require('@aws-sdk/client-s3');
+
+// S3 클라이언트 초기화
+const s3Client = new S3Client({
+    region: process.env.AWS_REGION,
+    credentials: {
+        accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY
+    }
+});
 
 // Multer 설정
 const storage = multer.diskStorage({
@@ -48,7 +58,32 @@ const upload = multer({
     }
 });
 
-// メインアルバムアップロード
+// S3에 파일 업로드하는 함수
+async function uploadToS3(file, type) {
+    try {
+        const fileStream = fs.createReadStream(file.path);
+        const key = `${type}/${path.basename(file.path)}`;
+        
+        const uploadParams = {
+            Bucket: process.env.AWS_BUCKET_NAME,
+            Key: key,
+            Body: fileStream,
+            ContentType: file.mimetype
+        };
+
+        await s3Client.send(new PutObjectCommand(uploadParams));
+        
+        // 로컬 파일 삭제
+        fs.unlinkSync(file.path);
+        
+        return `https://${process.env.AWS_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${key}`;
+    } catch (error) {
+        console.error('S3 upload error:', error);
+        throw error;
+    }
+}
+
+// 메인 앨범 업로드
 router.post('/', upload.fields([
     { name: 'image', maxCount: 1 },
     { name: 'audio', maxCount: 1 }
@@ -64,13 +99,17 @@ router.post('/', upload.fields([
         const imageFile = req.files['image'][0];
         const audioFile = req.files['audio'][0];
 
+        // S3에 파일 업로드
+        const imageUrl = await uploadToS3(imageFile, 'images');
+        const audioUrl = await uploadToS3(audioFile, 'audio');
+
         const albumData = {
             albumTitle: req.body.albumTitle,
             nameEn: req.body.nameEn,
             nameKana: req.body.nameKana,
             artistInfo: req.body.artistInfo,
             isReleased: req.body.isReleased === 'true',
-            imageUrl: imageFile.path,
+            imageUrl: imageUrl,
             genre: req.body.genre,
             youtubeMonetize: req.body.youtubeMonetize,
             youtubeAgree: req.body.youtubeAgree === 'true',
@@ -79,7 +118,7 @@ router.post('/', upload.fields([
                 titleEn: req.body.songTitleEn,
                 date: new Date(req.body.date),
                 duration: req.body.time,
-                audioUrl: audioFile.path,
+                audioUrl: audioUrl,
                 isClassical: req.body.isClassical === 'true'
             }]
         };
@@ -91,7 +130,7 @@ router.post('/', upload.fields([
             processedYoutubeAgree: albumData.youtubeAgree
         });
 
-        // クラシック音楽の場合の追加情報
+        // 클래식 음악의 경우 추가 정보
         if (req.body.isClassical === 'true') {
             albumData.songs[0].classicalInfo = {
                 composer: req.body.composer,
@@ -111,7 +150,7 @@ router.post('/', upload.fields([
     } catch (error) {
         console.error('Upload error:', error);
         
-        // エラー発生時にアップロードされたファイルを削除
+        // 에러 발생 시 업로드된 파일 삭제
         if (req.files) {
             Object.values(req.files).forEach(files => {
                 files.forEach(file => {
