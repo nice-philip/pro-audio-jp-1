@@ -352,8 +352,8 @@
                 }
 
                 try {
-                    // 이전 URL 패턴으로 복구하고 업로드 API 패턴 사용
-                    const url = `https://pro-audio-jp-1.onrender.com/api/upload/${id}`;
+                    // albums-jp API 엔드포인트로 변경
+                    const url = `https://pro-audio-jp-1.onrender.com/api/albums-jp/${id}`;
                     console.log('Delete API request details:', {
                         url: url,
                         method: 'DELETE',
