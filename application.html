@@ -755,6 +755,36 @@
         document.addEventListener('DOMContentLoaded', function() {
             document.querySelector('button[type="submit"]').disabled = false;
         });
+
+        // 폼 데이터 변경 여부를 추적하는 변수
+        let formModified = false;
+
+        // 폼 입력 필드 변경 감지
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('albumForm');
+            if (form) {
+                const inputs = form.querySelectorAll('input, textarea, select');
+                inputs.forEach(input => {
+                    input.addEventListener('change', () => {
+                        formModified = true;
+                    });
+                });
+
+                // 폼 제출 시 변경 플래그 초기화
+                form.addEventListener('submit', () => {
+                    formModified = false;
+                });
+            }
+        });
+
+        // 페이지 이탈 시 경고
+        window.addEventListener('beforeunload', function(e) {
+            if (formModified) {
+                e.preventDefault();
+                e.returnValue = '';
+                return '';
+            }
+        });
     </script>
 </body>
 </html> 

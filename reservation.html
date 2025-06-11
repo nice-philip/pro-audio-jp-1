@@ -310,12 +310,77 @@
                         <td>${reservation.songs?.length || 0}曲</td>
                         <td>${reservation.status || '処理中'}</td>
                         <td>
-                            ${isAdmin ? `<button onclick="deleteReservation('${reservation._id}')" class="delete-btn" data-id="${reservation._id}">
-                                <i class="fa fa-trash"></i> 削除
-                            </button>` : '-'}
+                            ${isAdmin ? `
+                                <button onclick="toggleAccordion('${reservation._id}')" class="btn btn-info btn-sm mb-1" style="width: 100%;">
+                                    <i class="fa fa-eye"></i> 確認
+                                </button>
+                                <button onclick="deleteReservation('${reservation._id}')" class="delete-btn" data-id="${reservation._id}" style="width: 100%;">
+                                    <i class="fa fa-trash"></i> 削除
+                                </button>
+                            ` : '-'}
                         </td>
                     `;
+                    
+                    // 아코디언 콘텐츠를 위한 새로운 행 추가
+                    const accordionRow = document.createElement('tr');
+                    accordionRow.id = `accordion_${reservation._id}`;
+                    accordionRow.style.display = 'none';
+                    accordionRow.innerHTML = `
+                        <td colspan="6">
+                            <div class="p-3">
+                                <h4>詳細情報</h4>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <p><strong>メールアドレス:</strong> ${reservation.email || ''}</p>
+                                        <p><strong>ジャンル:</strong> ${reservation.genre || ''}</p>
+                                        <p><strong>アーティスト情報:</strong> ${reservation.artistInfo || ''}</p>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <p><strong>YouTube収益化:</strong> ${reservation.youtubeMonetize === 'yes' ? '利用する' : '利用しない'}</p>
+                                        <p><strong>アルバムリリース:</strong> ${reservation.isReleased ? 'はい' : 'いいえ'}</p>
+                                    </div>
+                                </div>
+                                ${reservation.songs ? `
+                                    <h5 class="mt-3">曲情報</h5>
+                                    <div class="table-responsive">
+                                        <table class="table table-bordered">
+                                            <thead>
+                                                <tr>
+                                                    <th>曲名</th>
+                                                    <th>曲名（英語）</th>
+                                                    <th>再生時間</th>
+                                                    ${reservation.songs.some(song => song.isClassical) ? `
+                                                        <th>作曲家</th>
+                                                        <th>作品番号</th>
+                                                        <th>楽章</th>
+                                                        <th>速度記号</th>
+                                                    ` : ''}
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                ${reservation.songs.map(song => `
+                                                    <tr>
+                                                        <td>${song.songTitle || ''}</td>
+                                                        <td>${song.songTitleEn || ''}</td>
+                                                        <td>${song.duration || ''}</td>
+                                                        ${song.isClassical ? `
+                                                            <td>${song.composer || ''}</td>
+                                                            <td>${song.opusNumber || ''}</td>
+                                                            <td>${song.movement || ''}</td>
+                                                            <td>${song.tempo || ''}</td>
+                                                        ` : ''}
+                                                    </tr>
+                                                `).join('')}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                ` : ''}
+                            </div>
+                        </td>
+                    `;
+                    
                     tableBody.appendChild(row);
+                    tableBody.appendChild(accordionRow);
                 });
 
                 resultsDiv.style.display = 'block';
@@ -425,7 +490,17 @@
                 }
             }
 
+            // 아코디언 토글 함수
+            function toggleAccordion(id) {
+                const accordionRow = document.getElementById(`accordion_${id}`);
+                if (accordionRow) {
+                    // 현재 상태가 'none'이면 보여주고, 그렇지 않으면 숨김
+                    accordionRow.style.display = accordionRow.style.display === 'none' ? 'table-row' : 'none';
+                }
+            }
+
             // 전역 함수로 등록
+            window.toggleAccordion = toggleAccordion;
             window.checkReservation = checkReservation;
             window.deleteReservation = deleteReservation;
 
