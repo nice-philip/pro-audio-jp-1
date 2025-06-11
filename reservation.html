@@ -337,6 +337,7 @@
                 }
                 
                 const memberKey = document.getElementById('memberKey')?.value?.trim() || '';
+                const userEmail = document.getElementById('userEmail')?.value?.trim() || '';
                 
                 if (memberKey !== 'admin25') {
                     console.error('Delete failed: Not admin');
@@ -351,11 +352,14 @@
                 }
 
                 try {
-                    const url = `https://pro-audio-jp-1.onrender.com/api/upload/${id}`;
+                    // API 엔드포인트를 조회 API와 동일한 패턴으로 변경
+                    const url = `https://pro-audio-jp-1.onrender.com/api/reservations?key=${memberKey}&email=${encodeURIComponent(userEmail)}&password=${encodeURIComponent(memberKey)}&id=${id}`;
                     console.log('Delete API request:', {
                         url,
                         method: 'DELETE',
-                        id: id
+                        id: id,
+                        email: userEmail,
+                        key: memberKey
                     });
 
                     const response = await fetch(url, {
@@ -384,14 +388,18 @@
                         console.error('Delete API error:', {
                             status: response.status,
                             result: result,
-                            id: id
+                            id: id,
+                            email: userEmail,
+                            key: memberKey
                         });
                         alert(errorMessage);
                     }
                 } catch (error) {
                     console.error('Delete API error:', {
                         error: error,
-                        id: id
+                        id: id,
+                        email: userEmail,
+                        key: memberKey
                     });
                     alert('削除に失敗しました。サーバーエラーが発生しました。');
                 }
