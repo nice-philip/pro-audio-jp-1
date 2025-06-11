@@ -29,8 +29,24 @@ mongoose.connect(process.env.MONGODB_URI, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
     serverSelectionTimeoutMS: 5000
-}).then(() => {
+}).then(async () => {
     console.log('✅ MongoDB 接続完了');
+    
+    // 데이터베이스 상태 확인
+    try {
+        const count = await Album.countDocuments();
+        console.log(`現在のアルバム数: ${count}`);
+        
+        const albums = await Album.find().limit(5);
+        console.log('最新のアルバム:', albums.map(a => ({
+            id: a._id,
+            title: a.albumTitle,
+            email: a.email,
+            createdAt: a.createdAt
+        })));
+    } catch (err) {
+        console.error('❌ データベース確認エラー:', err);
+    }
 }).catch((err) => {
     console.error('❌ MongoDB 接続失敗:', err);
     process.exit(1);
@@ -98,7 +114,6 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.get('/api/reservations', async(req, res) => {
     const key = req.query.key;
     const email = req.query.email;
-    const showDeleted = req.query.showDeleted === 'true'; // 삭제된 항목 표시 여부
 
     if (!key) {
         return res.status(400).json({ message: 'パスワードを入力してください' });
@@ -109,40 +124,14 @@ app.get('/api/reservations', async(req, res) => {
     }
 
     try {
-        // 관리자인 경우
         if (key === 'admin25') {
-            let query = {};
-            
-            // showDeleted가 true가 아닌 경우 삭제된 항목 제외
-            if (!showDeleted) {
-                query = {
-                    status: { $ne: 'エラー' },
-                    isReleased: { $ne: false }
-                };
-            }
-            // showDeleted가 true인 경우 삭제된 항목만 표시
-            else {
-                query = {
-                    $or: [
-                        { status: 'エラー' },
-                        { isReleased: false }
-                    ]
-                };
-            }
-
-            const all = await Album.find(query).sort({ createdAt: -1 });
+            const all = await Album.find().sort({ createdAt: -1 });
             return res.status(200).json(all);
-        } 
-        // 일반 사용자인 경우
-        else {
-            const query = {
+        } else {
+            const userReservations = await Album.find({
                 password: key,
-                email: email,
-                status: { $ne: 'エラー' },
-                isReleased: { $ne: false }
-            };
-            
-            const userReservations = await Album.find(query).sort({ createdAt: -1 });
+                email: email
+            }).sort({ createdAt: -1 });
 
             if (userReservations.length === 0) {
                 return res.status(404).json({ message: '予約情報が見つからないか、メールアドレスとパスワードが一致しません' });
@@ -170,13 +159,48 @@ app.delete('/api/reservations', async (req, res) => {
     }
 
     try {
-        const result = await Album.findByIdAndDelete(id);
-
-        if (!result) {
+        // 먼저 앨범 정보를 가져옵니다
+        const album = await Album.findById(id);
+        
+        if (!album) {
             console.log('Album not found:', id);
             return res.status(404).json({ message: 'Album not found in database' });
         }
 
+        // S3에서 이미지 파일 삭제
+        if (album.imageUrl) {
+            try {
+                const imageKey = album.imageUrl.split('/').pop();
+                await s3Client.send(new DeleteObjectCommand({
+                    Bucket: process.env.AWS_BUCKET_NAME,
+                    Key: `images/${imageKey}`
+                }));
+                console.log('Image deleted from S3:', imageKey);
+            } catch (err) {
+                console.error('Failed to delete image from S3:', err);
+            }
+        }
+
+        // S3에서 오디오 파일들 삭제
+        if (album.songs && album.songs.length > 0) {
+            for (const song of album.songs) {
+                if (song.audioUrl) {
+                    try {
+                        const audioKey = song.audioUrl.split('/').pop();
+                        await s3Client.send(new DeleteObjectCommand({
+                            Bucket: process.env.AWS_BUCKET_NAME,
+                            Key: `audio/${audioKey}`
+                        }));
+                        console.log('Audio deleted from S3:', audioKey);
+                    } catch (err) {
+                        console.error('Failed to delete audio from S3:', err);
+                    }
+                }
+            }
+        }
+
+        // MongoDB에서 앨범 삭제
+        await Album.findByIdAndDelete(id);
         console.log('Album permanently deleted:', id);
         return res.status(200).json({ message: '削除しました' });
     } catch (err) {
