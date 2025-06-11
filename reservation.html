@@ -352,33 +352,36 @@
                 }
 
                 try {
-                    // RESTful API 패턴으로 변경
-                    const url = `https://pro-audio-jp-1.onrender.com/api/reservations/${id}`;
+                    // 이전 URL 패턴으로 복구하고 업로드 API 패턴 사용
+                    const url = `https://pro-audio-jp-1.onrender.com/api/upload/${id}`;
                     console.log('Delete API request details:', {
                         url: url,
                         method: 'DELETE',
                         id: id,
+                        email: userEmail,
+                        key: memberKey,
                         headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': `Basic ${btoa(`${userEmail}:${memberKey}`)}`
+                            'Content-Type': 'application/json'
                         }
                     });
 
                     const response = await fetch(url, {
                         method: 'DELETE',
                         headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': `Basic ${btoa(`${userEmail}:${memberKey}`)}`
+                            'Content-Type': 'application/json'
                         }
                     });
 
                     console.log('Delete API response status:', response.status);
                     console.log('Delete API response headers:', Object.fromEntries([...response.headers]));
                     
-                    const result = await response.json().catch(e => {
+                    let result;
+                    try {
+                        result = await response.json();
+                    } catch (e) {
                         console.error('Failed to parse response JSON:', e);
-                        return null;
-                    });
+                        result = null;
+                    }
                     
                     console.log('Delete API response body:', result);
 
@@ -387,7 +390,7 @@
                         // 삭제 후 데이터 새로고침 전에 약간의 지연을 추가
                         setTimeout(async () => {
                             await checkReservation();
-                        }, 500);
+                        }, 1000);
                     } else {
                         let errorMessage = '削除に失敗しました';
                         if (response.status === 404) {
