@@ -61,53 +61,6 @@
                 padding: 10px 0;
             }
 
-            #responsive-menu {
-                background: rgba(0, 0, 0, 0.9);
-                padding: 10px 0;
-                position: fixed;
-                top: 0;
-                left: 0;
-                right: 0;
-                z-index: 1000;
-                display: none;
-            }
-
-            #responsive-menu.active {
-                display: block;
-            }
-
-            #responsive-menu .menu-holder {
-                padding: 0;
-                margin: 0;
-                list-style: none;
-            }
-
-            #responsive-menu .menu-holder li a {
-                padding: 10px 20px;
-                display: block;
-                color: white;
-                font-size: 16px;
-                text-decoration: none;
-            }
-
-            #responsive-menu .menu-holder li a:hover {
-                background: rgba(255, 255, 255, 0.1);
-            }
-
-            .templatemo-nav {
-                display: none;
-            }
-
-            #mobile_menu {
-                display: block;
-                padding: 10px;
-                color: white;
-                font-size: 20px;
-                position: absolute;
-                right: 15px;
-                top: 15px;
-            }
-
             .tm-reservation-form {
                 padding: 0 15px;
             }
@@ -125,12 +78,6 @@
 </head>
 
 <body>
-    <nav id="responsive-menu">
-        <ul class="menu-holder">
-            <li><a href="index.html"><i class="fa fa-home"></i>ホーム</a></li>
-            <li><a href="reservation.html"><i class="fa fa-search"></i>予約確認</a></li>
-        </ul>
-    </nav>
     <div class="templatemo-header">
         <div class="templatemo-header-gradient-bg"></div>
         <div class="container">
@@ -141,9 +88,6 @@
                     <li class="active"><a href="reservation.html">予約確認</a></li>
                 </ul>
             </nav>
-            <div class="text-right visible-xs">
-                <a href="#" id="mobile_menu"><span class="fa fa-bars"></span></a>
-            </div>
         </div>
     </div>
     <div class="templatemo-header-image"></div>
@@ -199,16 +143,13 @@
     <script>
         // DOM이 완전히 로드된 후 실행되도록 수정
         document.addEventListener('DOMContentLoaded', function() {
-            // 모바일 메뉴 관련 코드
-            const mobileMenu = document.getElementById('mobile_menu');
-            const responsiveMenu = document.getElementById('responsive-menu');
-            
-            if (mobileMenu && responsiveMenu) {
-                mobileMenu.addEventListener('click', function(e) {
+            // 엔터 키 이벤트 추가
+            document.getElementById('memberKey').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
                     e.preventDefault();
-                    responsiveMenu.style.display = 'block';
-                });
-            }
+                    checkReservation();
+                }
+            });
 
             // 예약 확인 함수
             async function checkReservation() {
@@ -265,20 +206,9 @@
                     return;
                 }
 
-                console.log('All reservations:', reservations);
-
                 // 삭제되지 않은 데이터만 필터링
                 const activeReservations = reservations.filter(reservation => {
                     if (!reservation) return false;
-                    
-                    // 각 예약의 상세 정보 로깅
-                    console.log('Reservation details:', {
-                        _id: reservation._id,
-                        albumTitle: reservation.albumTitle,
-                        status: reservation.status,
-                        isDeleted: reservation.isDeleted
-                    });
-                    
                     return !reservation.isDeleted && reservation.status !== '削除済み';
                 });
 
@@ -295,12 +225,6 @@
                     
                     const date = new Date(reservation.createdAt);
                     const formattedDate = `${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}日`;
-                    
-                    // 삭제 버튼에 사용될 ID 로깅
-                    console.log('Creating delete button for reservation:', {
-                        _id: reservation._id,
-                        albumTitle: reservation.albumTitle
-                    });
                     
                     const row = document.createElement('tr');
                     row.innerHTML = `
@@ -493,20 +417,23 @@
             // 아코디언 토글 함수
             function toggleAccordion(id) {
                 const accordionRow = document.getElementById(`accordion_${id}`);
-                if (accordionRow) {
-                    const isVisible = accordionRow.style.display === 'table-row';
-                    // 모든 아코디언 패널을 닫습니다
-                    document.querySelectorAll('[id^="accordion_"]').forEach(panel => {
+                if (!accordionRow) return;
+
+                // 현재 상태 확인
+                const isVisible = accordionRow.style.display === 'table-row';
+                
+                // 다른 모든 아코디언 패널을 닫음
+                document.querySelectorAll('[id^="accordion_"]').forEach(panel => {
+                    if (panel !== accordionRow) {
                         panel.style.display = 'none';
-                    });
-                    // 클릭한 패널이 닫혀있었다면 엽니다
-                    if (!isVisible) {
-                        accordionRow.style.display = 'table-row';
                     }
-                }
+                });
+
+                // 클릭된 패널의 상태를 토글
+                accordionRow.style.display = isVisible ? 'none' : 'table-row';
             }
 
-            // 전역 함수로 등록
+            // 전역 스코프에 함수 추가
             window.toggleAccordion = toggleAccordion;
             window.checkReservation = checkReservation;
             window.deleteReservation = deleteReservation;
