@@ -159,31 +159,39 @@ app.delete('/api/reservations', async (req, res) => {
     }
 
     try {
-        // 먼저 앨범 정보를 가져옵니다
-        const album = await Album.findById(id);
-        
-        if (!album) {
-            console.log('Album not found:', id);
+        // 삭제 전 전체 앨범 수 확인
+        const totalBefore = await Album.countDocuments();
+        console.log(`삭제 전 전체 앨범 수: ${totalBefore}`);
+
+        // 삭제하려는 앨범 확인
+        const targetAlbum = await Album.findById(id);
+        if (!targetAlbum) {
+            console.log('삭제하려는 앨범을 찾을 수 없음:', id);
             return res.status(404).json({ message: 'Album not found in database' });
         }
+        console.log('삭제 대상 앨범:', {
+            id: targetAlbum._id,
+            title: targetAlbum.albumTitle,
+            email: targetAlbum.email
+        });
 
         // S3에서 이미지 파일 삭제
-        if (album.imageUrl) {
+        if (targetAlbum.imageUrl) {
             try {
-                const imageKey = album.imageUrl.split('/').pop();
+                const imageKey = targetAlbum.imageUrl.split('/').pop();
                 await s3Client.send(new DeleteObjectCommand({
                     Bucket: process.env.AWS_BUCKET_NAME,
                     Key: `images/${imageKey}`
                 }));
-                console.log('Image deleted from S3:', imageKey);
+                console.log('S3에서 이미지 삭제 완료:', imageKey);
             } catch (err) {
-                console.error('Failed to delete image from S3:', err);
+                console.error('S3 이미지 삭제 실패:', err);
             }
         }
 
         // S3에서 오디오 파일들 삭제
-        if (album.songs && album.songs.length > 0) {
-            for (const song of album.songs) {
+        if (targetAlbum.songs && targetAlbum.songs.length > 0) {
+            for (const song of targetAlbum.songs) {
                 if (song.audioUrl) {
                     try {
                         const audioKey = song.audioUrl.split('/').pop();
@@ -191,18 +199,35 @@ app.delete('/api/reservations', async (req, res) => {
                             Bucket: process.env.AWS_BUCKET_NAME,
                             Key: `audio/${audioKey}`
                         }));
-                        console.log('Audio deleted from S3:', audioKey);
+                        console.log('S3에서 오디오 파일 삭제 완료:', audioKey);
                     } catch (err) {
-                        console.error('Failed to delete audio from S3:', err);
+                        console.error('S3 오디오 파일 삭제 실패:', err);
                     }
                 }
             }
         }
 
-        // MongoDB에서 앨범 삭제
-        await Album.findByIdAndDelete(id);
-        console.log('Album permanently deleted:', id);
-        return res.status(200).json({ message: '削除しました' });
+        // MongoDB에서 특정 앨범만 삭제
+        const deleteResult = await Album.deleteOne({ _id: id });
+        console.log('MongoDB 삭제 결과:', deleteResult);
+
+        // 삭제 후 전체 앨범 수 확인
+        const totalAfter = await Album.countDocuments();
+        console.log(`삭제 후 전체 앨범 수: ${totalAfter}`);
+
+        if (deleteResult.deletedCount === 1) {
+            console.log('앨범 삭제 완료:', id);
+            return res.status(200).json({ 
+                message: '削除しました',
+                beforeCount: totalBefore,
+                afterCount: totalAfter
+            });
+        } else {
+            console.log('앨범 삭제 실패 - 삭제된 문서 없음');
+            return res.status(500).json({ 
+                message: '削除に失敗しました - 削除された文書がありません'
+            });
+        }
     } catch (err) {
         console.error('❌ 削除失敗:', err);
         return res.status(500).json({ message: 'サーバーエラーが発生しました', error: err.message });
