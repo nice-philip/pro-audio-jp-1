@@ -72,6 +72,15 @@ if (!process.env.AWS_REGION || !process.env.AWS_ACCESS_KEY_ID ||
     process.exit(1);
 }
 
+// ✅ AWS S3 클라이언트 초기화
+const s3Client = new S3Client({
+    region: process.env.AWS_REGION,
+    credentials: {
+        accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY
+    }
+});
+
 // ✅ 허용된 Origin 리스트
 const allowedOrigins = [
     'https://brilliant-unicorn-a5395d.netlify.app',
