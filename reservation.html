@@ -352,14 +352,15 @@
                 }
 
                 try {
-                    // 원래 업로드 API 엔드포인트로 복구
-                    const url = `https://pro-audio-jp-1.onrender.com/api/upload/${id}`;
+                    // 컬렉션 정보를 포함한 URL로 변경
+                    const url = `https://pro-audio-jp-1.onrender.com/api/upload/${id}?collection=albums-jp`;
                     console.log('Delete API request details:', {
                         url: url,
                         method: 'DELETE',
                         id: id,
                         email: userEmail,
                         key: memberKey,
+                        collection: 'albums-jp',
                         headers: {
                             'Content-Type': 'application/json'
                         }
@@ -368,7 +369,8 @@
                     const response = await fetch(url, {
                         method: 'DELETE',
                         headers: {
-                            'Content-Type': 'application/json'
+                            'Content-Type': 'application/json',
+                            'X-Collection': 'albums-jp'
                         }
                     });
 
