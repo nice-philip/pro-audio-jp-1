@@ -172,6 +172,36 @@ app.delete('/api/reservations', async (req, res) => {
     }
 });
 
+// ✅ 예약 완전 삭제 API (Hard Delete)
+app.delete('/api/reservations/permanent', async (req, res) => {
+    const { id, key, email, password } = req.query;
+
+    console.log('Permanent delete request received:', { id, key, email, password });
+
+    if (!id || !mongoose.Types.ObjectId.isValid(id)) {
+        return res.status(400).json({ message: '無効なIDです' });
+    }
+
+    if (key !== 'admin25' || email !== 'admin25' || password !== 'admin25') {
+        return res.status(403).json({ message: '管理者権限がありません' });
+    }
+
+    try {
+        const result = await Album.findByIdAndDelete(id);
+
+        if (!result) {
+            console.log('Album not found:', id);
+            return res.status(404).json({ message: 'Album not found in database' });
+        }
+
+        console.log('Album permanently deleted:', id);
+        return res.status(200).json({ message: 'データベースから完全に削除されました' });
+    } catch (err) {
+        console.error('❌ 完全削除に失敗:', err);
+        return res.status(500).json({ message: 'サーバーエラーが発生しました', error: err.message });
+    }
+});
+
 // ✅ 업로드 API 라우트 연결
 app.use('/api/upload', uploadRoutes);
 
