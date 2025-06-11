@@ -352,8 +352,8 @@
                 }
 
                 try {
-                    // albums-jp 컬렉션을 사용하는 upload API로 변경
-                    const url = `https://pro-audio-jp-1.onrender.com/api/upload/${id}`;
+                    // 삭제 API 엔드포인트로 변경
+                    const url = `https://pro-audio-jp-1.onrender.com/api/reservations?key=${memberKey}&email=${encodeURIComponent(userEmail)}&password=${memberKey}&id=${id}`;
                     console.log('Delete API request details:', {
                         url: url,
                         method: 'DELETE',
@@ -370,11 +370,7 @@
                         headers: {
                             'Content-Type': 'application/json'
                         },
-                        body: JSON.stringify({
-                            collection: 'albums-jp',
-                            email: userEmail,
-                            key: memberKey
-                        })
+                        credentials: 'include'  // CORS 인증 정보 포함
                     });
 
                     console.log('Delete API response status:', response.status);
