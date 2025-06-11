@@ -108,14 +108,19 @@ app.get('/api/reservations', async(req, res) => {
     }
 
     try {
+        const query = {
+            status: { $ne: 'エラー' },  // Exclude albums with error status
+            isReleased: { $ne: false }  // Exclude unreleased albums
+        };
+
         if (key === 'admin25') {
-            const all = await Album.find().sort({ createdAt: -1 });
+            const all = await Album.find(query).sort({ createdAt: -1 });
             return res.status(200).json(all);
         } else {
-            const userReservations = await Album.find({
-                password: key,
-                email: email
-            }).sort({ createdAt: -1 });
+            query.password = key;
+            query.email = email;
+            
+            const userReservations = await Album.find(query).sort({ createdAt: -1 });
 
             if (userReservations.length === 0) {
                 return res.status(404).json({ message: '予約情報が見つからないか、メールアドレスとパスワードが一致しません' });
