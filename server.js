@@ -143,18 +143,23 @@ app.delete('/api/reservations', async (req, res) => {
     }
 
     try {
-        const album = await Album.findById(id);
-        if (!album) {
+        const result = await Album.findOneAndUpdate(
+            { _id: id },
+            { 
+                $set: { 
+                    status: 'エラー',  // Using a valid enum value
+                    isReleased: false  // Mark as not released
+                }
+            },
+            { new: true }
+        );
+
+        if (!result) {
             console.log('Album not found:', id);
             return res.status(404).json({ message: 'Album not found in database' });
         }
 
-        // 논리 삭제 (필드 유지하고 삭제 처리)
-        album.status = '削除済み';
-        album.isDeleted = true;
-        await album.save();
-
-        console.log('Album deleted successfully:', id);
+        console.log('Album marked as deleted successfully:', id);
         return res.status(200).json({ message: '削除しました' });
     } catch (err) {
         console.error('❌ 削除失敗:', err);
