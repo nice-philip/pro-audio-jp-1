@@ -352,36 +352,51 @@
                 }
 
                 try {
-                    // API 엔드포인트를 조회 API와 동일한 패턴으로 변경
-                    const url = `https://pro-audio-jp-1.onrender.com/api/reservations?key=${memberKey}&email=${encodeURIComponent(userEmail)}&password=${encodeURIComponent(memberKey)}&id=${id}`;
-                    console.log('Delete API request:', {
-                        url,
+                    // RESTful API 패턴으로 변경
+                    const url = `https://pro-audio-jp-1.onrender.com/api/reservations/${id}`;
+                    console.log('Delete API request details:', {
+                        url: url,
                         method: 'DELETE',
                         id: id,
-                        email: userEmail,
-                        key: memberKey
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Basic ${btoa(`${userEmail}:${memberKey}`)}`
+                        }
                     });
 
                     const response = await fetch(url, {
                         method: 'DELETE',
                         headers: {
-                            'Content-Type': 'application/json'
+                            'Content-Type': 'application/json',
+                            'Authorization': `Basic ${btoa(`${userEmail}:${memberKey}`)}`
                         }
                     });
 
                     console.log('Delete API response status:', response.status);
+                    console.log('Delete API response headers:', Object.fromEntries([...response.headers]));
                     
-                    const result = await response.json();
-                    console.log('Delete API response:', result);
+                    const result = await response.json().catch(e => {
+                        console.error('Failed to parse response JSON:', e);
+                        return null;
+                    });
+                    
+                    console.log('Delete API response body:', result);
 
                     if (response.ok) {
                         alert('削除しました');
-                        await checkReservation();
+                        // 삭제 후 데이터 새로고침 전에 약간의 지연을 추가
+                        setTimeout(async () => {
+                            await checkReservation();
+                        }, 500);
                     } else {
                         let errorMessage = '削除に失敗しました';
                         if (response.status === 404) {
                             errorMessage = '該当するデータが見つかりません';
-                            console.error('Album not found in database:', id);
+                            console.error('Album not found in database:', {
+                                id: id,
+                                status: response.status,
+                                result: result
+                            });
                         } else if (result && result.message) {
                             errorMessage = `削除に失敗しました：${result.message}`;
                         }
@@ -395,8 +410,9 @@
                         alert(errorMessage);
                     }
                 } catch (error) {
-                    console.error('Delete API error:', {
-                        error: error,
+                    console.error('Delete API request failed:', {
+                        error: error.toString(),
+                        stack: error.stack,
                         id: id,
                         email: userEmail,
                         key: memberKey
