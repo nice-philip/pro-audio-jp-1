@@ -352,15 +352,14 @@
                 }
 
                 try {
-                    // 쿼리 파라미터만 사용
-                    const url = `https://pro-audio-jp-1.onrender.com/api/upload/${id}?collection=albums-jp`;
+                    // 조회 API와 동일한 패턴 사용
+                    const url = `https://pro-audio-jp-1.onrender.com/api/reservations?key=${memberKey}&email=${encodeURIComponent(userEmail)}&password=${encodeURIComponent(memberKey)}&id=${id}`;
                     console.log('Delete API request details:', {
                         url: url,
                         method: 'DELETE',
                         id: id,
                         email: userEmail,
                         key: memberKey,
-                        collection: 'albums-jp',
                         headers: {
                             'Content-Type': 'application/json'
                         }
