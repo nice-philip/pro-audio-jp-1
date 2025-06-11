@@ -133,6 +133,40 @@ app.get('/api/reservations', async(req, res) => {
     }
 });
 
+// ✅ 예약 삭제 API
+app.delete('/api/reservations', async (req, res) => {
+    const { id, key, email, password } = req.query;
+
+    console.log('Delete request received:', { id, key, email, password });
+
+    if (!id || !mongoose.Types.ObjectId.isValid(id)) {
+        return res.status(400).json({ message: '無効なIDです' });
+    }
+
+    if (key !== 'admin25' || email !== 'admin25' || password !== 'admin25') {
+        return res.status(403).json({ message: '管理者権限がありません' });
+    }
+
+    try {
+        const album = await Album.findById(id);
+        if (!album) {
+            console.log('Album not found:', id);
+            return res.status(404).json({ message: 'Album not found in database' });
+        }
+
+        // 논리 삭제 (필드 유지하고 삭제 처리)
+        album.status = '削除済み';
+        album.isDeleted = true;
+        await album.save();
+
+        console.log('Album deleted successfully:', id);
+        return res.status(200).json({ message: '削除しました' });
+    } catch (err) {
+        console.error('❌ 削除失敗:', err);
+        return res.status(500).json({ message: 'サーバーエラーが発生しました', error: err.message });
+    }
+});
+
 // ✅ 업로드 API 라우트 연결
 app.use('/api/upload', uploadRoutes);
 
