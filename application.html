@@ -759,12 +759,15 @@
         // 폼 데이터 변경 여부를 추적하는 변수
         let formModified = false;
 
-        // 폼 입력 필드 변경 감지
         document.addEventListener('DOMContentLoaded', function() {
             const form = document.getElementById('albumForm');
             if (form) {
+                // 모든 입력 필드의 변경 감지
                 const inputs = form.querySelectorAll('input, textarea, select');
                 inputs.forEach(input => {
+                    input.addEventListener('input', () => {
+                        formModified = true;
+                    });
                     input.addEventListener('change', () => {
                         formModified = true;
                     });
@@ -775,14 +778,26 @@
                     formModified = false;
                 });
             }
+
+            // 홈으로 가기 버튼에 경고 추가
+            const homeButton = document.querySelector('a[href="/index"]');
+            if (homeButton) {
+                homeButton.addEventListener('click', function(e) {
+                    if (formModified) {
+                        if (!confirm('入力内容が保存されていません。\nページを離れてもよろしいですか？')) {
+                            e.preventDefault();
+                        }
+                    }
+                });
+            }
         });
 
         // 페이지 이탈 시 경고
         window.addEventListener('beforeunload', function(e) {
             if (formModified) {
                 e.preventDefault();
-                e.returnValue = '';
-                return '';
+                e.returnValue = '入力内容が保存されていません。';
+                return e.returnValue;
             }
         });
     </script>

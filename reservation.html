@@ -494,8 +494,15 @@
             function toggleAccordion(id) {
                 const accordionRow = document.getElementById(`accordion_${id}`);
                 if (accordionRow) {
-                    // 현재 상태가 'none'이면 보여주고, 그렇지 않으면 숨김
-                    accordionRow.style.display = accordionRow.style.display === 'none' ? 'table-row' : 'none';
+                    const isVisible = accordionRow.style.display === 'table-row';
+                    // 모든 아코디언 패널을 닫습니다
+                    document.querySelectorAll('[id^="accordion_"]').forEach(panel => {
+                        panel.style.display = 'none';
+                    });
+                    // 클릭한 패널이 닫혀있었다면 엽니다
+                    if (!isVisible) {
+                        accordionRow.style.display = 'table-row';
+                    }
                 }
             }
 
