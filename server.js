@@ -98,6 +98,7 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.get('/api/reservations', async(req, res) => {
     const key = req.query.key;
     const email = req.query.email;
+    const showDeleted = req.query.showDeleted === 'true'; // 삭제된 항목 표시 여부
 
     if (!key) {
         return res.status(400).json({ message: 'パスワードを入力してください' });
@@ -108,17 +109,38 @@ app.get('/api/reservations', async(req, res) => {
     }
 
     try {
-        const query = {
-            status: { $ne: 'エラー' },  // Exclude albums with error status
-            isReleased: { $ne: false }  // Exclude unreleased albums
-        };
-
+        // 관리자인 경우
         if (key === 'admin25') {
+            let query = {};
+            
+            // showDeleted가 true가 아닌 경우 삭제된 항목 제외
+            if (!showDeleted) {
+                query = {
+                    status: { $ne: 'エラー' },
+                    isReleased: { $ne: false }
+                };
+            }
+            // showDeleted가 true인 경우 삭제된 항목만 표시
+            else {
+                query = {
+                    $or: [
+                        { status: 'エラー' },
+                        { isReleased: false }
+                    ]
+                };
+            }
+
             const all = await Album.find(query).sort({ createdAt: -1 });
             return res.status(200).json(all);
-        } else {
-            query.password = key;
-            query.email = email;
+        } 
+        // 일반 사용자인 경우
+        else {
+            const query = {
+                password: key,
+                email: email,
+                status: { $ne: 'エラー' },
+                isReleased: { $ne: false }
+            };
             
             const userReservations = await Album.find(query).sort({ createdAt: -1 });
 
@@ -148,23 +170,14 @@ app.delete('/api/reservations', async (req, res) => {
     }
 
     try {
-        const result = await Album.findOneAndUpdate(
-            { _id: id },
-            { 
-                $set: { 
-                    status: 'エラー',  // Using a valid enum value
-                    isReleased: false  // Mark as not released
-                }
-            },
-            { new: true }
-        );
+        const result = await Album.findByIdAndDelete(id);
 
         if (!result) {
             console.log('Album not found:', id);
             return res.status(404).json({ message: 'Album not found in database' });
         }
 
-        console.log('Album marked as deleted successfully:', id);
+        console.log('Album permanently deleted:', id);
         return res.status(200).json({ message: '削除しました' });
     } catch (err) {
         console.error('❌ 削除失敗:', err);
