@@ -918,6 +918,9 @@
         $(document).ready(function() {
             let songCount = 0;
 
+            // Enable submit button initially
+            document.querySelector('button[type="submit"]').disabled = false;
+
             // 곡 추가 버튼 클릭 이벤트
             $('#addSongButton').on('click', function() {
                 const originalSong = $('#songs-container .song-entry:first').clone();
@@ -929,15 +932,12 @@
                 // 모든 input, select, textarea 초기화 및 인덱스 업데이트
                 originalSong.find('input, select, textarea').each(function() {
                     const elem = $(this);
-                    // name 속성 업데이트
                     if (elem.attr('name')) {
                         elem.attr('name', elem.attr('name').replace(/_\d+/, `_${songCount}`));
                     }
-                    // id 속성 업데이트
                     if (elem.attr('id')) {
                         elem.attr('id', elem.attr('id').replace(/_\d+/, `_${songCount}`));
                     }
-                    // 값 초기화
                     elem.val('');
                 });
 
@@ -964,37 +964,23 @@
                 }
             });
 
-            // 입력 필드 추가 버튼 클릭 이벤트
+            // 입력 필드 추가/삭제 버튼 이벤트
             $(document).on('click', '.add-field', function(e) {
                 e.preventDefault();
-                e.stopPropagation();
-                
                 const container = $(this).closest('.mb-3');
                 const inputGroup = $(this).closest('.input-group');
                 const newGroup = inputGroup.clone(true);
-                
-                // 입력 필드 초기화
                 newGroup.find('input').val('');
-                
-                // 새 입력 그룹 추가
                 container.append(newGroup);
-                
-                // 모든 삭제 버튼 활성화
                 container.find('.remove-field').prop('disabled', false);
             });
 
-            // 입력 필드 삭제 버튼 클릭 이벤트
             $(document).on('click', '.remove-field', function(e) {
                 e.preventDefault();
-                e.stopPropagation();
-                
                 const container = $(this).closest('.mb-3');
                 const inputGroups = container.find('.input-group');
-                
                 if (inputGroups.length > 1) {
                     $(this).closest('.input-group').remove();
-                    
-                    // 마지막 남은 입력 그룹의 삭제 버튼 비활성화
                     if (inputGroups.length === 2) {
                         container.find('.remove-field').last().prop('disabled', true);
                     }
@@ -1020,18 +1006,18 @@
                 }
             });
 
-            // 폼 제출 이벤트 핸들러
+            // Form submission handler
             $('#albumForm').on('submit', async function(e) {
                 e.preventDefault();
                 
-                // 폼 유효성 검사
+                // Form validation
                 if (!this.checkValidity()) {
                     e.stopPropagation();
                     $(this).addClass('was-validated');
                     return;
                 }
 
-                // 제출 버튼 비활성화
+                // Disable submit button while processing
                 const submitButton = $(this).find('button[type="submit"]');
                 submitButton.prop('disabled', true);
                 submitButton.html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> 送信中...');
@@ -1039,13 +1025,13 @@
                 try {
                     const formData = new FormData(this);
 
-                    // 앨범 커버 파일 추가
-                    const albumCover = $('#albumCover')[0].files[0];
+                    // Add album cover file
+                    const albumCover = $('input[name="albumCover"]')[0].files[0];
                     if (albumCover) {
                         formData.append('albumCover', albumCover);
                     }
 
-                    // 오디오 파일들 추가
+                    // Add audio files
                     $('.song-entry').each(function(index) {
                         const audioFile = $(this).find('input[type="file"]')[0].files[0];
                         if (audioFile) {
@@ -1053,7 +1039,7 @@
                         }
                     });
 
-                    // API 호출
+                    // API call
                     const response = await fetch('/api/upload', {
                         method: 'POST',
                         body: formData
@@ -1065,17 +1051,17 @@
 
                     const result = await response.json();
                     
-                    // 성공 메시지 표시
+                    // Show success message
                     alert('アルバムの申請が完了しました。');
                     
-                    // 예약 확인 페이지로 이동
+                    // Redirect to reservation page
                     window.location.href = '/reservation.html';
 
                 } catch (error) {
                     console.error('Error:', error);
                     alert('エラーが発生しました。もう一度お試しください。');
                 } finally {
-                    // 제출 버튼 상태 복구
+                    // Re-enable submit button
                     submitButton.prop('disabled', false);
                     submitButton.html('申請する');
                 }
@@ -1084,7 +1070,7 @@
     </script>
 
     <script>
-        // PayPal 설정
+        // PayPal configuration
         paypal.Buttons({
             style: {
                 layout: 'vertical',
@@ -1105,18 +1091,15 @@
             },
             onApprove: function(data, actions) {
                 return actions.order.capture().then(function(details) {
-                    // 결제 성공 메시지 표시
+                    // Show payment success message
                     const paymentStatus = document.getElementById('payment-status');
                     paymentStatus.className = 'payment-status success';
                     paymentStatus.style.display = 'block';
                     paymentStatus.innerHTML = '決済が完了しました。ありがとうございます！';
-                    
-                    // 제출 버튼 활성화
-                    document.querySelector('button[type="submit"]').disabled = false;
                 });
             },
             onError: function(err) {
-                // 에러 메시지 표시
+                // Show error message
                 const paymentStatus = document.getElementById('payment-status');
                 paymentStatus.className = 'payment-status error';
                 paymentStatus.style.display = 'block';
@@ -1124,9 +1107,6 @@
                 console.error('PayPal Error:', err);
             }
         }).render('#paypal-button-container');
-
-        // 초기에 제출 버튼 비활성화
-        document.querySelector('button[type="submit"]').disabled = true;
     </script>
 </body>
 </html> 
