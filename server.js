@@ -97,18 +97,18 @@ const allowedOrigins = [
 
 // ✅ CORS 전역 적용
 app.use(cors({
-    origin: allowedOrigins,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'Origin', 'X-Requested-With'],
-    exposedHeaders: ['Content-Length', 'Content-Type'],
+    origin: function(origin, callback) {
+        // origin이 undefined인 경우 (예: Postman 등)도 허용
+        if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+            callback(null, true);
+        } else {
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
     credentials: true,
-    preflightContinue: false,
-    optionsSuccessStatus: 204,
-    maxAge: 86400 // preflight 결과를 24시간 캐시
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
 }));
-
-// CORS Preflight 요청에 대한 명시적 처리
-app.options('*', cors());
 
 console.log('CORS is enabled for allowed origins:', allowedOrigins);
 
