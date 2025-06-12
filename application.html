@@ -1135,7 +1135,7 @@
                     // Add image file
                     const imageFile = $('input[name="image"]')[0].files[0];
                     if (imageFile) {
-                        formData.append('image', imageFile);
+                        formData.append('albumCover', imageFile); // 'image' 대신 'albumCover'로 변경
                     }
 
                     // Process songs data
@@ -1166,7 +1166,7 @@
                         // Add audio file
                         const audioFile = entry.find('input[type="file"][accept=".wav"]')[0].files[0];
                         if (audioFile) {
-                            formData.append(`audio_${index}`, audioFile);
+                            formData.append(`audioFiles`, audioFile); // 'audio_${index}' 대신 'audioFiles'로 변경
                         }
                     });
 
