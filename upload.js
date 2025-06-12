@@ -6,6 +6,7 @@ const Album = require('./models/Album');
 const path = require('path');
 const fs = require('fs');
 const sharp = require('sharp');
+const crypto = require('crypto');
 
 const router = express.Router();
 
@@ -21,23 +22,11 @@ const s3Client = new S3Client({
 // ✅ Multer 메모리 저장소 설정
 const storage = multer.memoryStorage();
 
-const upload = multer({ 
-    storage,
-    fileFilter: function (req, file, cb) {
-        console.log('✅ File upload attempt:', file.fieldname, file.originalname);
-        if (file.fieldname === 'albumCover') {
-            if (!file.originalname.match(/\.(jpg|jpeg|png)$/)) {
-                return cb(new Error('JPG/PNG 形式の画像のみアップロード可能です。'), false);
-            }
-        } else if (file.fieldname.startsWith('audio_')) {
-            if (!file.originalname.match(/\.(wav)$/)) {
-                return cb(new Error('WAV 形式の音声ファイルのみアップロード可能です。'), false);
-            }
-        }
-        cb(null, true);
-    },
+const upload = multer({
+    storage: storage,
     limits: {
-        fileSize: 2 * 1024 * 1024 * 1024 // 2GB limit for audio files
+        fileSize: 2 * 1024 * 1024 * 1024, // 2GB
+        files: 50 // 최대 파일 수
     }
 });
 
@@ -79,111 +68,136 @@ async function uploadToS3(file, folder) {
 // ✅ 앨범 업로드 처리 라우터
 router.post('/', upload.fields([
     { name: 'albumCover', maxCount: 1 },
-    { name: 'audio_*', maxCount: 1 }
+    { name: 'audio', maxCount: 50 }
 ]), async (req, res) => {
-    console.log('Upload route accessed');
-    console.log('Request headers:', req.headers);
-    console.log('Request body:', req.body);
-    console.log('Request files:', req.files);
-
+    console.log('Upload request received');
+    
     try {
-        // 앨범 커버 검증
-        if (!req.files.albumCover) {
+        // 필수 필드 검증
+        if (!req.body || !req.files) {
             return res.status(400).json({
-                message: 'アルバムカバーは必須です',
-                code: 'MISSING_COVER'
+                success: false,
+                message: 'ファイルまたはフォームデータが不足しています'
             });
         }
 
-        // 이미지 검증
-        const coverImage = req.files.albumCover[0];
-        try {
-            await validateImage(coverImage.buffer);
-        } catch (error) {
+        // 앨범 커버 검증
+        if (!req.files.albumCover || !req.files.albumCover[0]) {
             return res.status(400).json({
-                message: error.message,
-                code: 'INVALID_IMAGE'
+                success: false,
+                message: 'アルバムカバーが必要です'
             });
         }
+
+        // 오디오 파일 검증
+        if (!req.files.audio || req.files.audio.length === 0) {
+            return res.status(400).json({
+                success: false,
+                message: '少なくとも1つの音声ファイルが必要です'
+            });
+        }
+
+        // 파일 업로드 처리
+        const albumCoverFile = req.files.albumCover[0];
+        const audioFiles = req.files.audio;
 
         // 앨범 커버 S3 업로드
-        const coverUrl = await uploadToS3(coverImage, 'covers');
+        const coverKey = `covers/${Date.now()}-${crypto.randomBytes(8).toString('hex')}${path.extname(albumCoverFile.originalname)}`;
+        await s3Client.send(new PutObjectCommand({
+            Bucket: process.env.AWS_BUCKET_NAME,
+            Key: coverKey,
+            Body: albumCoverFile.buffer,
+            ContentType: albumCoverFile.mimetype
+        }));
 
-        // 곡 정보 처리
-        const songs = [];
-        const audioFiles = Object.keys(req.files).filter(key => key.startsWith('audio_'));
-        
-        for (let i = 0; i < audioFiles.length; i++) {
-            const audioKey = audioFiles[i];
-            const audioFile = req.files[audioKey][0];
-            const songIndex = audioKey.split('_')[1];
+        // 오디오 파일 S3 업로드
+        const uploadedSongs = await Promise.all(audioFiles.map(async (file, index) => {
+            const audioKey = `audio/${Date.now()}-${crypto.randomBytes(8).toString('hex')}${path.extname(file.originalname)}`;
+            await s3Client.send(new PutObjectCommand({
+                Bucket: process.env.AWS_BUCKET_NAME,
+                Key: audioKey,
+                Body: file.buffer,
+                ContentType: file.mimetype
+            }));
 
-            // 오디오 파일 S3 업로드
-            const audioUrl = await uploadToS3(audioFile, 'audio');
-            
-            // 곡 정보 구성
-            songs.push({
-                mainArtists: req.body[`mainArtist_${songIndex}`].split(',').map(item => item.trim()).filter(Boolean),
-                participatingArtists: req.body[`participatingArtist_${songIndex}`].split(',').map(item => item.trim()).filter(Boolean),
-                featuringArtists: req.body[`featuring_${songIndex}`] ? 
-                    req.body[`featuring_${songIndex}`].split(',').map(item => item.trim()).filter(Boolean) : [],
-                mixingEngineers: req.body[`mixingEngineer_${songIndex}`].split(',').map(item => item.trim()).filter(Boolean),
-                recordingEngineers: req.body[`recordingEngineer_${songIndex}`].split(',').map(item => item.trim()).filter(Boolean),
-                producers: req.body[`producer_${songIndex}`].split(',').map(item => item.trim()).filter(Boolean),
-                lyricists: req.body[`lyricist_${songIndex}`].split(',').map(item => item.trim()).filter(Boolean),
-                composers: req.body[`composer_${songIndex}`].split(',').map(item => item.trim()).filter(Boolean),
-                arrangers: req.body[`arranger_${songIndex}`].split(',').map(item => item.trim()).filter(Boolean),
-                isRemake: req.body[`isRemake_${songIndex}`] === 'yes',
-                usesExternalBeat: req.body[`usesExternalBeat_${songIndex}`] === 'yes',
-                language: req.body[`language_${songIndex}`],
-                lyrics: req.body[`lyrics_${songIndex}`],
-                audioUrl
-            });
-        }
+            // 노래 정보 구성
+            return {
+                mainArtist: req.body[`mainArtist_${index}`]?.split(',') || [],
+                participatingArtist: req.body[`participatingArtist_${index}`]?.split(',') || [],
+                featuring: req.body[`featuring_${index}`]?.split(',') || [],
+                mixingEngineer: req.body[`mixingEngineer_${index}`]?.split(',') || [],
+                recordingEngineer: req.body[`recordingEngineer_${index}`]?.split(',') || [],
+                producer: req.body[`producer_${index}`]?.split(',') || [],
+                lyricist: req.body[`lyricist_${index}`]?.split(',') || [],
+                composer: req.body[`composer_${index}`]?.split(',') || [],
+                arranger: req.body[`arranger_${index}`]?.split(',') || [],
+                audioUrl: `https://${process.env.AWS_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${audioKey}`,
+                isRemake: req.body[`isRemake_${index}`] || 'no',
+                usesExternalBeat: req.body[`usesExternalBeat_${index}`] || 'no',
+                language: req.body[`language_${index}`] || 'japanese',
+                lyrics: req.body[`lyrics_${index}`] || '',
+                hasExplicitContent: req.body[`hasExplicitContent_${index}`] === 'true'
+            };
+        }));
 
-        // 새 앨범 생성
-        const newAlbum = new Album({
+        // 앨범 데이터 생성
+        const albumData = {
+            releaseDate: req.body.releaseDate,
             email: req.body.email,
-            password: req.body.password, // Note: 실제 구현시 비밀번호 해시 처리 필요
+            password: req.body.password,
             albumNameDomestic: req.body.albumNameDomestic,
             albumNameInternational: req.body.albumNameInternational,
             artistNameKana: req.body.artistNameKana,
             artistNameEnglish: req.body.artistNameEnglish,
             versionInfo: req.body.versionInfo,
-            songs,
-            albumCover: coverUrl,
-            platforms: Array.isArray(req.body.platforms) ? req.body.platforms : [req.body.platforms],
-            excludedCountries: Array.isArray(req.body.excludedCountries) ? req.body.excludedCountries : [],
+            songs: uploadedSongs,
+            albumCover: `https://${process.env.AWS_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${coverKey}`,
+            platforms: req.body.platforms ? JSON.parse(req.body.platforms) : [],
+            excludedCountries: req.body.excludedCountries ? JSON.parse(req.body.excludedCountries) : [],
             genre: req.body.genre,
-            youtubeMonetize: req.body.youtubeMonetize === 'yes',
+            youtubeMonetize: req.body.youtubeMonetize || 'no',
             youtubeAgree: req.body.youtubeAgree === 'true',
-            agreements: {
-                all: req.body.agreementAll === 'true',
-                rights: req.body.rightsAgreement === 'true',
-                reRelease: req.body.reReleaseAgreement === 'true',
-                platform: req.body.platformAgreement === 'true'
-            },
-            paymentStatus: 'pending'
-        });
+            rightsAgreement: req.body.rightsAgreement === 'true',
+            reReleaseAgreement: req.body.reReleaseAgreement === 'true',
+            platformAgreement: req.body.platformAgreement === 'true',
+            paymentStatus: 'completed'
+        };
 
-        await newAlbum.save();
-        console.log('✅ Album saved successfully:', newAlbum._id);
+        // MongoDB에 앨범 저장
+        const album = new Album(albumData);
+        await album.save();
 
+        // 성공 응답
         res.status(200).json({
-            message: 'アルバムの申請が完了しました',
-            albumId: newAlbum._id,
-            coverUrl,
-            songs: songs.map(song => ({
-                audioUrl: song.audioUrl
-            }))
+            success: true,
+            message: 'アルバムが正常に登録されました',
+            albumId: album._id
         });
 
     } catch (error) {
-        console.error('❌ Upload process error:', error);
+        console.error('Upload error:', error);
+        
+        // 구체적인 에러 메시지 반환
+        if (error.name === 'ValidationError') {
+            return res.status(400).json({
+                success: false,
+                message: '入力データが無効です',
+                error: error.message
+            });
+        }
+        
+        if (error.code === 11000) {
+            return res.status(400).json({
+                success: false,
+                message: '重複したデータが存在します',
+                error: error.message
+            });
+        }
+        
         res.status(500).json({
-            message: 'アルバムの申請に失敗しました',
-            error: error.message,
-            stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+            success: false,
+            message: 'アップロードに失敗しました',
+            error: error.message
         });
     }
 });

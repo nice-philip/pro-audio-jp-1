@@ -18,7 +18,7 @@ console.log('Environment:', {
 });
 
 // ✅ 라우트 및 모델 로드
-const uploadRoutes = require('./routes/upload');
+const uploadRoutes = require('./upload');
 const Album = require('./models/Album');
 
 const app = express();
@@ -115,6 +115,10 @@ console.log('CORS is enabled for allowed origins:', allowedOrigins);
 // ✅ Body parser
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// ✅ 파일 업로드 크기 제한 설정
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
 // ✅ 정적 파일 제공
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
