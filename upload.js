@@ -92,7 +92,7 @@ const sendErrorResponse = (res, status, message, error = null) => {
         }
     }
 
-    return res.status(status).json(response);
+    res.status(status).json(response);
 };
 
 // ✅ 앨범 업로드 처리 라우터
@@ -121,27 +121,25 @@ router.post('/', (req, res) => {
                 return sendErrorResponse(res, 500, `Unknown upload error: ${err.message}`, err);
             }
 
+            // 요청 검증
+            if (!req.body) {
+                return sendErrorResponse(res, 400, 'No form data received');
+            }
+
             console.log('📁 Files received:', {
                 fileCount: req.files ? Object.keys(req.files).length : 0,
                 fileFields: req.files ? Object.keys(req.files) : [],
                 imagePresent: req.files && req.files.image ? 'yes' : 'no',
                 audioFilesCount: req.files ? Object.keys(req.files).filter(key => key.startsWith('audio_')).length : 0
             });
-            console.log('📄 Body received:', {
-                bodyKeys: Object.keys(req.body || {}),
-                songsPresent: req.body.songs ? 'yes' : 'no',
-                songCount: req.body.songs ? req.body.songs.length : 0
-            });
 
             // 필수 필드 검증
             if (!req.files) {
-                console.error('❌ No files uploaded');
                 return sendErrorResponse(res, 400, 'No files were uploaded');
             }
 
             // 앨범 커버 검증
             if (!req.files.image || !req.files.image[0]) {
-                console.error('❌ Album cover missing');
                 return sendErrorResponse(res, 400, 'Album cover is required');
             }
 
@@ -155,11 +153,13 @@ router.post('/', (req, res) => {
             }
 
             if (audioFiles.length === 0) {
-                console.error('❌ No audio files uploaded');
                 return sendErrorResponse(res, 400, 'At least one audio file is required');
             }
 
-            console.log('🎵 Audio files found:', audioFiles.length);
+            // songs 배열 검증
+            if (!req.body.songs || !Array.isArray(req.body.songs)) {
+                return sendErrorResponse(res, 400, 'Songs data is required and must be an array');
+            }
 
             // songs 배열 파싱
             let songs;
@@ -172,19 +172,15 @@ router.post('/', (req, res) => {
                             songString: songStr,
                             error: parseError.message
                         });
-                        throw parseError;
+                        throw new Error(`Invalid song data format: ${parseError.message}`);
                     }
                 });
-                console.log('📝 Songs parsed successfully:', songs.length);
             } catch (error) {
-                console.error('❌ Songs parsing failed:', {
-                    error: error.message,
-                    songsData: req.body.songs
-                });
                 return sendErrorResponse(res, 400, 'Invalid songs data format', error);
             }
 
             // 앨범 커버 S3 업로드
+            let coverUrl;
             try {
                 const coverKey = `covers/${Date.now()}-${crypto.randomBytes(8).toString('hex')}${path.extname(req.files.image[0].originalname)}`;
                 await s3Client.send(new PutObjectCommand({
@@ -193,19 +189,17 @@ router.post('/', (req, res) => {
                     Body: req.files.image[0].buffer,
                     ContentType: req.files.image[0].mimetype
                 }));
+                coverUrl = `https://${process.env.AWS_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${coverKey}`;
                 console.log('✅ Album cover uploaded to S3:', coverKey);
             } catch (error) {
-                console.error('❌ Album cover S3 upload failed:', {
-                    error: error.message,
-                    stack: error.stack,
-                    details: error
-                });
-                throw error;
+                console.error('❌ Album cover S3 upload failed:', error);
+                return sendErrorResponse(res, 500, 'Failed to upload album cover', error);
             }
 
             // 오디오 파일 S3 업로드
+            let uploadedSongs;
             try {
-                const uploadedSongs = await Promise.all(songs.map(async (song, index) => {
+                uploadedSongs = await Promise.all(songs.map(async (song, index) => {
                     const audioFile = audioFiles[index];
                     if (!audioFile) {
                         throw new Error(`Missing audio file for song ${index + 1}`);
@@ -225,14 +219,9 @@ router.post('/', (req, res) => {
                         audioUrl: `https://${process.env.AWS_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${audioKey}`
                     };
                 }));
-                console.log('✅ All audio files uploaded successfully');
             } catch (error) {
-                console.error('❌ Audio files S3 upload failed:', {
-                    error: error.message,
-                    stack: error.stack,
-                    details: error
-                });
-                throw error;
+                console.error('❌ Audio files S3 upload failed:', error);
+                return sendErrorResponse(res, 500, 'Failed to upload audio files', error);
             }
 
             // 앨범 데이터 생성
@@ -246,7 +235,7 @@ router.post('/', (req, res) => {
                 artistNameEnglish: req.body.artistNameEnglish,
                 versionInfo: req.body.versionInfo,
                 songs: uploadedSongs,
-                albumCover: `https://${process.env.AWS_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${coverKey}`,
+                albumCover: coverUrl,
                 platforms: JSON.parse(req.body.platforms || '[]'),
                 excludedCountries: JSON.parse(req.body.excludedCountries || '[]'),
                 genre: req.body.genre,
@@ -258,20 +247,21 @@ router.post('/', (req, res) => {
                 paymentStatus: 'completed'
             };
 
-            console.log('Album data to save:', albumData);
-
             // MongoDB에 앨범 저장
-            const album = new Album(albumData);
-            await album.save();
+            try {
+                const album = new Album(albumData);
+                await album.save();
+                console.log('✅ Album saved successfully:', album._id);
 
-            console.log('Album saved successfully:', album._id);
-
-            // 성공 응답
-            res.status(200).json({
-                success: true,
-                message: 'アルバムが正常に登録されました',
-                albumId: album._id
-            });
+                res.status(200).json({
+                    success: true,
+                    message: 'アルバムが正常に登録されました',
+                    albumId: album._id
+                });
+            } catch (error) {
+                console.error('❌ Album save failed:', error);
+                return sendErrorResponse(res, 500, 'Failed to save album data', error);
+            }
 
         } catch (error) {
             console.error('❌ Upload process error:', {
@@ -282,25 +272,14 @@ router.post('/', (req, res) => {
             });
             
             if (error.name === 'ValidationError') {
-                console.error('❌ Validation error details:', {
-                    errors: Object.keys(error.errors).map(key => ({
-                        field: key,
-                        message: error.errors[key].message,
-                        value: error.errors[key].value
-                    }))
-                });
                 return sendErrorResponse(res, 400, 'Validation error', error);
             }
             
             if (error.code === 11000) {
-                console.error('❌ Duplicate key error:', {
-                    keyPattern: error.keyPattern,
-                    keyValue: error.keyValue
-                });
                 return sendErrorResponse(res, 400, 'Duplicate data error', error);
             }
             
-            sendErrorResponse(res, 500, 'Upload failed', error);
+            return sendErrorResponse(res, 500, 'Upload failed', error);
         }
     });
 });

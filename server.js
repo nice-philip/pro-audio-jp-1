@@ -274,6 +274,7 @@ app.use('/api/upload', uploadRoutes);
 // ✅ API 경로에 대한 404 핸들러
 app.use('/api/*', (req, res) => {
     res.status(404).json({
+        success: false,
         message: 'APIエンドポイントが見つかりません',
         code: 'NOT_FOUND'
     });
@@ -285,13 +286,14 @@ app.use((req, res) => {
         res.status(404).sendFile(path.join(__dirname, '404.html'));
     } else {
         res.status(404).json({
+            success: false,
             message: 'ページが見つかりません',
             code: 'NOT_FOUND'
         });
     }
 });
 
-// ✅ 에러 핸들러
+// ✅ API 에러 핸들러
 app.use((err, req, res, next) => {
     console.error('❌ Server error:', {
         message: err.message,
@@ -307,6 +309,12 @@ app.use((err, req, res, next) => {
 
     // API 경로에 대한 에러 처리
     if (req.path.startsWith('/api/')) {
+        const errorResponse = {
+            success: false,
+            message: 'サーバーエラーが発生しました',
+            code: 'SERVER_ERROR'
+        };
+
         if (err instanceof multer.MulterError) {
             console.error('❌ Multer error details:', {
                 code: err.code,
@@ -317,6 +325,7 @@ app.use((err, req, res, next) => {
 
             if (err.code === 'LIMIT_FILE_SIZE') {
                 return res.status(400).json({
+                    ...errorResponse,
                     message: 'ファイルサイズが大きすぎます (最大100MB)',
                     code: 'FILE_TOO_LARGE',
                     details: {
@@ -326,12 +335,13 @@ app.use((err, req, res, next) => {
                 });
             }
             return res.status(400).json({
+                ...errorResponse,
                 message: 'ファイルアップロードに失敗しました',
                 code: 'UPLOAD_ERROR',
-                error: err.message,
                 details: {
                     code: err.code,
-                    field: err.field
+                    field: err.field,
+                    message: err.message
                 }
             });
         }
@@ -344,6 +354,14 @@ app.use((err, req, res, next) => {
                 keyPattern: err.keyPattern,
                 keyValue: err.keyValue
             });
+            return res.status(500).json({
+                ...errorResponse,
+                code: 'MONGODB_ERROR',
+                details: process.env.NODE_ENV === 'development' ? {
+                    code: err.code,
+                    codeName: err.codeName
+                } : undefined
+            });
         }
 
         // Validation 에러 처리
@@ -355,12 +373,23 @@ app.use((err, req, res, next) => {
                     value: err.errors[key].value
                 }))
             });
+            return res.status(400).json({
+                ...errorResponse,
+                message: '入力データが無効です',
+                code: 'VALIDATION_ERROR',
+                details: process.env.NODE_ENV === 'development' ? {
+                    errors: Object.keys(err.errors).map(key => ({
+                        field: key,
+                        message: err.errors[key].message
+                    }))
+                } : undefined
+            });
         }
 
+        // 기본 에러 응답
         return res.status(500).json({
-            message: 'サーバーエラーが発生しました',
-            code: 'SERVER_ERROR',
-            error: process.env.NODE_ENV === 'development' ? {
+            ...errorResponse,
+            details: process.env.NODE_ENV === 'development' ? {
                 message: err.message,
                 type: err.name,
                 code: err.code
