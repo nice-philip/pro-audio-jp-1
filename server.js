@@ -37,13 +37,8 @@ mongoose.connect(process.env.MONGODB_URI, {
         const count = await Album.countDocuments();
         console.log(`現在のアルバム数: ${count}`);
         
-        const albums = await Album.find().limit(5);
-        console.log('最新のアルバム:', albums.map(a => ({
-            id: a._id,
-            title: a.albumTitle,
-            email: a.email,
-            createdAt: a.createdAt
-        })));
+        const albums = await Album.find().sort({ _id: -1 }).limit(5);
+        console.log('最新のアルバム:', albums);
     } catch (err) {
         console.error('❌ データベース確認エラー:', err);
     }
@@ -113,12 +108,8 @@ app.use(cors({
 console.log('CORS is enabled for allowed origins:', allowedOrigins);
 
 // ✅ Body parser
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-
-// ✅ 파일 업로드 크기 제한 설정
 app.use(express.json({ limit: '50mb' }));
-app.use(express.urlencoded({ limit: '50mb', extended: true }));
+app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
 // ✅ 정적 파일 제공
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
@@ -302,28 +293,78 @@ app.use((req, res) => {
 
 // ✅ 에러 핸들러
 app.use((err, req, res, next) => {
-    console.error('❌ Server error:', err);
+    console.error('❌ Server error:', {
+        message: err.message,
+        stack: err.stack,
+        type: err.constructor.name,
+        path: req.path,
+        method: req.method,
+        headers: req.headers,
+        query: req.query,
+        body: req.body,
+        files: req.files
+    });
 
     // API 경로에 대한 에러 처리
     if (req.path.startsWith('/api/')) {
         if (err instanceof multer.MulterError) {
+            console.error('❌ Multer error details:', {
+                code: err.code,
+                field: err.field,
+                message: err.message,
+                stack: err.stack
+            });
+
             if (err.code === 'LIMIT_FILE_SIZE') {
                 return res.status(400).json({
                     message: 'ファイルサイズが大きすぎます (最大100MB)',
-                    code: 'FILE_TOO_LARGE'
+                    code: 'FILE_TOO_LARGE',
+                    details: {
+                        field: err.field,
+                        size: err.size
+                    }
                 });
             }
             return res.status(400).json({
                 message: 'ファイルアップロードに失敗しました',
                 code: 'UPLOAD_ERROR',
-                error: err.message
+                error: err.message,
+                details: {
+                    code: err.code,
+                    field: err.field
+                }
+            });
+        }
+
+        // MongoDB 에러 처리
+        if (err.name === 'MongoError' || err.name === 'MongoServerError') {
+            console.error('❌ MongoDB error:', {
+                code: err.code,
+                codeName: err.codeName,
+                keyPattern: err.keyPattern,
+                keyValue: err.keyValue
+            });
+        }
+
+        // Validation 에러 처리
+        if (err.name === 'ValidationError') {
+            console.error('❌ Validation error:', {
+                errors: Object.keys(err.errors).map(key => ({
+                    field: key,
+                    message: err.errors[key].message,
+                    value: err.errors[key].value
+                }))
             });
         }
 
         return res.status(500).json({
             message: 'サーバーエラーが発生しました',
             code: 'SERVER_ERROR',
-            error: process.env.NODE_ENV === 'development' ? err.message : undefined
+            error: process.env.NODE_ENV === 'development' ? {
+                message: err.message,
+                type: err.name,
+                code: err.code
+            } : undefined
         });
     }
 
