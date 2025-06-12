@@ -5,6 +5,7 @@ const { v4: uuidv4 } = require('uuid');
 const Album = require('./models/Album');
 const path = require('path');
 const fs = require('fs');
+const sharp = require('sharp');
 
 const router = express.Router();
 
@@ -24,11 +25,11 @@ const upload = multer({
     storage,
     fileFilter: function (req, file, cb) {
         console.log('✅ File upload attempt:', file.fieldname, file.originalname);
-        if (file.fieldname === 'image') {
-            if (!file.originalname.match(/\.(jpg|jpeg)$/)) {
-                return cb(new Error('JPG 形式の画像のみアップロード可能です。'), false);
+        if (file.fieldname === 'albumCover') {
+            if (!file.originalname.match(/\.(jpg|jpeg|png)$/)) {
+                return cb(new Error('JPG/PNG 形式の画像のみアップロード可能です。'), false);
             }
-        } else if (file.fieldname === 'audio') {
+        } else if (file.fieldname.startsWith('audio_')) {
             if (!file.originalname.match(/\.(wav)$/)) {
                 return cb(new Error('WAV 形式の音声ファイルのみアップロード可能です。'), false);
             }
@@ -36,218 +37,193 @@ const upload = multer({
         cb(null, true);
     },
     limits: {
-        fileSize: 100 * 1024 * 1024 // 100MB 제한으로 수정
+        fileSize: 2 * 1024 * 1024 * 1024 // 2GB limit for audio files
     }
 });
 
-// ✅ 중국어 날짜 형식 처리 함수
-function parseChineseDate(dateStr) {
-    const match = dateStr.match(/(\d{4})年(\d{1,2})月(\d{1,2})日/);
-    if (!match) {
-        throw new Error('日付フォーマットが正しくありません (例: 2024年3月15日)');
+// ✅ 이미지 검증 함수
+async function validateImage(buffer) {
+    try {
+        const metadata = await sharp(buffer).metadata();
+        if (metadata.width !== 3000 || metadata.height !== 3000) {
+            throw new Error('アルバムカバーは3000x3000ピクセルである必要があります。');
+        }
+        if (buffer.length > 10 * 1024 * 1024) {
+            throw new Error('アルバムカバーは10MB以下である必要があります。');
+        }
+        return true;
+    } catch (error) {
+        throw error;
     }
-    const [_, year, month, day] = match;
-    return new Date(year, month - 1, day);
 }
 
-// ✅ 오디오와 이미지 업로드 처리 라우터
+// ✅ S3 업로드 함수
+async function uploadToS3(file, folder) {
+    const filename = `${uuidv4()}_${file.originalname}`;
+    const uploadParams = {
+        Bucket: process.env.AWS_BUCKET_NAME,
+        Key: `${folder}/${filename}`,
+        Body: file.buffer,
+        ContentType: file.mimetype
+    };
+
+    try {
+        await s3Client.send(new PutObjectCommand(uploadParams));
+        return `https://${process.env.AWS_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${folder}/${filename}`;
+    } catch (error) {
+        console.error(`❌ S3 upload failed for ${filename}:`, error);
+        throw error;
+    }
+}
+
+// ✅ 앨범 업로드 처리 라우터
 router.post('/', upload.fields([
-    { name: 'audio', maxCount: 1 },
-    { name: 'image', maxCount: 1 }
-]), async(req, res) => {
+    { name: 'albumCover', maxCount: 1 },
+    { name: 'audio_*', maxCount: 1 }
+]), async (req, res) => {
     console.log('Upload route accessed');
     console.log('Request headers:', req.headers);
     console.log('Request body:', req.body);
     console.log('Request files:', req.files);
 
     try {
-        if (!req.files || !req.files.audio || !req.files.image) {
-            console.log('❌ Required files missing');
-            return res.status(400).json({ 
-                message: '音声ファイルとジャケット画像が必要です',
-                code: 'FILE_REQUIRED' 
-            });
-        }
-
-        // 필수 필드 검증
-        const requiredFields = [
-            'albumTitle', 'nameEn', 'nameKana', 'artistInfo',
-            'songTitle', 'songTitleEn', 'date', 'time', 'genre'
-        ];
-
-        const missingFields = requiredFields.filter(field => !req.body[field]);
-        if (missingFields.length > 0) {
-            console.log('❌ Missing required fields:', missingFields);
+        // 앨범 커버 검증
+        if (!req.files.albumCover) {
             return res.status(400).json({
-                message: '必須項目が不足しています: ' + missingFields.join(', '),
-                fields: missingFields,
-                code: 'MISSING_FIELDS'
+                message: 'アルバムカバーは必須です',
+                code: 'MISSING_COVER'
             });
         }
 
-        // 날짜 파싱
-        let parsedDate;
+        // 이미지 검증
+        const coverImage = req.files.albumCover[0];
         try {
-            parsedDate = parseChineseDate(req.body.date);
-            console.log('✅ Date parsed successfully:', parsedDate.toISOString());
-        } catch (e) {
-            console.error('❌ Date parsing failed:', e.message);
-            return res.status(400).json({
-                message: e.message,
-                code: 'DATE_PARSE_ERROR'
-            });
-        }
-
-        // S3 업로드 - 오디오 파일
-        const audioFile = req.files.audio[0];
-        const audioFilename = `${uuidv4()}_${audioFile.originalname}`;
-        const audioUploadParams = {
-            Bucket: process.env.AWS_BUCKET_NAME,
-            Key: `audio/${audioFilename}`,
-            Body: audioFile.buffer,
-            ContentType: audioFile.mimetype,
-        };
-
-        console.log('Attempting S3 upload for audio:', audioFilename);
-        let audioUrl;
-        try {
-            await s3Client.send(new PutObjectCommand(audioUploadParams));
-            console.log('✅ S3 audio upload success');
-            audioUrl = `https://${process.env.AWS_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/audio/${audioFilename}`;
+            await validateImage(coverImage.buffer);
         } catch (error) {
-            console.error('❌ S3 audio upload failed:', error);
-            throw error;
+            return res.status(400).json({
+                message: error.message,
+                code: 'INVALID_IMAGE'
+            });
         }
 
-        // S3 업로드 - 이미지 파일
-        let imageUrl;
-        if (req.files.image) {
-            const imageFile = req.files.image[0];
-            const imageFilename = `${uuidv4()}_${imageFile.originalname}`;
-            const imageUploadParams = {
-                Bucket: process.env.AWS_BUCKET_NAME,
-                Key: `images/${imageFilename}`,
-                Body: imageFile.buffer,
-                ContentType: imageFile.mimetype,
-            };
+        // 앨범 커버 S3 업로드
+        const coverUrl = await uploadToS3(coverImage, 'covers');
 
-            try {
-                await s3Client.send(new PutObjectCommand(imageUploadParams));
-                console.log('✅ S3 image upload success');
-                imageUrl = `https://${process.env.AWS_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/images/${imageFilename}`;
-            } catch (error) {
-                console.error('❌ S3 image upload failed:', error);
-                throw error;
-            }
+        // 곡 정보 처리
+        const songs = [];
+        const audioFiles = Object.keys(req.files).filter(key => key.startsWith('audio_'));
+        
+        for (let i = 0; i < audioFiles.length; i++) {
+            const audioKey = audioFiles[i];
+            const audioFile = req.files[audioKey][0];
+            const songIndex = audioKey.split('_')[1];
+
+            // 오디오 파일 S3 업로드
+            const audioUrl = await uploadToS3(audioFile, 'audio');
+            
+            // 곡 정보 구성
+            songs.push({
+                mainArtists: req.body[`mainArtist_${songIndex}`].split(',').map(item => item.trim()).filter(Boolean),
+                participatingArtists: req.body[`participatingArtist_${songIndex}`].split(',').map(item => item.trim()).filter(Boolean),
+                featuringArtists: req.body[`featuring_${songIndex}`] ? 
+                    req.body[`featuring_${songIndex}`].split(',').map(item => item.trim()).filter(Boolean) : [],
+                mixingEngineers: req.body[`mixingEngineer_${songIndex}`].split(',').map(item => item.trim()).filter(Boolean),
+                recordingEngineers: req.body[`recordingEngineer_${songIndex}`].split(',').map(item => item.trim()).filter(Boolean),
+                producers: req.body[`producer_${songIndex}`].split(',').map(item => item.trim()).filter(Boolean),
+                lyricists: req.body[`lyricist_${songIndex}`].split(',').map(item => item.trim()).filter(Boolean),
+                composers: req.body[`composer_${songIndex}`].split(',').map(item => item.trim()).filter(Boolean),
+                arrangers: req.body[`arranger_${songIndex}`].split(',').map(item => item.trim()).filter(Boolean),
+                isRemake: req.body[`isRemake_${songIndex}`] === 'yes',
+                usesExternalBeat: req.body[`usesExternalBeat_${songIndex}`] === 'yes',
+                language: req.body[`language_${songIndex}`],
+                lyrics: req.body[`lyrics_${songIndex}`],
+                audioUrl
+            });
         }
 
-        // MongoDB 저장
+        // 새 앨범 생성
         const newAlbum = new Album({
-            albumTitle: req.body.albumTitle,
-            nameEn: req.body.nameEn,
-            nameKana: req.body.nameKana,
-            artistInfo: req.body.artistInfo,
-            isReleased: req.body.isReleased === 'true',
-            imageUrl,
+            email: req.body.email,
+            password: req.body.password, // Note: 실제 구현시 비밀번호 해시 처리 필요
+            albumNameDomestic: req.body.albumNameDomestic,
+            albumNameInternational: req.body.albumNameInternational,
+            artistNameKana: req.body.artistNameKana,
+            artistNameEnglish: req.body.artistNameEnglish,
+            versionInfo: req.body.versionInfo,
+            songs,
+            albumCover: coverUrl,
+            platforms: Array.isArray(req.body.platforms) ? req.body.platforms : [req.body.platforms],
+            excludedCountries: Array.isArray(req.body.excludedCountries) ? req.body.excludedCountries : [],
             genre: req.body.genre,
-            youtubeMonetize: req.body.youtubeMonetize,
+            youtubeMonetize: req.body.youtubeMonetize === 'yes',
             youtubeAgree: req.body.youtubeAgree === 'true',
-            songs: [{
-                title: req.body.songTitle,
-                titleEn: req.body.songTitleEn,
-                date: parsedDate,
-                duration: req.body.time,
-                audioUrl,
-                isClassical: req.body.isClassical === 'true',
-                classicalInfo: {
-                    composer: req.body.composer || '',
-                    opusNumber: req.body.opusNumber || '',
-                    movement: req.body.movement || '',
-                    tempo: req.body.tempo || ''
-                }
-            }],
-            status: '処理中'
+            agreements: {
+                all: req.body.agreementAll === 'true',
+                rights: req.body.rightsAgreement === 'true',
+                reRelease: req.body.reReleaseAgreement === 'true',
+                platform: req.body.platformAgreement === 'true'
+            },
+            paymentStatus: 'pending'
         });
 
-        console.log('Attempting to save to MongoDB:', newAlbum);
         await newAlbum.save();
-        console.log('✅ MongoDB save success:', newAlbum._id);
+        console.log('✅ Album saved successfully:', newAlbum._id);
 
-        res.status(200).json({ 
-            message: '保存完了',
+        res.status(200).json({
+            message: 'アルバムの申請が完了しました',
             albumId: newAlbum._id,
-            audioUrl,
-            imageUrl 
+            coverUrl,
+            songs: songs.map(song => ({
+                audioUrl: song.audioUrl
+            }))
         });
 
-    } catch (err) {
-        console.error('❌ Upload process error:', err);
-        res.status(500).json({ 
-            message: '予約作成に失敗しました', 
-            error: err.message,
-            stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
+    } catch (error) {
+        console.error('❌ Upload process error:', error);
+        res.status(500).json({
+            message: 'アルバムの申請に失敗しました',
+            error: error.message,
+            stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
         });
     }
 });
 
-// ✅ 예약 삭제 라우터 (S3 파일도 함께 삭제)
-router.delete('/:id', async(req, res) => {
+// ✅ 앨범 삭제 라우터
+router.delete('/:id', async (req, res) => {
     try {
         const album = await Album.findById(req.params.id);
         if (!album) {
-            return res.status(404).json({ message: '予約が見つかりません' });
+            return res.status(404).json({ message: 'アルバムが見つかりません' });
         }
 
-        // S3 오디오 파일 삭제
-        if (album.audioUrl) {
-            const key = album.audioUrl.split('/').pop();
-            const deleteParams = {
+        // S3에서 앨범 커버 삭제
+        if (album.albumCover) {
+            const coverKey = album.albumCover.split('/').pop();
+            await s3Client.send(new DeleteObjectCommand({
                 Bucket: process.env.AWS_BUCKET_NAME,
-                Key: `audio/${key}`
-            };
-            await s3Client.send(new DeleteObjectCommand(deleteParams));
-            console.log('✅ S3ファイルを削除しました:', key);
+                Key: `covers/${coverKey}`
+            }));
+        }
+
+        // S3에서 모든 곡 파일 삭제
+        for (const song of album.songs) {
+            if (song.audioUrl) {
+                const audioKey = song.audioUrl.split('/').pop();
+                await s3Client.send(new DeleteObjectCommand({
+                    Bucket: process.env.AWS_BUCKET_NAME,
+                    Key: `audio/${audioKey}`
+                }));
+            }
         }
 
         await Album.findByIdAndDelete(req.params.id);
-        res.status(200).json({ message: '予約を削除しました' });
-    } catch (err) {
-        console.error('❌ 削除に失敗:', err);
-        res.status(500).json({ message: '削除に失敗しました', error: err.message });
-    }
-});
-
-// ✅ 다운로드 라우터
-router.get('/download/:id', async(req, res) => {
-    try {
-        const album = await Album.findById(req.params.id);
-        if (!album || !album.audioUrl) {
-            return res.status(404).json({ message: 'ファイルが存在しません' });
-        }
-
-        const key = decodeURIComponent(album.audioUrl.split('/').slice(-1)[0]);
-        const filename = key.split('_').slice(1).join('_');
-
-        const getObjectParams = {
-            Bucket: process.env.AWS_BUCKET_NAME,
-            Key: `audio/${key}`,
-        };
-
-        const { Body } = await s3Client.send(new GetObjectCommand(getObjectParams));
-
-        res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
-        res.setHeader('Content-Type', 'audio/mpeg');
-        Body.pipe(res);
-
-        Body.on('error', (err) => {
-            console.error('❌ S3ストリーミングに失敗:', err);
-            if (!res.headersSent) {
-                res.status(500).json({ message: 'ダウンロードに失敗しました', error: err.message });
-            }
+        res.status(200).json({ message: 'アルバムを削除しました' });
+    } catch (error) {
+        console.error('❌ Delete process error:', error);
+        res.status(500).json({
+            message: 'アルバムの削除に失敗しました',
+            error: error.message
         });
-    } catch (err) {
-        console.error('❌ ダウンロードに失敗:', err);
-        res.status(500).json({ message: 'ダウンロードに失敗しました', error: err.message });
     }
 });
 

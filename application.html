@@ -153,12 +153,19 @@
                 <h3 class="mb-4">基本情報</h3>
                 <div class="row">
                     <div class="col-md-6 mb-3">
+                        <label for="releaseDate" class="form-label required-label">配信開始希望日</label>
+                        <input type="date" class="form-control" id="releaseDate" name="releaseDate" required>
+                        <small class="text-muted">配信開始は本日から3週間以降の日付を選択してください</small>
+                    </div>
+                    <div class="col-md-6 mb-3">
                         <label for="email" class="form-label required-label">メールアドレス</label>
                         <input type="email" class="form-control" id="email" name="email" required>
                         <div class="invalid-feedback">
                             有効なメールアドレスを入力してください（@を含む必要があります）
                         </div>
                     </div>
+                </div>
+                <div class="row">
                     <div class="col-md-6 mb-3">
                         <label for="password" class="form-label required-label">パスワード</label>
                         <input type="password" class="form-control" id="password" name="password" required>
@@ -339,7 +346,7 @@
                             </div>
 
                             <div class="mb-3">
-                                <label class="form-label">リメイク曲ですか？</label>
+                                <label class="form-label required-label">リメイク曲ですか？</label>
                                 <div class="form-check">
                                     <input type="radio" class="form-check-input" name="isRemake_0" value="yes" required>
                                     <label class="form-check-label">はい</label>
@@ -364,37 +371,54 @@
 
                             <div class="mb-3">
                                 <label class="form-label required-label">言語</label>
-                                <select class="form-select" name="language_0" required>
-                                    <option value="instrumental">演奏（言語なし）</option>
-                                    <option value="japanese">日本語</option>
-                                    <option value="english">英語</option>
-                                    <option value="korean">韓国語</option>
-                                    <option value="chinese">中国語</option>
-                                    <option value="spanish">スペイン語</option>
-                                    <option value="french">フランス語</option>
-                                    <option value="german">ドイツ語</option>
-                                    <option value="italian">イタリア語</option>
-                                    <option value="portuguese">ポルトガル語</option>
-                                    <option value="russian">ロシア語</option>
-                                    <option value="arabic">アラビア語</option>
-                                    <option value="hindi">ヒンディー語</option>
-                                    <option value="bengali">ベンガル語</option>
-                                    <option value="punjabi">パンジャブ語</option>
-                                    <option value="javanese">ジャワ語</option>
-                                    <option value="vietnamese">ベトナム語</option>
-                                    <option value="thai">タイ語</option>
-                                    <option value="turkish">トルコ語</option>
-                                    <option value="persian">ペルシャ語</option>
-                                </select>
+                                <div class="accordion" id="languageAccordion_0">
+                                    <div class="accordion-item">
+                                        <h2 class="accordion-header" id="languageHeading_0">
+                                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#languageCollapse_0" aria-expanded="false" aria-controls="languageCollapse_0">
+                                                言語を選択
+                                            </button>
+                                        </h2>
+                                        <div id="languageCollapse_0" class="accordion-collapse collapse" aria-labelledby="languageHeading_0" data-bs-parent="#languageAccordion_0">
+                                            <div class="accordion-body">
+                                                <select class="form-select" name="language_0" required>
+                                                    <option value="instrumental">演奏（言語なし）</option>
+                                                    <option value="japanese">日本語</option>
+                                                    <option value="english">英語</option>
+                                                    <option value="korean">韓国語</option>
+                                                    <option value="chinese">中国語</option>
+                                                    <option value="spanish">スペイン語</option>
+                                                    <option value="french">フランス語</option>
+                                                    <option value="german">ドイツ語</option>
+                                                    <option value="italian">イタリア語</option>
+                                                    <option value="portuguese">ポルトガル語</option>
+                                                    <option value="russian">ロシア語</option>
+                                                    <option value="arabic">アラビア語</option>
+                                                    <option value="hindi">ヒンディー語</option>
+                                                    <option value="bengali">ベンガル語</option>
+                                                    <option value="punjabi">パンジャブ語</option>
+                                                    <option value="javanese">ジャワ語</option>
+                                                    <option value="vietnamese">ベトナム語</option>
+                                                    <option value="thai">タイ語</option>
+                                                    <option value="turkish">トルコ語</option>
+                                                    <option value="persian">ペルシャ語</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
 
                             <div class="mb-3">
                                 <label class="form-label">歌詞</label>
-                                <textarea class="form-control" name="lyrics_0" rows="5"></textarea>
+                                <textarea class="form-control" name="lyrics_0" rows="5" placeholder="歌詞を入力してください"></textarea>
                                 <div class="alert alert-warning mt-2">
                                     <p>- 歌詞に性的な内容や暴言が含まれている場合、禁止事項をチェックしてください。</p>
                                     <p>- 歌詞に性的な内容や暴言が含まれているにもかかわらず禁止事項のチェックがない場合、当社の方針により歌詞サービスが制限される可能性があります。</p>
                                     <p>- 商標が歌詞に含まれる場合、各プラットフォームの方針により歌詞サービスが制限される可能性があります。</p>
+                                </div>
+                                <div class="form-check mt-2">
+                                    <input type="checkbox" class="form-check-input" name="hasExplicitContent_0">
+                                    <label class="form-check-label">歌詞に性的な内容や暴言が含まれています</label>
                                 </div>
                             </div>
                         </div>
@@ -411,7 +435,41 @@
                     <div class="alert alert-warning mt-2">
                         <p class="text-danger">※ 商標や商用イメージは使用できません</p>
                         <p><strong>アルバムカバーは以下の規格を必ず守ってください：</strong></p>
-                        <p>3,000x3,000px、10MB以下の正方形JPG、PNGイメージ</p>
+                        <ul>
+                            <li>サイズ: 3,000 x 3,000 ピクセル（正方形）</li>
+                            <li>ファイル形式: JPG または PNG</li>
+                            <li>ファイルサイズ: 10MB以下</li>
+                        </ul>
+                        <p>※ 規格外の画像は自動的にリサイズされ、画質が低下する可能性があります。</p>
+                    </div>
+                </div>
+
+                <!-- 同意事項 -->
+                <div class="terms-section">
+                    <h4>同意事項</h4>
+                    <div class="form-check mb-3">
+                        <input type="checkbox" class="form-check-input" name="rightsAgreement" required>
+                        <label class="form-check-label">所有権等権利紛争に関する全ての情報に同意します。</label>
+                        <div class="terms-content">
+                            <p>本有料サービスは、有料利用会員の発売履歴が存在しない、新規の純粋な創作物を対象としています。</p>
+                            <p>会員は、流通対象コンテンツに関して、当社に独占的な流通事業権を付与するために必要な適法な著作権、著作隣接権、商標権、意匠権、パブリシティ権等の権利および／または本有料サービスの契約期間中有効な関連使用権限を有していることを保証します。</p>
+                        </div>
+                    </div>
+
+                    <div class="form-check mb-3">
+                        <input type="checkbox" class="form-check-input" name="reReleaseAgreement" required>
+                        <label class="form-check-label">他社発売音源の再発売に関する情報に同意します。</label>
+                        <div class="terms-content">
+                            <p>本有料サービスでは、過去に他社にて発売または流通された経歴があるコンテンツの重複発売を許可いたしません。</p>
+                        </div>
+                    </div>
+
+                    <div class="form-check mb-3">
+                        <input type="checkbox" class="form-check-input" name="platformAgreement" required>
+                        <label class="form-check-label">発売国及びプラットフォームに関する情報に同意します。</label>
+                        <div class="terms-content">
+                            <p>本有料サービスは、有料利用会員が登録・発売したコンテンツを、当社とコンテンツ流通契約関係にあるすべてのDSPおよび各DSPがサービスを提供する全地域に対して流通・供給することを原則とします。</p>
+                        </div>
                     </div>
                 </div>
 
@@ -490,315 +548,298 @@
 
                 <!-- 除外国選択 -->
                 <div class="mb-3">
-                    <label class="form-label">発売を希望しない国</label>
-                    <button class="btn btn-link" type="button" data-bs-toggle="collapse" data-bs-target="#excludedCountriesCollapse" aria-expanded="false" aria-controls="excludedCountriesCollapse">
-                        国を選択 (クリックして展開)
-                    </button>
-                    <div class="collapse" id="excludedCountriesCollapse">
-                        <div class="card card-body">
-                            <div class="row">
-                                <div class="col-md-3">
-                                    <h6>アジア</h6>
-                                    <div class="form-check">
-                                        <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="JP">
-                                        <label class="form-check-label">日本</label>
-                                    </div>
-                                    <div class="form-check">
-                                        <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="CN">
-                                        <label class="form-check-label">中国</label>
-                                    </div>
-                                    <div class="form-check">
-                                        <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="KR">
-                                        <label class="form-check-label">韓国</label>
-                                    </div>
-                                    <div class="form-check">
-                                        <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="TW">
-                                        <label class="form-check-label">台湾</label>
-                                    </div>
-                                    <div class="form-check">
-                                        <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="HK">
-                                        <label class="form-check-label">香港</label>
-                                    </div>
-                                    <div class="form-check">
-                                        <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="SG">
-                                        <label class="form-check-label">シンガポール</label>
-                                    </div>
-                                    <div class="form-check">
-                                        <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="MY">
-                                        <label class="form-check-label">マレーシア</label>
-                                    </div>
-                                    <div class="form-check">
-                                        <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="ID">
-                                        <label class="form-check-label">インドネシア</label>
-                                    </div>
-                                    <div class="form-check">
-                                        <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="TH">
-                                        <label class="form-check-label">タイ</label>
-                                    </div>
-                                    <div class="form-check">
-                                        <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="VN">
-                                        <label class="form-check-label">ベトナム</label>
-                                    </div>
-                                    <div class="form-check">
-                                        <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="PH">
-                                        <label class="form-check-label">フィリピン</label>
-                                    </div>
-                                    <div class="form-check">
-                                        <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="IN">
-                                        <label class="form-check-label">インド</label>
-                                    </div>
-                                    <div class="form-check">
-                                        <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="PK">
-                                        <label class="form-check-label">パキスタン</label>
-                                    </div>
-                                    <div class="form-check">
-                                        <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="BD">
-                                        <label class="form-check-label">バングラデシュ</label>
-                                    </div>
-                                    <div class="form-check">
-                                        <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="LK">
-                                        <label class="form-check-label">スリランカ</label>
-                                    </div>
-                                </div>
-                                <div class="col-md-3">
-                                    <h6>ヨーロッパ</h6>
-                                    <div class="form-check">
-                                        <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="GB">
-                                        <label class="form-check-label">イギリス</label>
-                                    </div>
-                                    <div class="form-check">
-                                        <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="FR">
-                                        <label class="form-check-label">フランス</label>
-                                    </div>
-                                    <div class="form-check">
-                                        <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="DE">
-                                        <label class="form-check-label">ドイツ</label>
-                                    </div>
-                                    <div class="form-check">
-                                        <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="IT">
-                                        <label class="form-check-label">イタリア</label>
-                                    </div>
-                                    <div class="form-check">
-                                        <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="ES">
-                                        <label class="form-check-label">スペイン</label>
-                                    </div>
-                                    <div class="form-check">
-                                        <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="PT">
-                                        <label class="form-check-label">ポルトガル</label>
-                                    </div>
-                                    <div class="form-check">
-                                        <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="NL">
-                                        <label class="form-check-label">オランダ</label>
-                                    </div>
-                                    <div class="form-check">
-                                        <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="BE">
-                                        <label class="form-check-label">ベルギー</label>
-                                    </div>
-                                    <div class="form-check">
-                                        <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="CH">
-                                        <label class="form-check-label">スイス</label>
-                                    </div>
-                                    <div class="form-check">
-                                        <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="AT">
-                                        <label class="form-check-label">オーストリア</label>
-                                    </div>
-                                    <div class="form-check">
-                                        <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="SE">
-                                        <label class="form-check-label">スウェーデン</label>
-                                    </div>
-                                    <div class="form-check">
-                                        <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="NO">
-                                        <label class="form-check-label">ノルウェー</label>
-                                    </div>
-                                    <div class="form-check">
-                                        <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="DK">
-                                        <label class="form-check-label">デンマーク</label>
-                                    </div>
-                                    <div class="form-check">
-                                        <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="FI">
-                                        <label class="form-check-label">フィンランド</label>
-                                    </div>
-                                    <div class="form-check">
-                                        <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="IE">
-                                        <label class="form-check-label">アイルランド</label>
-                                    </div>
-                                    <div class="form-check">
-                                        <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="PL">
-                                        <label class="form-check-label">ポーランド</label>
-                                    </div>
-                                    <div class="form-check">
-                                        <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="CZ">
-                                        <label class="form-check-label">チェコ</label>
-                                    </div>
-                                    <div class="form-check">
-                                        <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="HU">
-                                        <label class="form-check-label">ハンガリー</label>
-                                    </div>
-                                    <div class="form-check">
-                                        <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="GR">
-                                        <label class="form-check-label">ギリシャ</label>
-                                    </div>
-                                    <div class="form-check">
-                                        <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="RO">
-                                        <label class="form-check-label">ルーマニア</label>
-                                    </div>
-                                </div>
-                                <div class="col-md-3">
-                                    <h6>北米・南米</h6>
-                                    <div class="form-check">
-                                        <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="US">
-                                        <label class="form-check-label">アメリカ</label>
-                                    </div>
-                                    <div class="form-check">
-                                        <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="CA">
-                                        <label class="form-check-label">カナダ</label>
-                                    </div>
-                                    <div class="form-check">
-                                        <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="MX">
-                                        <label class="form-check-label">メキシコ</label>
-                                    </div>
-                                    <div class="form-check">
-                                        <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="BR">
-                                        <label class="form-check-label">ブラジル</label>
-                                    </div>
-                                    <div class="form-check">
-                                        <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="AR">
-                                        <label class="form-check-label">アルゼンチン</label>
-                                    </div>
-                                    <div class="form-check">
-                                        <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="CL">
-                                        <label class="form-check-label">チリ</label>
-                                    </div>
-                                    <div class="form-check">
-                                        <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="CO">
-                                        <label class="form-check-label">コロンビア</label>
-                                    </div>
-                                    <div class="form-check">
-                                        <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="PE">
-                                        <label class="form-check-label">ペルー</label>
-                                    </div>
-                                    <div class="form-check">
-                                        <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="VE">
-                                        <label class="form-check-label">ベネズエラ</label>
-                                    </div>
-                                    <div class="form-check">
-                                        <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="EC">
-                                        <label class="form-check-label">エクアドル</label>
-                                    </div>
-                                    <div class="form-check">
-                                        <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="BO">
-                                        <label class="form-check-label">ボリビア</label>
-                                    </div>
-                                    <div class="form-check">
-                                        <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="PY">
-                                        <label class="form-check-label">パラグアイ</label>
-                                    </div>
-                                    <div class="form-check">
-                                        <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="UY">
-                                        <label class="form-check-label">ウルグアイ</label>
-                                    </div>
-                                </div>
-                                <div class="col-md-3">
-                                    <h6>その他の地域</h6>
-                                    <div class="form-check">
-                                        <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="AU">
-                                        <label class="form-check-label">オーストラリア</label>
-                                    </div>
-                                    <div class="form-check">
-                                        <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="NZ">
-                                        <label class="form-check-label">ニュージーランド</label>
-                                    </div>
-                                    <div class="form-check">
-                                        <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="RU">
-                                        <label class="form-check-label">ロシア</label>
-                                    </div>
-                                    <div class="form-check">
-                                        <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="TR">
-                                        <label class="form-check-label">トルコ</label>
-                                    </div>
-                                    <div class="form-check">
-                                        <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="ZA">
-                                        <label class="form-check-label">南アフリカ</label>
-                                    </div>
-                                    <div class="form-check">
-                                        <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="EG">
-                                        <label class="form-check-label">エジプト</label>
-                                    </div>
-                                    <div class="form-check">
-                                        <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="SA">
-                                        <label class="form-check-label">サウジアラビア</label>
-                                    </div>
-                                    <div class="form-check">
-                                        <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="AE">
-                                        <label class="form-check-label">アラブ首長国連邦</label>
-                                    </div>
-                                    <div class="form-check">
-                                        <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="IL">
-                                        <label class="form-check-label">イスラエル</label>
-                                    </div>
-                                    <div class="form-check">
-                                        <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="IR">
-                                        <label class="form-check-label">イラン</label>
+                    <h4>発売を希望しない国</h4>
+                    <div class="accordion" id="excludedCountriesAccordion">
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="asiaHeading">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#asiaCollapse" aria-expanded="false" aria-controls="asiaCollapse">
+                                    アジア
+                                </button>
+                            </h2>
+                            <div id="asiaCollapse" class="accordion-collapse collapse" aria-labelledby="asiaHeading" data-bs-parent="#excludedCountriesAccordion">
+                                <div class="accordion-body">
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <div class="form-check">
+                                                <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="JP">
+                                                <label class="form-check-label">日本</label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="CN">
+                                                <label class="form-check-label">中国</label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="KR">
+                                                <label class="form-check-label">韓国</label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="TW">
+                                                <label class="form-check-label">台湾</label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="HK">
+                                                <label class="form-check-label">香港</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="form-check">
+                                                <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="SG">
+                                                <label class="form-check-label">シンガポール</label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="MY">
+                                                <label class="form-check-label">マレーシア</label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="ID">
+                                                <label class="form-check-label">インドネシア</label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="TH">
+                                                <label class="form-check-label">タイ</label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="VN">
+                                                <label class="form-check-label">ベトナム</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="form-check">
+                                                <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="PH">
+                                                <label class="form-check-label">フィリピン</label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="IN">
+                                                <label class="form-check-label">インド</label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="PK">
+                                                <label class="form-check-label">パキスタン</label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="BD">
+                                                <label class="form-check-label">バングラデシュ</label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="LK">
+                                                <label class="form-check-label">スリランカ</label>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                            <div class="row mt-3">
-                                <div class="col-12">
-                                    <button type="button" class="btn btn-secondary" id="showMoreCountries">
-                                        その他の国を表示 (50カ国以上)
-                                    </button>
+                        </div>
+
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="europeHeading">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#europeCollapse" aria-expanded="false" aria-controls="europeCollapse">
+                                    ヨーロッパ
+                                </button>
+                            </h2>
+                            <div id="europeCollapse" class="accordion-collapse collapse" aria-labelledby="europeHeading" data-bs-parent="#excludedCountriesAccordion">
+                                <div class="accordion-body">
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <div class="form-check">
+                                                <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="GB">
+                                                <label class="form-check-label">イギリス</label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="FR">
+                                                <label class="form-check-label">フランス</label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="DE">
+                                                <label class="form-check-label">ドイツ</label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="IT">
+                                                <label class="form-check-label">イタリア</label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="ES">
+                                                <label class="form-check-label">スペイン</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="form-check">
+                                                <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="PT">
+                                                <label class="form-check-label">ポルトガル</label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="NL">
+                                                <label class="form-check-label">オランダ</label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="BE">
+                                                <label class="form-check-label">ベルギー</label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="CH">
+                                                <label class="form-check-label">スイス</label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="AT">
+                                                <label class="form-check-label">オーストリア</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="form-check">
+                                                <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="SE">
+                                                <label class="form-check-label">スウェーデン</label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="NO">
+                                                <label class="form-check-label">ノルウェー</label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="DK">
+                                                <label class="form-check-label">デンマーク</label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="FI">
+                                                <label class="form-check-label">フィンランド</label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="IE">
+                                                <label class="form-check-label">アイルランド</label>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                </div>
 
-                <!-- 同意事項 -->
-                <div class="terms-section">
-                    <div class="form-check mb-3">
-                        <input type="checkbox" class="form-check-input" name="agreementAll" required>
-                        <label class="form-check-label">所有権等権利紛争に関する全ての情報、他社発売音源の再発売に関する情報、発売国及びプラットフォームに関する情報に同意します。</label>
-                    </div>
-
-                    <div class="form-check mb-3">
-                        <input type="checkbox" class="form-check-input" name="rightsAgreement" required>
-                        <label class="form-check-label">所有権紛争通知に同意します。</label>
-                        <div class="terms-content">
-                            <p>本有料サービスは、有料利用会員の発売履歴が存在しない、新規の純粋な創作物を対象としています。</p>
-
-                            <p>会員は、流通対象コンテンツに関して、当社に独占的な流通事業権を付与するために必要な適法な著作権、著作隣接権、商標権、意匠権、パブリシティ権等の権利および／または本有料サービスの契約期間中有効な関連使用権限を有していることを保証し、当該コンテンツが第三者の著作権、著作隣接権、商標権、意匠権、パブリシティ権その他正当な法的権利または利益を侵害していないことを保証します。</p>
-
-                            <p>会員は、当社が有料利用契約に基づき、流通対象コンテンツに関して独占的な流通事業を行うにあたり、妨げとなるまたは支障をきたすような一切の約定（口頭・書面を問わず）を締結していないこと、またそのような約定を締結する義務も負っていないこと、さらに、流通対象コンテンツに関して流通事業に必要な一切の権利（著作隣接権を含む）を第三者に譲渡、ライセンス、贈与、担保提供その他の処分を行っておらず、そのような処分を行う義務も負っていないことを保証します。</p>
-
-                            <p>会員は、当社が有料利用契約に基づき、流通対象コンテンツに関して独占的な流通事業を行えるように、契約期間中、(i) 自ら当該コンテンツの流通事業を行わないこと、(ii) 当社以外の第三者に対して当該コンテンツの流通事業権を付与しないこと、(iii) 当該コンテンツの全部または一部を利用または再録音して新たな音源を制作・販売しないこと、またそのための契約を締結しないこと、(iv) その他当社の独占的流通事業権を侵害する一切の法的・事実的行為を行わないことを確約します。</p>
-
-                            <p>有料利用会員が発売したコンテンツについて、当社またはDSPに対し第三者が権利を主張した場合（DSPのカスタマーサポートウェブサイトを通じた間接的な主張も含む）、当社は会員に対し説明を求めることができ、当該説明に基づいて当社は会員を代理して最大2回まで権利を主張することができます。2回の主張後も権利が明確にならない場合や権利紛争が継続する場合、当社は権利の主張を中止または撤回することができます。</p>
-
-                            <p>有料利用会員の説明にもかかわらず、上記第三者の主張に基づく合理的な疑義が引き続き存在する場合、当社はSurroundio利用規約に従って会員に通知のうえ、当該音源および／またはコンテンツの有料サービスを直ちに中止し、該当する収益に対する精算金の支払いを保留することができ、当該保留金に対しては利息が発生しないものとします。ただし、上記第三者の主張に明確な法的根拠がある場合、または即時の中止が必要とされる緊急の事情がある場合には、会員への事前通知なしに当該音源および／またはコンテンツの有料サービスを即時中止し、収益の精算金の支払いを保留することができます。当社は、関連する紛争が法的手続きの確定や当事者間の合意などにより終了した場合、その結果に基づいて会員に対し保留していた精算金を支払います。</p>
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="americasHeading">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#americasCollapse" aria-expanded="false" aria-controls="americasCollapse">
+                                    北米・南米
+                                </button>
+                            </h2>
+                            <div id="americasCollapse" class="accordion-collapse collapse" aria-labelledby="americasHeading" data-bs-parent="#excludedCountriesAccordion">
+                                <div class="accordion-body">
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <div class="form-check">
+                                                <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="US">
+                                                <label class="form-check-label">アメリカ</label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="CA">
+                                                <label class="form-check-label">カナダ</label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="MX">
+                                                <label class="form-check-label">メキシコ</label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="BR">
+                                                <label class="form-check-label">ブラジル</label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="AR">
+                                                <label class="form-check-label">アルゼンチン</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="form-check">
+                                                <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="CL">
+                                                <label class="form-check-label">チリ</label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="CO">
+                                                <label class="form-check-label">コロンビア</label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="PE">
+                                                <label class="form-check-label">ペルー</label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="VE">
+                                                <label class="form-check-label">ベネズエラ</label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="EC">
+                                                <label class="form-check-label">エクアドル</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="form-check">
+                                                <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="BO">
+                                                <label class="form-check-label">ボリビア</label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="PY">
+                                                <label class="form-check-label">パラグアイ</label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="UY">
+                                                <label class="form-check-label">ウルグアイ</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                    </div>
 
-                    <div class="form-check mb-3">
-                        <input type="checkbox" class="form-check-input" name="reReleaseAgreement" required>
-                        <label class="form-check-label">他社発売音源の再発売情報に同意します。</label>
-                        <div class="terms-content">
-                            <p>本有料サービスでは、過去に他社にて発売または流通された経歴があるコンテンツの重複発売を許可いたしません。</p>
-
-                            <p>ただし、有料利用会員の要請により、既存の権利者から当社へコンテンツの流通権限が移管されることについての書面による同意書を、公文書または電子メールの形式で受領し、アルバム発売日の7日前までに当社宛（kmat0@surroundio.app）に提出した場合に限り、既に発売・流通されたコンテンツが含まれるアルバムの発売を承認します。期日内に当該書面同意書が提出されない場合は、当該トラックを含むアルバムの発売は却下されます。</p>
-
-                            <p>既存権利者の書面による同意手続を経ずにプラットフォームにコンテンツを登録し、アルバム発売を進行した後に、第三者または既存の権利者から権利主張がなされた場合、当社は有料利用会員の同意を得ることなく、該当アルバム全体または特定トラックの流通サービスを直ちに停止することができ、サービス期間中に発生した著作隣接権料の支払いを保留するか、原権利者に対して支払うことができます。</p>
-
-                            <p>万一、第三者または既存の権利者との間で、流通対象コンテンツに関して流通権限の侵害等の理由により紛争が発生した場合、会員は自己の責任と費用負担において当該紛争を解決し、当社が責任を負わないようにしなければなりません。また、これにより当社が費用を負担した場合は、その全額を補償しなければなりません。</p>
-                        </div>
-                    </div>
-
-                    <div class="form-check mb-3">
-                        <input type="checkbox" class="form-check-input" name="platformAgreement" required>
-                        <label class="form-check-label">Surroundio発売国及びプラットフォームガイドに同意します。</label>
-                        <div class="terms-content">
-                            <p>本有料サービスは、有料利用会員が登録・発売したコンテンツを、当社とコンテンツ流通契約関係にあるすべてのDSPおよび各DSPがサービスを提供する全地域に対して流通・供給することを原則とします。</p>
-
-                            <p>ただし、有料利用会員がプラットフォーム上で、特定のDSPまたは国に対してコンテンツの流通・供給を希望しない旨を当社に明示した場合、当社は有料利用会員の要請または条件に従ってコンテンツを流通・供給します。</p>
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="othersHeading">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#othersCollapse" aria-expanded="false" aria-controls="othersCollapse">
+                                    その他の地域
+                                </button>
+                            </h2>
+                            <div id="othersCollapse" class="accordion-collapse collapse" aria-labelledby="othersHeading" data-bs-parent="#excludedCountriesAccordion">
+                                <div class="accordion-body">
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <div class="form-check">
+                                                <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="AU">
+                                                <label class="form-check-label">オーストラリア</label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="NZ">
+                                                <label class="form-check-label">ニュージーランド</label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="RU">
+                                                <label class="form-check-label">ロシア</label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="TR">
+                                                <label class="form-check-label">トルコ</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="form-check">
+                                                <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="ZA">
+                                                <label class="form-check-label">南アフリカ</label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="EG">
+                                                <label class="form-check-label">エジプト</label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="SA">
+                                                <label class="form-check-label">サウジアラビア</label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="AE">
+                                                <label class="form-check-label">アラブ首長国連邦</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="form-check">
+                                                <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="IL">
+                                                <label class="form-check-label">イスラエル</label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="IR">
+                                                <label class="form-check-label">イラン</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -918,18 +959,27 @@
         $(document).ready(function() {
             let songCount = 0;
 
+            // Set minimum date to 3 weeks from today
+            const releaseDateInput = document.getElementById('releaseDate');
+            const today = new Date();
+            const minDate = new Date(today);
+            minDate.setDate(today.getDate() + 21); // 3 weeks = 21 days
+            
+            releaseDateInput.min = minDate.toISOString().split('T')[0];
+            releaseDateInput.value = minDate.toISOString().split('T')[0];
+
             // Enable submit button initially
             document.querySelector('button[type="submit"]').disabled = false;
 
-            // 곡 추가 버튼 클릭 이벤트
+            // 楽曲追加ボタン クリックイベント
             $('#addSongButton').on('click', function() {
                 const originalSong = $('#songs-container .song-entry:first').clone();
                 songCount++;
 
-                // 새로운 곡 번호 설정
+                // 新しい楽曲番号設定
                 originalSong.find('.song-number').text(songCount + 1);
                 
-                // 모든 input, select, textarea 초기화 및 인덱스 업데이트
+                // 全ての input, select, textarea 初期化とインデックス更新
                 originalSong.find('input, select, textarea').each(function() {
                     const elem = $(this);
                     if (elem.attr('name')) {
@@ -941,13 +991,22 @@
                     elem.val('');
                 });
 
-                // 컨테이너 ID 업데이트
+                // コンテナID更新
                 originalSong.find('[id]').each(function() {
                     const elem = $(this);
                     elem.attr('id', elem.attr('id').replace(/_\d+/, `_${songCount}`));
                 });
 
-                // 삭제 버튼 표시 및 이벤트 설정
+                // アコーディオンIDとデータ属性の更新
+                originalSong.find('.accordion').attr('id', `languageAccordion_${songCount}`);
+                originalSong.find('.accordion-button')
+                    .attr('data-bs-target', `#languageCollapse_${songCount}`)
+                    .attr('aria-controls', `languageCollapse_${songCount}`);
+                originalSong.find('.accordion-collapse')
+                    .attr('id', `languageCollapse_${songCount}`)
+                    .attr('aria-labelledby', `languageHeading_${songCount}`);
+
+                // 削除ボタン表示とイベント設定
                 originalSong.find('.remove-song').show().on('click', function() {
                     if ($('.song-entry').length > 1) {
                         $(this).closest('.song-entry').remove();
@@ -955,16 +1014,16 @@
                     }
                 });
 
-                // 새로운 곡 추가
+                // 新しい楽曲追加
                 $('#songs-container').append(originalSong);
                 
-                // 모든 곡의 삭제 버튼 표시 (첫 번째 곡 제외)
+                // 全ての楽曲の削除ボタン表示（最初の楽曲を除く）
                 if ($('.song-entry').length > 1) {
                     $('.remove-song').show();
                 }
             });
 
-            // 입력 필드 추가/삭제 버튼 이벤트
+            // 入力フィールド追加/削除ボタン イベント
             $(document).on('click', '.add-field', function(e) {
                 e.preventDefault();
                 const container = $(this).closest('.mb-3');
@@ -987,22 +1046,51 @@
                 }
             });
 
-            // 곡 번호 업데이트 함수
+            // 楽曲番号更新関数
             function updateSongNumbers() {
                 $('.song-entry').each(function(index) {
                     $(this).find('.song-number').text(index + 1);
                 });
             }
 
-            // 초기 상태 설정
+            // 初期状態設定
             if ($('.song-entry').length === 1) {
                 $('.remove-song').hide();
             }
 
-            // 각 섹션의 첫 번째 삭제 버튼 비활성화
+            // 各セクションの最初の削除ボタン無効化
             $('.mb-3').each(function() {
                 if ($(this).find('.input-group').length === 1) {
                     $(this).find('.remove-field').prop('disabled', true);
+                }
+            });
+
+            // アルバムカバー画像バリデーション
+            $('#albumCover').on('change', function() {
+                const file = this.files[0];
+                if (file) {
+                    // ファイルサイズチェック (10MB)
+                    if (file.size > 10 * 1024 * 1024) {
+                        alert('ファイルサイズは10MB以下にしてください。');
+                        this.value = '';
+                        return;
+                    }
+
+                    // 画像の寸法チェック
+                    const img = new Image();
+                    img.onload = function() {
+                        if (this.width !== this.height) {
+                            alert('画像は正方形（縦横同じサイズ）にしてください。');
+                            $('#albumCover').val('');
+                            return;
+                        }
+                        if (this.width < 3000 || this.height < 3000) {
+                            alert('画像サイズは3000x3000ピクセル以上にしてください。');
+                            $('#albumCover').val('');
+                            return;
+                        }
+                    };
+                    img.src = URL.createObjectURL(file);
                 }
             });
 
@@ -1014,6 +1102,20 @@
                 if (!this.checkValidity()) {
                     e.stopPropagation();
                     $(this).addClass('was-validated');
+                    return;
+                }
+
+                // プラットフォーム選択チェック
+                if ($('input[name="platforms[]"]:checked').length === 0) {
+                    alert('少なくとも1つのプラットフォームを選択してください。');
+                    return;
+                }
+
+                // 同意事項チェック
+                if (!$('input[name="rightsAgreement"]').is(':checked') ||
+                    !$('input[name="reReleaseAgreement"]').is(':checked') ||
+                    !$('input[name="platformAgreement"]').is(':checked')) {
+                    alert('全ての同意事項にチェックを入れてください。');
                     return;
                 }
 
@@ -1107,6 +1209,19 @@
                 console.error('PayPal Error:', err);
             }
         }).render('#paypal-button-container');
+    </script>
+
+    <script>
+        // Set minimum date to 3 weeks from today
+        window.addEventListener('DOMContentLoaded', (event) => {
+            const releaseDateInput = document.getElementById('releaseDate');
+            const today = new Date();
+            const minDate = new Date(today);
+            minDate.setDate(today.getDate() + 21); // 3 weeks = 21 days
+            
+            releaseDateInput.min = minDate.toISOString().split('T')[0];
+            releaseDateInput.value = minDate.toISOString().split('T')[0];
+        });
     </script>
 </body>
 </html> 

@@ -134,13 +134,17 @@ app.get('/api/reservations', async(req, res) => {
 
     try {
         if (key === 'admin25') {
-            const all = await Album.find().sort({ createdAt: -1 });
+            const all = await Album.find()
+                .select('-password') // 비밀번호 필드 제외
+                .sort({ createdAt: -1 });
             return res.status(200).json(all);
         } else {
             const userReservations = await Album.find({
                 password: key,
                 email: email
-            }).sort({ createdAt: -1 });
+            })
+            .select('-password') // 비밀번호 필드 제외
+            .sort({ createdAt: -1 });
 
             if (userReservations.length === 0) {
                 return res.status(404).json({ message: '予約情報が見つからないか、メールアドレスとパスワードが一致しません' });
@@ -157,7 +161,7 @@ app.get('/api/reservations', async(req, res) => {
 app.delete('/api/reservations', async (req, res) => {
     const { id, key, email, password } = req.query;
 
-    console.log('Delete request received:', { id, key, email, password });
+    console.log('Delete request received:', { id, key, email });
 
     if (!id || !mongoose.Types.ObjectId.isValid(id)) {
         return res.status(400).json({ message: '無効なIDです' });
@@ -170,35 +174,35 @@ app.delete('/api/reservations', async (req, res) => {
     try {
         // 삭제 전 전체 앨범 수 확인
         const totalBefore = await Album.countDocuments();
-        console.log(`삭제 전 전체 앨범 수: ${totalBefore}`);
+        console.log(`削除前のアルバム総数: ${totalBefore}`);
 
         // 삭제하려는 앨범 확인
         const targetAlbum = await Album.findById(id);
         if (!targetAlbum) {
-            console.log('삭제하려는 앨범을 찾을 수 없음:', id);
-            return res.status(404).json({ message: 'Album not found in database' });
+            console.log('削除対象のアルバムが見つかりません:', id);
+            return res.status(404).json({ message: 'アルバムが見つかりません' });
         }
-        console.log('삭제 대상 앨범:', {
+        console.log('削除対象のアルバム:', {
             id: targetAlbum._id,
-            title: targetAlbum.albumTitle,
+            albumNameDomestic: targetAlbum.albumNameDomestic,
             email: targetAlbum.email
         });
 
-        // S3에서 이미지 파일 삭제
-        if (targetAlbum.imageUrl) {
+        // S3에서 앨범 커버 삭제
+        if (targetAlbum.albumCover) {
             try {
-                const imageKey = targetAlbum.imageUrl.split('/').pop();
+                const coverKey = targetAlbum.albumCover.split('/').pop();
                 await s3Client.send(new DeleteObjectCommand({
                     Bucket: process.env.AWS_BUCKET_NAME,
-                    Key: `images/${imageKey}`
+                    Key: `covers/${coverKey}`
                 }));
-                console.log('S3에서 이미지 삭제 완료:', imageKey);
+                console.log('S3からアルバムカバーを削除しました:', coverKey);
             } catch (err) {
-                console.error('S3 이미지 삭제 실패:', err);
+                console.error('S3アルバムカバー削除エラー:', err);
             }
         }
 
-        // S3에서 오디오 파일들 삭제
+        // S3에서 모든 곡 파일 삭제
         if (targetAlbum.songs && targetAlbum.songs.length > 0) {
             for (const song of targetAlbum.songs) {
                 if (song.audioUrl) {
@@ -208,38 +212,34 @@ app.delete('/api/reservations', async (req, res) => {
                             Bucket: process.env.AWS_BUCKET_NAME,
                             Key: `audio/${audioKey}`
                         }));
-                        console.log('S3에서 오디오 파일 삭제 완료:', audioKey);
+                        console.log('S3から音声ファイルを削除しました:', audioKey);
                     } catch (err) {
-                        console.error('S3 오디오 파일 삭제 실패:', err);
+                        console.error('S3音声ファイル削除エラー:', err);
                     }
                 }
             }
         }
 
-        // MongoDB에서 특정 앨범만 삭제
-        const deleteResult = await Album.deleteOne({ _id: id });
-        console.log('MongoDB 삭제 결과:', deleteResult);
-
+        // MongoDB에서 앨범 삭제
+        await Album.findByIdAndDelete(id);
+        
         // 삭제 후 전체 앨범 수 확인
         const totalAfter = await Album.countDocuments();
-        console.log(`삭제 후 전체 앨범 수: ${totalAfter}`);
+        console.log(`削除後のアルバム総数: ${totalAfter}`);
+        
+        res.status(200).json({ 
+            message: 'アルバムを削除しました',
+            deletedId: id,
+            totalBefore,
+            totalAfter
+        });
 
-        if (deleteResult.deletedCount === 1) {
-            console.log('앨범 삭제 완료:', id);
-            return res.status(200).json({ 
-                message: '削除しました',
-                beforeCount: totalBefore,
-                afterCount: totalAfter
-            });
-        } else {
-            console.log('앨범 삭제 실패 - 삭제된 문서 없음');
-            return res.status(500).json({ 
-                message: '削除に失敗しました - 削除された文書がありません'
-            });
-        }
     } catch (err) {
-        console.error('❌ 削除失敗:', err);
-        return res.status(500).json({ message: 'サーバーエラーが発生しました', error: err.message });
+        console.error('❌ 削除エラー:', err);
+        res.status(500).json({ 
+            message: '削除に失敗しました', 
+            error: err.message 
+        });
     }
 });
 
