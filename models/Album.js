@@ -1,12 +1,30 @@
 const mongoose = require('mongoose');
 
 const AlbumSchema = new mongoose.Schema({
+    // User Information
+    email: {
+        type: String,
+        required: true
+    },
+    password: {
+        type: String,
+        required: true
+    },
+
     // Basic Information
     albumNameDomestic: {
         type: String,
         required: true
     },
     albumNameInternational: {
+        type: String,
+        required: true
+    },
+    artistNameKana: {
+        type: String,
+        required: true
+    },
+    artistNameEnglish: {
         type: String,
         required: true
     },
@@ -27,83 +45,85 @@ const AlbumSchema = new mongoose.Schema({
         }
     },
 
-    // Artist Information
-    mainArtists: [{
-        type: String,
-        required: true
+    // Songs array for multiple songs
+    songs: [{
+        mainArtists: [{
+            type: String,
+            required: true
+        }],
+        participatingArtists: [{
+            type: String,
+            required: true
+        }],
+        featuringArtists: [{
+            type: String
+        }],
+        mixingEngineers: [{
+            type: String,
+            required: true
+        }],
+        recordingEngineers: [{
+            type: String,
+            required: true
+        }],
+        producers: [{
+            type: String,
+            required: true
+        }],
+        lyricists: [{
+            type: String,
+            required: true
+        }],
+        composers: [{
+            type: String,
+            required: true
+        }],
+        arrangers: [{
+            type: String,
+            required: true
+        }],
+        isRemake: {
+            type: Boolean,
+            required: true
+        },
+        usesExternalBeat: {
+            type: Boolean,
+            required: true
+        },
+        language: {
+            type: String,
+            required: true,
+            enum: [
+                'instrumental',
+                'japanese',
+                'english',
+                'korean',
+                'chinese',
+                'spanish',
+                'french',
+                'german',
+                'italian',
+                'portuguese',
+                'russian',
+                'arabic',
+                'hindi',
+                'bengali',
+                'punjabi',
+                'javanese',
+                'vietnamese',
+                'thai',
+                'turkish',
+                'persian'
+            ]
+        },
+        lyrics: {
+            type: String
+        },
+        audioUrl: {
+            type: String,
+            required: true
+        }
     }],
-    participatingArtists: [{
-        type: String,
-        required: true
-    }],
-    featuringArtists: [{
-        type: String
-    }],
-    mixingEngineers: [{
-        type: String,
-        required: true
-    }],
-    recordingEngineers: [{
-        type: String,
-        required: true
-    }],
-    producers: [{
-        type: String,
-        required: true
-    }],
-
-    // Creator Information
-    lyricists: [{
-        type: String,
-        required: true
-    }],
-    composers: [{
-        type: String,
-        required: true
-    }],
-    arrangers: [{
-        type: String,
-        required: true
-    }],
-
-    // Song Information
-    isRemake: {
-        type: Boolean,
-        required: true
-    },
-    usesExternalBeat: {
-        type: Boolean,
-        required: true
-    },
-    language: {
-        type: String,
-        required: true,
-        enum: [
-            'instrumental',
-            'japanese',
-            'english',
-            'korean',
-            'chinese',
-            'spanish',
-            'french',
-            'german',
-            'italian',
-            'portuguese',
-            'russian',
-            'arabic',
-            'hindi',
-            'bengali',
-            'punjabi',
-            'javanese',
-            'vietnamese',
-            'thai',
-            'turkish',
-            'persian'
-        ]
-    },
-    lyrics: {
-        type: String
-    },
 
     // Album Cover
     albumCover: {
@@ -118,16 +138,73 @@ const AlbumSchema = new mongoose.Schema({
         }
     },
 
+    // Genre
+    genre: {
+        type: String,
+        required: true,
+        enum: [
+            'pop',
+            'rock',
+            'jazz',
+            'classical',
+            'electronic',
+            'hiphop',
+            'rb',
+            'folk',
+            'world',
+            'ambient',
+            'metal',
+            'blues',
+            'country',
+            'experimental',
+            'fusion'
+        ]
+    },
+
     // Distribution
     platforms: [{
         type: String,
         required: true,
-        enum: ['anghami', 'TIDAL', 'JOOX'] // Add more platforms as needed
+        enum: [
+            'spotify',
+            'apple_music',
+            'youtube_music',
+            'amazon_music',
+            'tidal',
+            'deezer',
+            'pandora',
+            'soundcloud',
+            'napster',
+            'anghami',
+            'joox',
+            'kkbox',
+            'line_music',
+            'qq_music',
+            'netease'
+        ]
     }],
     excludedCountries: [{
         type: String,
-        enum: ['JP', 'US', 'CN', 'KR'] // Add more countries as needed
+        enum: [
+            'JP', 'CN', 'KR', 'TW', 'HK', 'SG', 'MY', 'ID', 'TH', 'VN',
+            'PH', 'IN', 'PK', 'BD', 'LK',
+            'GB', 'FR', 'DE', 'IT', 'ES', 'PT', 'NL', 'BE', 'CH', 'AT',
+            'SE', 'NO', 'DK', 'FI', 'IE',
+            'US', 'CA', 'MX', 'BR', 'AR', 'CL', 'CO', 'PE', 'VE', 'EC',
+            'BO', 'PY', 'UY',
+            'AU', 'NZ', 'RU', 'TR', 'ZA', 'EG', 'SA', 'AE', 'IL', 'IR'
+        ]
     }],
+
+    // YouTube Monetization
+    youtubeMonetize: {
+        type: Boolean,
+        default: false
+    },
+    youtubeAgree: {
+        type: Boolean,
+        default: false
+    },
 
     // Agreements
     agreements: {
@@ -147,6 +224,13 @@ const AlbumSchema = new mongoose.Schema({
             type: Boolean,
             required: true
         }
+    },
+
+    // Payment Status
+    paymentStatus: {
+        type: String,
+        enum: ['pending', 'completed', 'failed'],
+        default: 'pending'
     },
 
     // Metadata

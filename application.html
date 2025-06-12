@@ -168,7 +168,7 @@
                 <div class="row">
                     <div class="col-md-6 mb-3">
                         <label for="password" class="form-label required-label">パスワード</label>
-                        <input type="password" class="form-control" id="password" name="password" required>
+                        <input type="password" class="form-control" id="password" name="password" autocomplete="current-password" required>
                         <div class="invalid-feedback">
                             パスワードを入力してください
                         </div>
@@ -1128,7 +1128,7 @@
                     const formData = new FormData(this);
 
                     // Add album cover file
-                    const albumCover = $('input[name="albumCover"]')[0].files[0];
+                    const albumCover = $('#albumCover')[0].files[0];
                     if (albumCover) {
                         formData.append('albumCover', albumCover);
                     }
@@ -1141,14 +1141,38 @@
                         }
                     });
 
-                    // API call
+                    // Add platform selections
+                    const selectedPlatforms = [];
+                    $('input[name="platforms[]"]:checked').each(function() {
+                        selectedPlatforms.push($(this).val());
+                    });
+                    formData.append('platforms', selectedPlatforms);
+
+                    // Add excluded countries
+                    const excludedCountries = [];
+                    $('input[name="excludedCountries[]"]:checked').each(function() {
+                        excludedCountries.push($(this).val());
+                    });
+                    formData.append('excludedCountries', excludedCountries);
+
+                    // Add agreements
+                    formData.append('rightsAgreement', $('input[name="rightsAgreement"]').is(':checked'));
+                    formData.append('reReleaseAgreement', $('input[name="reReleaseAgreement"]').is(':checked'));
+                    formData.append('platformAgreement', $('input[name="platformAgreement"]').is(':checked'));
+                    formData.append('youtubeAgree', $('#youtubeAgree').is(':checked'));
+
+                    // API call with proper headers
                     const response = await fetch('/api/upload', {
                         method: 'POST',
-                        body: formData
+                        body: formData,
+                        headers: {
+                            'Accept': 'application/json'
+                        }
                     });
 
                     if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
+                        const errorData = await response.json();
+                        throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
                     }
 
                     const result = await response.json();
@@ -1161,7 +1185,7 @@
 
                 } catch (error) {
                     console.error('Error:', error);
-                    alert('エラーが発生しました。もう一度お試しください。');
+                    alert('エラーが発生しました。もう一度お試しください。\n' + error.message);
                 } finally {
                     // Re-enable submit button
                     submitButton.prop('disabled', false);
