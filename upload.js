@@ -92,7 +92,16 @@ const sendErrorResponse = (res, status, message, error = null) => {
         }
     }
 
-    res.status(status).json(response);
+    // 응답 전송 전 로깅
+    console.log('📤 Sending error response:', {
+        status,
+        response,
+        headers: res.getHeaders()
+    });
+
+    // 명시적으로 Content-Type 설정
+    res.setHeader('Content-Type', 'application/json');
+    return res.status(status).json(response);
 };
 
 // ✅ 앨범 업로드 처리 라우터
@@ -123,15 +132,56 @@ router.post('/', (req, res) => {
 
             // 요청 검증
             if (!req.body) {
+                console.error('❌ No form data received');
                 return sendErrorResponse(res, 400, 'No form data received');
             }
 
-            console.log('📁 Files received:', {
-                fileCount: req.files ? Object.keys(req.files).length : 0,
-                fileFields: req.files ? Object.keys(req.files) : [],
-                imagePresent: req.files && req.files.image ? 'yes' : 'no',
-                audioFilesCount: req.files ? Object.keys(req.files).filter(key => key.startsWith('audio_')).length : 0
+            console.log('📦 Request body:', {
+                bodyKeys: Object.keys(req.body || {}),
+                songsPresent: req.body.songs ? 'yes' : 'no',
+                songsType: req.body.songs ? typeof req.body.songs : 'undefined',
+                songsIsArray: Array.isArray(req.body.songs),
+                songsLength: req.body.songs ? (Array.isArray(req.body.songs) ? req.body.songs.length : 'not array') : 0
             });
+
+            // songs 필드 검증 강화
+            if (!req.body.songs) {
+                console.error('❌ Songs field is missing');
+                return sendErrorResponse(res, 400, 'Songs data is required');
+            }
+
+            if (!Array.isArray(req.body.songs)) {
+                console.error('❌ Songs is not an array:', typeof req.body.songs);
+                return sendErrorResponse(res, 400, 'Songs must be an array');
+            }
+
+            if (req.body.songs.length === 0) {
+                console.error('❌ Songs array is empty');
+                return sendErrorResponse(res, 400, 'At least one song is required');
+            }
+
+            // songs 배열 파싱
+            let songs;
+            try {
+                songs = req.body.songs.map((songStr, index) => {
+                    try {
+                        if (typeof songStr !== 'string') {
+                            console.error(`❌ Song ${index} is not a string:`, typeof songStr);
+                            throw new Error(`Song ${index} must be a JSON string`);
+                        }
+                        return JSON.parse(songStr);
+                    } catch (parseError) {
+                        console.error(`❌ Failed to parse song ${index}:`, {
+                            songData: songStr,
+                            error: parseError.message
+                        });
+                        throw new Error(`Invalid song data at index ${index}: ${parseError.message}`);
+                    }
+                });
+                console.log('✅ Successfully parsed songs:', songs.length);
+            } catch (error) {
+                return sendErrorResponse(res, 400, error.message);
+            }
 
             // 필수 필드 검증
             if (!req.files) {
@@ -154,29 +204,6 @@ router.post('/', (req, res) => {
 
             if (audioFiles.length === 0) {
                 return sendErrorResponse(res, 400, 'At least one audio file is required');
-            }
-
-            // songs 배열 검증
-            if (!req.body.songs || !Array.isArray(req.body.songs)) {
-                return sendErrorResponse(res, 400, 'Songs data is required and must be an array');
-            }
-
-            // songs 배열 파싱
-            let songs;
-            try {
-                songs = req.body.songs.map(songStr => {
-                    try {
-                        return JSON.parse(songStr);
-                    } catch (parseError) {
-                        console.error('❌ Song parsing error:', {
-                            songString: songStr,
-                            error: parseError.message
-                        });
-                        throw new Error(`Invalid song data format: ${parseError.message}`);
-                    }
-                });
-            } catch (error) {
-                return sendErrorResponse(res, 400, 'Invalid songs data format', error);
             }
 
             // 앨범 커버 S3 업로드
