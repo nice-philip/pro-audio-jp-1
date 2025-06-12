@@ -333,7 +333,7 @@
                             <h5>その他の情報</h5>
                             <div class="mb-3">
                                 <label class="form-label required-label">音声ファイル（WAV形式）</label>
-                                <input type="file" class="form-control" name="audio" accept=".wav" required>
+                                <input type="file" class="form-control" name="audioFiles" accept=".wav" required>
                                 <div class="alert alert-warning mt-2">
                                     <p class="text-danger">※ 音声ファイルは以下の規格を必ず守ってください：</p>
                                     <ul>
@@ -433,7 +433,7 @@
                 <h3>アルバム全体の情報</h3>
                 <div class="mb-3">
                     <label class="form-label required-label">アルバムカバー</label>
-                    <input type="file" class="form-control" name="image" accept=".jpg,.jpeg,.png" required>
+                    <input type="file" class="form-control" name="albumCover" accept=".jpg,.jpeg,.png" required>
                     <div class="alert alert-warning mt-2">
                         <p class="text-danger">※ 商標や商用イメージは使用できません</p>
                         <p><strong>アルバムカバーは以下の規格を必ず守ってください：</strong></p>
@@ -1133,9 +1133,9 @@
                     formData.append('platformAgreement', $('input[name="platformAgreement"]').prop('checked'));
 
                     // Add image file
-                    const imageFile = $('input[name="image"]')[0].files[0];
+                    const imageFile = $('input[name="albumCover"]')[0].files[0];
                     if (imageFile) {
-                        formData.append('albumCover', imageFile); // 'image' 대신 'albumCover'로 변경
+                        formData.append('albumCover', imageFile);
                     }
 
                     // Process songs data
@@ -1166,7 +1166,7 @@
                         // Add audio file
                         const audioFile = entry.find('input[type="file"][accept=".wav"]')[0].files[0];
                         if (audioFile) {
-                            formData.append(`audioFiles`, audioFile); // 'audio_${index}' 대신 'audioFiles'로 변경
+                            formData.append('audioFiles', audioFile);
                         }
                     });
 
