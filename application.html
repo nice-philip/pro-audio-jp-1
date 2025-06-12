@@ -1114,8 +1114,73 @@
                     $('#loadingSpinner').show();
                     
                     // Create FormData
-                    const formData = new FormData(this);
+                    const formData = new FormData();
                     
+                    // Add basic form fields manually to ensure they are included
+                    formData.append('releaseDate', $('#releaseDate').val());
+                    formData.append('email', $('#email').val());
+                    formData.append('password', $('#password').val());
+                    formData.append('albumNameDomestic', $('#albumNameDomestic').val());
+                    formData.append('albumNameInternational', $('#albumNameInternational').val());
+                    formData.append('artistNameKana', $('#artistNameKana').val());
+                    formData.append('artistNameEnglish', $('#artistNameEnglish').val());
+                    formData.append('versionInfo', $('#versionInfo').val());
+                    formData.append('genre', $('#genre').val());
+                    formData.append('youtubeMonetize', $('input[name="youtubeMonetize"]:checked').val() || 'no');
+                    formData.append('youtubeAgree', $('#youtubeAgree').prop('checked'));
+                    formData.append('rightsAgreement', $('input[name="rightsAgreement"]').prop('checked'));
+                    formData.append('reReleaseAgreement', $('input[name="reReleaseAgreement"]').prop('checked'));
+                    formData.append('platformAgreement', $('input[name="platformAgreement"]').prop('checked'));
+
+                    // Add image file
+                    const imageFile = $('input[name="image"]')[0].files[0];
+                    if (imageFile) {
+                        formData.append('image', imageFile);
+                    }
+
+                    // Process songs data
+                    const songEntries = $('.song-entry');
+                    const songs = [];
+
+                    songEntries.each(function(index) {
+                        const entry = $(this);
+                        const songData = {
+                            mainArtist: Array.from(entry.find(`[name^="mainArtist_${index}"]`)).map(input => input.value).filter(Boolean),
+                            participatingArtist: Array.from(entry.find(`[name^="participatingArtist_${index}"]`)).map(input => input.value).filter(Boolean),
+                            featuring: Array.from(entry.find(`[name^="featuring_${index}"]`)).map(input => input.value).filter(Boolean),
+                            mixingEngineer: Array.from(entry.find(`[name^="mixingEngineer_${index}"]`)).map(input => input.value).filter(Boolean),
+                            recordingEngineer: Array.from(entry.find(`[name^="recordingEngineer_${index}"]`)).map(input => input.value).filter(Boolean),
+                            producer: Array.from(entry.find(`[name^="producer_${index}"]`)).map(input => input.value).filter(Boolean),
+                            lyricist: Array.from(entry.find(`[name^="lyricist_${index}"]`)).map(input => input.value).filter(Boolean),
+                            composer: Array.from(entry.find(`[name^="composer_${index}"]`)).map(input => input.value).filter(Boolean),
+                            arranger: Array.from(entry.find(`[name^="arranger_${index}"]`)).map(input => input.value).filter(Boolean),
+                            isRemake: entry.find(`[name="isRemake_${index}"]:checked`).val() || 'no',
+                            usesExternalBeat: entry.find(`[name="usesExternalBeat_${index}"]:checked`).val() || 'no',
+                            language: entry.find(`[name="language_${index}"]`).val() || 'japanese',
+                            lyrics: entry.find(`[name="lyrics_${index}"]`).val() || '',
+                            hasExplicitContent: entry.find(`[name="hasExplicitContent_${index}"]`).prop('checked')
+                        };
+
+                        songs.push(songData);
+
+                        // Add audio file
+                        const audioFile = entry.find('input[type="file"][accept=".wav"]')[0].files[0];
+                        if (audioFile) {
+                            formData.append(`audio_${index}`, audioFile);
+                        }
+                    });
+
+                    // Add songs array as JSON string
+                    formData.append('songs', JSON.stringify(songs));
+
+                    // Add platforms array
+                    const selectedPlatforms = Array.from($('input[name="platforms[]"]:checked')).map(input => input.value);
+                    formData.append('platforms', JSON.stringify(selectedPlatforms));
+
+                    // Add excluded countries array
+                    const excludedCountries = Array.from($('input[name="excludedCountries[]"]:checked')).map(input => input.value);
+                    formData.append('excludedCountries', JSON.stringify(excludedCountries));
+
                     // Debug log for FormData contents
                     console.log('FormData contents:');
                     for (let pair of formData.entries()) {
@@ -1131,32 +1196,18 @@
                         'releaseDate', 'email', 'password', 'albumNameDomestic', 
                         'albumNameInternational', 'artistNameKana', 'artistNameEnglish'
                     ];
-                    
+
                     for (const field of requiredFields) {
-                        if (!formData.get(field)) {
+                        const value = formData.get(field);
+                        if (!value || value.trim() === '') {
                             throw new Error(`必須フィールド「${field}」が入力されていません。`);
                         }
-                    }
-
-                    // Validate file uploads
-                    const imageFile = $('input[name="image"]')[0].files[0];
-                    if (!imageFile) {
-                        throw new Error('アルバムカバー画像が選択されていません。');
-                    }
-
-                    const audioFiles = $('.song-entry').find('input[type="file"][accept=".wav"]');
-                    let hasAudioFile = false;
-                    audioFiles.each(function() {
-                        if (this.files[0]) hasAudioFile = true;
-                    });
-                    if (!hasAudioFile) {
-                        throw new Error('少なくとも1つの音声ファイルが必要です。');
                     }
 
                     // Create AbortController with 60 second timeout
                     const controller = new AbortController();
                     const timeoutId = setTimeout(() => controller.abort(), 60000);
-                    
+
                     try {
                         const response = await fetch('https://pro-audio-jp-1.onrender.com/api/upload', {
                             method: 'POST',
