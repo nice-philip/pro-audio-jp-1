@@ -140,6 +140,8 @@
 </head>
 <body>
     <div class="container my-5">
+        <div id="error-message" class="alert alert-danger" style="display: none;"></div>
+        <div id="success-message" class="alert alert-success" style="display: none;"></div>
         <div class="d-flex justify-content-between align-items-center mb-4">
             <a href="/index" class="btn btn-outline-primary">
                 <i class="fa fa-home"></i> <span>ホームへ戻る</span>
@@ -1098,96 +1100,132 @@
             $('#albumForm').on('submit', async function(e) {
                 e.preventDefault();
                 
-                // Form validation
-                if (!this.checkValidity()) {
-                    e.stopPropagation();
-                    $(this).addClass('was-validated');
-                    return;
-                }
-
-                // プラットフォーム選択チェック
-                if ($('input[name="platforms[]"]:checked').length === 0) {
-                    alert('少なくとも1つのプラットフォームを選択してください。');
-                    return;
-                }
-
-                // 同意事項チェック
-                if (!$('input[name="rightsAgreement"]').is(':checked') ||
-                    !$('input[name="reReleaseAgreement"]').is(':checked') ||
-                    !$('input[name="platformAgreement"]').is(':checked')) {
-                    alert('全ての同意事項にチェックを入れてください。');
-                    return;
-                }
-
-                // Disable submit button while processing
-                const submitButton = $(this).find('button[type="submit"]');
-                submitButton.prop('disabled', true);
-                submitButton.html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> 送信中...');
+                // エラーメッセージ初期化
+                $('#error-message').hide().html('');
+                $('#success-message').hide().html('');
 
                 try {
-                    const formData = new FormData(this);
-
-                    // Add album cover file
-                    const albumCover = $('#albumCover')[0].files[0];
-                    if (albumCover) {
-                        formData.append('albumCover', albumCover);
+                    // Form validation
+                    if (!this.checkValidity()) {
+                        e.stopPropagation();
+                        $(this).addClass('was-validated');
+                        throw new Error('必須項目を入力してください。');
                     }
 
-                    // Add audio files
-                    $('.song-entry').each(function(index) {
-                        const audioFile = $(this).find('input[type="file"]')[0].files[0];
-                        if (audioFile) {
-                            formData.append(`audio_${index}`, audioFile);
-                        }
+                    // FormData 객체 생성
+                    const formData = new FormData();
+
+                    // 기본 폼 데이터 추가
+                    const formElements = $(this).serializeArray();
+                    formElements.forEach(item => {
+                        formData.append(item.name, item.value);
                     });
 
-                    // Add platform selections
+                    // 앨범 커버 파일 처리
+                    const albumCoverInput = document.querySelector('input[name="albumCover"]');
+                    if (!albumCoverInput || !albumCoverInput.files || albumCoverInput.files.length === 0) {
+                        throw new Error('アルバムカバー画像を選択してください。');
+                    }
+                    formData.append('albumCover', albumCoverInput.files[0]);
+
+                    // 오디오 파일 처리
+                    let hasAudioFile = false;
+                    const songEntries = document.querySelectorAll('.song-entry');
+                    for (let i = 0; i < songEntries.length; i++) {
+                        const audioInput = songEntries[i].querySelector('input[type="file"][accept=".wav"]');
+                        if (!audioInput) {
+                            console.error(`Audio input not found for song ${i + 1}`);
+                            continue;
+                        }
+
+                        if (audioInput.files && audioInput.files.length > 0) {
+                            hasAudioFile = true;
+                            const audioFile = audioInput.files[0];
+                            
+                            if (!audioFile.type.match('audio/wav')) {
+                                throw new Error(`音声ファイル ${i + 1} はWAV形式である必要があります。`);
+                            }
+                            
+                            if (audioFile.size > 2 * 1024 * 1024 * 1024) {
+                                throw new Error(`音声ファイル ${i + 1} は2GB以下である必要があります。`);
+                            }
+
+                            formData.append(`audio_${i}`, audioFile);
+                            console.log(`Added audio file for song ${i + 1}:`, audioFile.name);
+                        }
+                    }
+
+                    if (!hasAudioFile) {
+                        throw new Error('少なくとも1つの音声ファイルをアップロードしてください。');
+                    }
+
+                    // プラットフォーム選択データ追加
                     const selectedPlatforms = [];
                     $('input[name="platforms[]"]:checked').each(function() {
                         selectedPlatforms.push($(this).val());
                     });
-                    formData.append('platforms', selectedPlatforms);
+                    formData.append('platforms', JSON.stringify(selectedPlatforms));
 
-                    // Add excluded countries
+                    // 除外国データ追加
                     const excludedCountries = [];
                     $('input[name="excludedCountries[]"]:checked').each(function() {
                         excludedCountries.push($(this).val());
                     });
-                    formData.append('excludedCountries', excludedCountries);
+                    formData.append('excludedCountries', JSON.stringify(excludedCountries));
 
-                    // Add agreements
-                    formData.append('rightsAgreement', $('input[name="rightsAgreement"]').is(':checked'));
-                    formData.append('reReleaseAgreement', $('input[name="reReleaseAgreement"]').is(':checked'));
-                    formData.append('platformAgreement', $('input[name="platformAgreement"]').is(':checked'));
-                    formData.append('youtubeAgree', $('#youtubeAgree').is(':checked'));
-
-                    // API call with proper headers
-                    const response = await fetch('/api/upload', {
-                        method: 'POST',
-                        body: formData,
-                        headers: {
-                            'Accept': 'application/json'
-                        }
-                    });
-
-                    if (!response.ok) {
-                        const errorData = await response.json();
-                        throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+                    // 同意事項チェック
+                    if (!$('input[name="rightsAgreement"]').is(':checked') ||
+                        !$('input[name="reReleaseAgreement"]').is(':checked') ||
+                        !$('input[name="platformAgreement"]').is(':checked')) {
+                        throw new Error('全ての同意事項にチェックを入れください。');
                     }
 
+                    // YouTube 同意事項
+                    formData.append('youtubeMonetize', $('input[name="youtubeMonetize"]:checked').val() || 'no');
+                    formData.append('youtubeAgree', $('#youtubeAgree').is(':checked'));
+
+                    // Submit button 비활성화
+                    const submitButton = $(this).find('button[type="submit"]');
+                    submitButton.prop('disabled', true);
+                    submitButton.html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> 送信中...');
+
+                    // FormData 내용 로깅
+                    for (let [key, value] of formData.entries()) {
+                        console.log(`FormData entry - ${key}:`, value instanceof File ? value.name : value);
+                    }
+
+                    // API 호출
+                    const response = await fetch('/api/upload', {
+                        method: 'POST',
+                        body: formData
+                    });
+
                     const result = await response.json();
+
+                    if (!response.ok) {
+                        throw new Error(result.message || `アップロードに失敗しました。(${response.status})`);
+                    }
+
+                    // 성공 메시지 표시
+                    $('#success-message').html('アルバムの申請が完了しました。').show();
                     
-                    // Show success message
-                    alert('アルバムの申請が完了しました。');
-                    
-                    // Redirect to reservation page
-                    window.location.href = '/reservation.html';
+                    // 3초 후 리다이렉트
+                    setTimeout(() => {
+                        window.location.href = '/reservation.html';
+                    }, 3000);
 
                 } catch (error) {
                     console.error('Error:', error);
-                    alert('エラーが発生しました。もう一度お試しください。\n' + error.message);
+                    // 에러 메시지 표시
+                    $('#error-message').html(`<strong>エラー:</strong> ${error.message}`).show();
+                    
+                    // 에러 메시지로 스크롤
+                    $('html, body').animate({
+                        scrollTop: $('#error-message').offset().top - 100
+                    }, 500);
                 } finally {
-                    // Re-enable submit button
+                    // Submit button 재활성화
+                    const submitButton = $(this).find('button[type="submit"]');
                     submitButton.prop('disabled', false);
                     submitButton.html('申請する');
                 }
