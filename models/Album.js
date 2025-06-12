@@ -1,113 +1,169 @@
 const mongoose = require('mongoose');
 
-const songSchema = new mongoose.Schema({
-    title: {
+const AlbumSchema = new mongoose.Schema({
+    // Basic Information
+    albumNameDomestic: {
         type: String,
         required: true
     },
-    titleEn: {
+    albumNameInternational: {
         type: String,
         required: true
     },
-    date: {
+    versionInfo: {
+        type: String,
+        required: true
+    },
+    releaseDate: {
         type: Date,
-        required: false
+        required: true,
+        validate: {
+            validator: function(date) {
+                const threeWeeksFromNow = new Date();
+                threeWeeksFromNow.setDate(threeWeeksFromNow.getDate() + 21);
+                return date >= threeWeeksFromNow;
+            },
+            message: '発売日は3週間以降の日付を選択してください。'
+        }
     },
-    duration: {
-        type: String,
-        required: true
-    },
-    audioUrl: {
-        type: String,
-        required: true
-    },
-    isClassical: {
-        type: Boolean,
-        default: false
-    },
-    classicalInfo: {
-        composer: String,
-        opusNumber: String,
-        movement: String,
-        tempo: String
-    }
-});
 
-const albumSchema = new mongoose.Schema({
-    albumTitle: {
+    // Artist Information
+    mainArtists: [{
         type: String,
         required: true
-    },
-    nameEn: {
+    }],
+    participatingArtists: [{
         type: String,
         required: true
-    },
-    nameKana: {
+    }],
+    featuringArtists: [{
+        type: String
+    }],
+    mixingEngineers: [{
         type: String,
         required: true
-    },
-    email: {
+    }],
+    recordingEngineers: [{
         type: String,
         required: true
-    },
-    password: {
+    }],
+    producers: [{
         type: String,
         required: true
-    },
-    artistInfo: {
+    }],
+
+    // Creator Information
+    lyricists: [{
         type: String,
         required: true
-    },
-    isReleased: {
-        type: Boolean,
-        default: false
-    },
-    imageUrl: {
+    }],
+    composers: [{
         type: String,
         required: true
-    },
-    genre: {
+    }],
+    arrangers: [{
         type: String,
-        required: true,
-        enum: ['pop', 'rock', 'jazz', 'classical', 'electronic', 'hiphop', 'rb', 'folk', 'world', 'ambient', 'metal', 'blues', 'country', 'experimental', 'fusion']
-    },
-    youtubeMonetize: {
-        type: String,
-        required: true,
-        enum: ['yes', 'no']
-    },
-    youtubeAgree: {
+        required: true
+    }],
+
+    // Song Information
+    isRemake: {
         type: Boolean,
         required: true
     },
-    songs: [songSchema],
-    status: {
-        type: String,
-        enum: ['処理中', '完了', 'エラー'],
-        default: '処理中'
+    usesExternalBeat: {
+        type: Boolean,
+        required: true
     },
+    language: {
+        type: String,
+        required: true,
+        enum: [
+            'instrumental',
+            'japanese',
+            'english',
+            'korean',
+            'chinese',
+            'spanish',
+            'french',
+            'german',
+            'italian',
+            'portuguese',
+            'russian',
+            'arabic',
+            'hindi',
+            'bengali',
+            'punjabi',
+            'javanese',
+            'vietnamese',
+            'thai',
+            'turkish',
+            'persian'
+        ]
+    },
+    lyrics: {
+        type: String
+    },
+
+    // Album Cover
+    albumCover: {
+        type: String,
+        required: true,
+        validate: {
+            validator: function(value) {
+                // Validation will be handled in the upload middleware
+                return true;
+            },
+            message: 'アルバムカバーは3000x3000ピクセル、10MB以下のJPG/PNG形式である必要があります。'
+        }
+    },
+
+    // Distribution
+    platforms: [{
+        type: String,
+        required: true,
+        enum: ['anghami', 'TIDAL', 'JOOX'] // Add more platforms as needed
+    }],
+    excludedCountries: [{
+        type: String,
+        enum: ['JP', 'US', 'CN', 'KR'] // Add more countries as needed
+    }],
+
+    // Agreements
+    agreements: {
+        all: {
+            type: Boolean,
+            required: true
+        },
+        rights: {
+            type: Boolean,
+            required: true
+        },
+        reRelease: {
+            type: Boolean,
+            required: true
+        },
+        platform: {
+            type: Boolean,
+            required: true
+        }
+    },
+
+    // Metadata
     createdAt: {
+        type: Date,
+        default: Date.now
+    },
+    updatedAt: {
         type: Date,
         default: Date.now
     }
 });
 
-// 저장 전 날짜 유효성 검사
-albumSchema.pre('save', function(next) {
-    // 날짜가 있는 곡들만 검증
-    const invalidDates = this.songs.filter(song => 
-        song.date && (
-            isNaN(song.date.getTime()) || 
-            song.date.getFullYear() < 1900 || 
-            song.date.getFullYear() > 2100
-        )
-    );
-
-    if (invalidDates.length > 0) {
-        return next(new Error('保存に失敗：無効な日付があります'));
-    }
-    
+// Update the updatedAt timestamp before saving
+AlbumSchema.pre('save', function(next) {
+    this.updatedAt = new Date();
     next();
 });
 
-module.exports = mongoose.model('Album', albumSchema, 'albums-jp');
+module.exports = mongoose.model('Album', AlbumSchema);

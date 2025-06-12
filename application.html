@@ -6,7 +6,7 @@
     <title>アルバム申請 - Surroundio</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="css/application.css" rel="stylesheet">
-    <link href="css/font-awesome.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
     <!-- PayPal SDK -->
     <script src="https://www.paypal.com/sdk/js?client-id=AUAys9sigvI9TtgDkQMRtQxfrXspOUiEp9CUafMtSagb2r_Av6rYByXOrkRkQIg7weOtYlGKfJMxRuK_&currency=JPY&intent=capture"></script>
     <style>
@@ -92,6 +92,50 @@
             color: #721c24;
             border: 1px solid #f5c6cb;
         }
+        .add-button {
+            background: #C1FFD7;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            margin: 5px 0;
+            cursor: pointer;
+        }
+        .add-button:hover { background: #B4EBC5; }
+        .input-group { margin-bottom: 10px; }
+        .checkbox-group { margin: 15px 0; }
+        .language-section { margin: 20px 0; }
+        .platform-section { 
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 10px;
+            margin: 20px 0;
+        }
+        .terms-section {
+            margin: 20px 0;
+            padding: 15px;
+            background: #f9f9f9;
+            border-radius: 5px;
+        }
+        .terms-content {
+            max-height: 200px;
+            overflow-y: auto;
+            padding: 10px;
+            margin: 10px 0;
+            background: white;
+            border: 1px solid #ddd;
+        }
+        .image-upload-info {
+            background: #f5f5f5;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+        .dynamic-input-container { margin-top: 10px; }
+        .remove-input {
+            color: red;
+            cursor: pointer;
+            margin-left: 10px;
+        }
     </style>
 </head>
 <body>
@@ -109,31 +153,45 @@
                 <h3 class="mb-4">基本情報</h3>
                 <div class="row">
                     <div class="col-md-6 mb-3">
-                        <label for="nameEn" class="form-label required-label">名前（英語）</label>
-                        <input type="text" class="form-control" id="nameEn" required>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <label for="nameKana" class="form-label required-label">名前（カナ）</label>
-                        <input type="text" class="form-control" id="nameKana" required>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-md-12 mb-3">
                         <label for="email" class="form-label required-label">メールアドレス</label>
-                        <input type="email" class="form-control" id="email" required>
+                        <input type="email" class="form-control" id="email" name="email" required>
                         <div class="invalid-feedback">
                             有効なメールアドレスを入力してください（@を含む必要があります）
                         </div>
                     </div>
-                </div>
-                <div class="row">
-                    <div class="col-md-12 mb-3">
+                    <div class="col-md-6 mb-3">
                         <label for="password" class="form-label required-label">パスワード</label>
-                        <input type="password" class="form-control" id="password" required>
+                        <input type="password" class="form-control" id="password" name="password" required>
                         <div class="invalid-feedback">
                             パスワードを入力してください
                         </div>
                         <small class="text-muted">予約確認時に必要となります</small>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="albumNameDomestic" class="form-label required-label">アルバム名（国内）</label>
+                        <input type="text" class="form-control" id="albumNameDomestic" name="albumNameDomestic" placeholder="アルバム名を入力してください" required>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="albumNameInternational" class="form-label required-label">アルバム名（海外）</label>
+                        <input type="text" class="form-control" id="albumNameInternational" name="albumNameInternational" placeholder="アルバム名を入力してください" required>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="artistNameKana" class="form-label required-label">アーティスト名（カナ）</label>
+                        <input type="text" class="form-control" id="artistNameKana" name="artistNameKana" placeholder="アーティスト名をカタカナで入力してください" required>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="artistNameEnglish" class="form-label required-label">アーティスト名（英文）</label>
+                        <input type="text" class="form-control" id="artistNameEnglish" name="artistNameEnglish" placeholder="Enter artist name in English" required>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-12 mb-3">
+                        <label for="versionInfo" class="form-label required-label">バージョン情報</label>
+                        <input type="text" class="form-control" id="versionInfo" name="versionInfo" placeholder="アルバムバージョン情報を入力してください(例: Holiday Remix / Instrumental Version)" required>
                     </div>
                 </div>
             </div>
@@ -141,136 +199,607 @@
             <!-- 楽曲情報 -->
             <div class="form-section">
                 <h3 class="mb-4">楽曲情報</h3>
+                <button type="button" class="btn btn-success mb-3" id="addSongButton">
+                    <i class="fa fa-plus"></i> 楽曲を追加
+                </button>
                 <div id="songs-container">
-                    <div class="song-entry" data-song-index="0">
-                        <div class="row">
-                            <div class="col-md-12 mb-3">
-                                <label for="albumTitle" class="form-label required-label">アルバムタイトル</label>
-                                <input type="text" class="form-control" id="albumTitle" required>
+                    <!-- Template for song entry -->
+                    <div class="song-entry mb-4 p-3 border rounded" data-song-index="0">
+                        <h4 class="d-flex justify-content-between align-items-center">
+                            楽曲 #<span class="song-number">1</span>
+                            <button type="button" class="btn btn-danger remove-song" style="display: none;">
+                                <i class="fa fa-trash"></i>
+                            </button>
+                        </h4>
+
+                        <!-- アーティスト情報 -->
+                        <div class="artist-section mb-4">
+                            <h5>アーティスト情報</h5>
+                            <div id="mainArtistContainer_0" class="mb-3">
+                                <label class="form-label required-label">メインアーティスト</label>
+                                <div class="input-group">
+                                    <input type="text" name="mainArtist_0[]" class="form-control" required>
+                                    <div class="btn-group">
+                                        <button type="button" class="btn btn-success add-field">+</button>
+                                        <button type="button" class="btn btn-danger remove-field">-</button>
+                                    </div>
+                                </div>
                             </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="songTitle_0" class="form-label required-label">曲名</label>
-                                <input type="text" class="form-control" id="songTitle_0" name="songTitle[]" required>
+
+                            <div id="participatingArtistContainer_0" class="mb-3">
+                                <label class="form-label required-label">参加アーティスト</label>
+                                <div class="input-group">
+                                    <input type="text" name="participatingArtist_0[]" class="form-control" required>
+                                    <div class="btn-group">
+                                        <button type="button" class="btn btn-success add-field">+</button>
+                                        <button type="button" class="btn btn-danger remove-field">-</button>
+                                    </div>
+                                </div>
                             </div>
-                            <div class="col-md-6 mb-3">
-                                <label for="songTitleEn_0" class="form-label required-label">曲名（英語）</label>
-                                <input type="text" class="form-control" id="songTitleEn_0" name="songTitleEn[]" required>
+
+                            <div id="featuringContainer_0" class="mb-3">
+                                <label class="form-label">フィーチャリングアーティスト</label>
+                                <div class="input-group">
+                                    <input type="text" name="featuring_0[]" class="form-control">
+                                    <div class="btn-group">
+                                        <button type="button" class="btn btn-success add-field">+</button>
+                                        <button type="button" class="btn btn-danger remove-field">-</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div id="mixingEngineerContainer_0" class="mb-3">
+                                <label class="form-label required-label">ミキシングエンジニア</label>
+                                <div class="input-group">
+                                    <input type="text" name="mixingEngineer_0[]" class="form-control" required>
+                                    <div class="btn-group">
+                                        <button type="button" class="btn btn-success add-field">+</button>
+                                        <button type="button" class="btn btn-danger remove-field">-</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div id="recordingEngineerContainer_0" class="mb-3">
+                                <label class="form-label required-label">レコーディングエンジニア</label>
+                                <div class="input-group">
+                                    <input type="text" name="recordingEngineer_0[]" class="form-control" required>
+                                    <div class="btn-group">
+                                        <button type="button" class="btn btn-success add-field">+</button>
+                                        <button type="button" class="btn btn-danger remove-field">-</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div id="producerContainer_0" class="mb-3">
+                                <label class="form-label required-label">プロデューサー</label>
+                                <div class="input-group">
+                                    <input type="text" name="producer_0[]" class="form-control" required>
+                                    <div class="btn-group">
+                                        <button type="button" class="btn btn-success add-field">+</button>
+                                        <button type="button" class="btn btn-danger remove-field">-</button>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
-                        <!-- 日付と時間 -->
-                        <div class="row date-time-fields" id="dateTimeFields_0">
-                            <div class="col-md-6 mb-3">
-                                <label for="date_0" class="form-label required-label">日付</label>
-                                <input type="text" class="form-control datepicker" id="date_0" name="date[]" required>
+                        <!-- 作者情報 -->
+                        <div class="creator-section mb-4">
+                            <h5>作者情報</h5>
+                            <div id="lyricistContainer_0" class="mb-3">
+                                <label class="form-label required-label">作詞</label>
+                                <div class="input-group">
+                                    <input type="text" name="lyricist_0[]" class="form-control" required>
+                                    <div class="btn-group">
+                                        <button type="button" class="btn btn-success add-field">+</button>
+                                        <button type="button" class="btn btn-danger remove-field">-</button>
+                                    </div>
+                                </div>
                             </div>
-                            <div class="col-md-6 mb-3">
-                                <label for="duration_0" class="form-label required-label">再生時間</label>
-                                <input type="text" class="form-control time-input" id="duration_0" name="duration[]" placeholder="HH:mm:ss" required>
-                                <small class="text-muted time-display">時間を入力してください (24時間制)</small>
+
+                            <div id="composerContainer_0" class="mb-3">
+                                <label class="form-label required-label">作曲</label>
+                                <div class="input-group">
+                                    <input type="text" name="composer_0[]" class="form-control" required>
+                                    <div class="btn-group">
+                                        <button type="button" class="btn btn-success add-field">+</button>
+                                        <button type="button" class="btn btn-danger remove-field">-</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div id="arrangerContainer_0" class="mb-3">
+                                <label class="form-label required-label">編曲</label>
+                                <div class="input-group">
+                                    <input type="text" name="arranger_0[]" class="form-control" required>
+                                    <div class="btn-group">
+                                        <button type="button" class="btn btn-success add-field">+</button>
+                                        <button type="button" class="btn btn-danger remove-field">-</button>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
-                        <div class="mb-3">
-                            <label for="audioUpload_0" class="form-label required-label">音源ファイル（WAV形式）</label>
-                            <input type="file" class="form-control" id="audioUpload_0" name="audio[]" accept=".wav" required>
-                        </div>
+                        <!-- その他の情報 -->
+                        <div class="other-info-section">
+                            <h5>その他の情報</h5>
+                            <div class="mb-3">
+                                <label class="form-label required-label">音声ファイル（WAV形式）</label>
+                                <input type="file" class="form-control" name="audio_0" accept=".wav" required>
+                                <div class="alert alert-warning mt-2">
+                                    <p class="text-danger">※ 音声ファイルは以下の規格を必ず守ってください：</p>
+                                    <ul>
+                                        <li>ファイル形式: WAV</li>
+                                        <li>サンプリングレート: 44.1kHz または 48kHz</li>
+                                        <li>ビット深度: 16bit または 24bit</li>
+                                        <li>チャンネル: ステレオ</li>
+                                        <li>ファイルサイズ: 2GB以下</li>
+                                    </ul>
+                                    <p>※ 音声ファイルが規格外の場合、音質の低下や処理の遅延が発生する可能性があります。</p>
+                                </div>
+                            </div>
 
-                        <!-- クラシック楽曲情報 -->
-                        <div class="mb-3">
+                            <div class="mb-3">
+                                <label class="form-label">リメイク曲ですか？</label>
+                                <div class="form-check">
+                                    <input type="radio" class="form-check-input" name="isRemake_0" value="yes" required>
+                                    <label class="form-check-label">はい</label>
+                                </div>
+                                <div class="form-check">
+                                    <input type="radio" class="form-check-input" name="isRemake_0" value="no" required>
+                                    <label class="form-check-label">いいえ</label>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">外部購入ビート/サンプルを使用していますか？</label>
+                                <div class="form-check">
+                                    <input type="radio" class="form-check-input" name="usesExternalBeat_0" value="yes" required>
+                                    <label class="form-check-label">はい</label>
+                                </div>
+                                <div class="form-check">
+                                    <input type="radio" class="form-check-input" name="usesExternalBeat_0" value="no" required>
+                                    <label class="form-check-label">いいえ</label>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label required-label">言語</label>
+                                <select class="form-select" name="language_0" required>
+                                    <option value="instrumental">演奏（言語なし）</option>
+                                    <option value="japanese">日本語</option>
+                                    <option value="english">英語</option>
+                                    <option value="korean">韓国語</option>
+                                    <option value="chinese">中国語</option>
+                                    <option value="spanish">スペイン語</option>
+                                    <option value="french">フランス語</option>
+                                    <option value="german">ドイツ語</option>
+                                    <option value="italian">イタリア語</option>
+                                    <option value="portuguese">ポルトガル語</option>
+                                    <option value="russian">ロシア語</option>
+                                    <option value="arabic">アラビア語</option>
+                                    <option value="hindi">ヒンディー語</option>
+                                    <option value="bengali">ベンガル語</option>
+                                    <option value="punjabi">パンジャブ語</option>
+                                    <option value="javanese">ジャワ語</option>
+                                    <option value="vietnamese">ベトナム語</option>
+                                    <option value="thai">タイ語</option>
+                                    <option value="turkish">トルコ語</option>
+                                    <option value="persian">ペルシャ語</option>
+                                </select>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">歌詞</label>
+                                <textarea class="form-control" name="lyrics_0" rows="5"></textarea>
+                                <div class="alert alert-warning mt-2">
+                                    <p>- 歌詞に性的な内容や暴言が含まれている場合、禁止事項をチェックしてください。</p>
+                                    <p>- 歌詞に性的な内容や暴言が含まれているにもかかわらず禁止事項のチェックがない場合、当社の方針により歌詞サービスが制限される可能性があります。</p>
+                                    <p>- 商標が歌詞に含まれる場合、各プラットフォームの方針により歌詞サービスが制限される可能性があります。</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- アルバム全体の情報 -->
+            <div class="form-section">
+                <h3>アルバム全体の情報</h3>
+                <div class="mb-3">
+                    <label class="form-label required-label">アルバムカバー</label>
+                    <input type="file" class="form-control" name="albumCover" accept=".jpg,.jpeg,.png" required>
+                    <div class="alert alert-warning mt-2">
+                        <p class="text-danger">※ 商標や商用イメージは使用できません</p>
+                        <p><strong>アルバムカバーは以下の規格を必ず守ってください：</strong></p>
+                        <p>3,000x3,000px、10MB以下の正方形JPG、PNGイメージ</p>
+                    </div>
+                </div>
+
+                <!-- プラットフォーム選択 -->
+                <div class="platform-section">
+                    <h4>発売を希望するプラットフォーム</h4>
+                    <div class="row">
+                        <div class="col-md-4">
                             <div class="form-check">
-                                <input class="form-check-input classical-check" type="checkbox" id="isClassical_0" name="isClassical[]" data-index="0">
-                                <label class="form-check-label" for="isClassical_0">クラシック楽曲</label>
+                                <input type="checkbox" class="form-check-input" name="platforms[]" value="spotify">
+                                <label class="form-check-label">Spotify</label>
+                            </div>
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input" name="platforms[]" value="apple_music">
+                                <label class="form-check-label">Apple Music</label>
+                            </div>
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input" name="platforms[]" value="youtube_music">
+                                <label class="form-check-label">YouTube Music</label>
+                            </div>
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input" name="platforms[]" value="amazon_music">
+                                <label class="form-check-label">Amazon Music</label>
+                            </div>
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input" name="platforms[]" value="tidal">
+                                <label class="form-check-label">TIDAL</label>
                             </div>
                         </div>
+                        <div class="col-md-4">
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input" name="platforms[]" value="deezer">
+                                <label class="form-check-label">Deezer</label>
+                            </div>
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input" name="platforms[]" value="pandora">
+                                <label class="form-check-label">Pandora</label>
+                            </div>
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input" name="platforms[]" value="soundcloud">
+                                <label class="form-check-label">SoundCloud</label>
+                            </div>
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input" name="platforms[]" value="napster">
+                                <label class="form-check-label">Napster</label>
+                            </div>
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input" name="platforms[]" value="anghami">
+                                <label class="form-check-label">Anghami</label>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input" name="platforms[]" value="joox">
+                                <label class="form-check-label">JOOX</label>
+                            </div>
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input" name="platforms[]" value="kkbox">
+                                <label class="form-check-label">KKBOX</label>
+                            </div>
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input" name="platforms[]" value="line_music">
+                                <label class="form-check-label">LINE MUSIC</label>
+                            </div>
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input" name="platforms[]" value="qq_music">
+                                <label class="form-check-label">QQ Music</label>
+                            </div>
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input" name="platforms[]" value="netease">
+                                <label class="form-check-label">NetEase Cloud Music</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
-                        <div id="classicalFields_0" class="classical-fields" style="display: none;">
+                <!-- 除外国選択 -->
+                <div class="mb-3">
+                    <label class="form-label">発売を希望しない国</label>
+                    <button class="btn btn-link" type="button" data-bs-toggle="collapse" data-bs-target="#excludedCountriesCollapse" aria-expanded="false" aria-controls="excludedCountriesCollapse">
+                        国を選択 (クリックして展開)
+                    </button>
+                    <div class="collapse" id="excludedCountriesCollapse">
+                        <div class="card card-body">
                             <div class="row">
-                                <div class="col-md-6 mb-3">
-                                    <label for="composer_0" class="form-label classical-required">作曲家</label>
-                                    <input type="text" class="form-control" id="composer_0" name="composer[]">
+                                <div class="col-md-3">
+                                    <h6>アジア</h6>
+                                    <div class="form-check">
+                                        <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="JP">
+                                        <label class="form-check-label">日本</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="CN">
+                                        <label class="form-check-label">中国</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="KR">
+                                        <label class="form-check-label">韓国</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="TW">
+                                        <label class="form-check-label">台湾</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="HK">
+                                        <label class="form-check-label">香港</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="SG">
+                                        <label class="form-check-label">シンガポール</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="MY">
+                                        <label class="form-check-label">マレーシア</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="ID">
+                                        <label class="form-check-label">インドネシア</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="TH">
+                                        <label class="form-check-label">タイ</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="VN">
+                                        <label class="form-check-label">ベトナム</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="PH">
+                                        <label class="form-check-label">フィリピン</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="IN">
+                                        <label class="form-check-label">インド</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="PK">
+                                        <label class="form-check-label">パキスタン</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="BD">
+                                        <label class="form-check-label">バングラデシュ</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="LK">
+                                        <label class="form-check-label">スリランカ</label>
+                                    </div>
                                 </div>
-                                <div class="col-md-6 mb-3">
-                                    <label for="opusNumber_0" class="form-label classical-required">作品番号</label>
-                                    <input type="text" class="form-control" id="opusNumber_0" name="opusNumber[]">
+                                <div class="col-md-3">
+                                    <h6>ヨーロッパ</h6>
+                                    <div class="form-check">
+                                        <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="GB">
+                                        <label class="form-check-label">イギリス</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="FR">
+                                        <label class="form-check-label">フランス</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="DE">
+                                        <label class="form-check-label">ドイツ</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="IT">
+                                        <label class="form-check-label">イタリア</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="ES">
+                                        <label class="form-check-label">スペイン</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="PT">
+                                        <label class="form-check-label">ポルトガル</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="NL">
+                                        <label class="form-check-label">オランダ</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="BE">
+                                        <label class="form-check-label">ベルギー</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="CH">
+                                        <label class="form-check-label">スイス</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="AT">
+                                        <label class="form-check-label">オーストリア</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="SE">
+                                        <label class="form-check-label">スウェーデン</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="NO">
+                                        <label class="form-check-label">ノルウェー</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="DK">
+                                        <label class="form-check-label">デンマーク</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="FI">
+                                        <label class="form-check-label">フィンランド</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="IE">
+                                        <label class="form-check-label">アイルランド</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="PL">
+                                        <label class="form-check-label">ポーランド</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="CZ">
+                                        <label class="form-check-label">チェコ</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="HU">
+                                        <label class="form-check-label">ハンガリー</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="GR">
+                                        <label class="form-check-label">ギリシャ</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="RO">
+                                        <label class="form-check-label">ルーマニア</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <h6>北米・南米</h6>
+                                    <div class="form-check">
+                                        <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="US">
+                                        <label class="form-check-label">アメリカ</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="CA">
+                                        <label class="form-check-label">カナダ</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="MX">
+                                        <label class="form-check-label">メキシコ</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="BR">
+                                        <label class="form-check-label">ブラジル</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="AR">
+                                        <label class="form-check-label">アルゼンチン</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="CL">
+                                        <label class="form-check-label">チリ</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="CO">
+                                        <label class="form-check-label">コロンビア</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="PE">
+                                        <label class="form-check-label">ペルー</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="VE">
+                                        <label class="form-check-label">ベネズエラ</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="EC">
+                                        <label class="form-check-label">エクアドル</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="BO">
+                                        <label class="form-check-label">ボリビア</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="PY">
+                                        <label class="form-check-label">パラグアイ</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="UY">
+                                        <label class="form-check-label">ウルグアイ</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <h6>その他の地域</h6>
+                                    <div class="form-check">
+                                        <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="AU">
+                                        <label class="form-check-label">オーストラリア</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="NZ">
+                                        <label class="form-check-label">ニュージーランド</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="RU">
+                                        <label class="form-check-label">ロシア</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="TR">
+                                        <label class="form-check-label">トルコ</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="ZA">
+                                        <label class="form-check-label">南アフリカ</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="EG">
+                                        <label class="form-check-label">エジプト</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="SA">
+                                        <label class="form-check-label">サウジアラビア</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="AE">
+                                        <label class="form-check-label">アラブ首長国連邦</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="IL">
+                                        <label class="form-check-label">イスラエル</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input type="checkbox" class="form-check-input" name="excludedCountries[]" value="IR">
+                                        <label class="form-check-label">イラン</label>
+                                    </div>
                                 </div>
                             </div>
-                            <div class="row">
-                                <div class="col-md-6 mb-3">
-                                    <label for="movement_0" class="form-label classical-required">楽章</label>
-                                    <input type="text" class="form-control" id="movement_0" name="movement[]">
-                                </div>
-                                <div class="col-md-6 mb-3">
-                                    <label for="tempo_0" class="form-label classical-required">速度記号</label>
-                                    <input type="text" class="form-control" id="tempo_0" name="tempo[]">
+                            <div class="row mt-3">
+                                <div class="col-12">
+                                    <button type="button" class="btn btn-secondary" id="showMoreCountries">
+                                        その他の国を表示 (50カ国以上)
+                                    </button>
                                 </div>
                             </div>
                         </div>
-                        <hr class="mt-4 mb-4">
                     </div>
                 </div>
-                <div class="text-center mt-3">
-                    <button type="button" class="btn btn-secondary" onclick="addSongEntry()" id="addSongButton">曲を追加</button>
-                    <button type="button" class="btn btn-danger ms-2" onclick="removeSongEntry()" id="removeSongButton" style="display: none;">削除</button>
-                </div>
 
-                <table class="audio-specs-table mt-5">
-                    <thead>
-                        <tr>
-                            <th>種類</th>
-                            <th>ファイル形式</th>
-                            <th>標本サイズ</th>
-                            <th>サンプリング周波数</th>
-                            <th>チャンネル</th>
-                            <th>曲の長さ</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>通常</td>
-                            <td>WAV形式</td>
-                            <td>16ビット</td>
-                            <td>44.1キロヘルツ</td>
-                            <td>ステレオ</td>
-                            <td>10分以内</td>
-                        </tr>
-                        <tr>
-                            <td>高解像度</td>
-                            <td>WAV形式</td>
-                            <td>24ビット</td>
-                            <td>44.1kHz, 48kHz, 88.2kHz, 96kHz, 176.4kHz, 192kHz</td>
-                            <td>ステレオ</td>
-                            <td>10分以内</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-
-            <!-- アーティスト情報 -->
-            <div class="form-section">
-                <h3 class="mb-4">アーティスト情報</h3>
-                <div class="mb-3">
-                    <label for="artistInfo" class="form-label required-label">アーティスト情報</label>
-                    <textarea class="form-control" id="artistInfo" rows="3" required></textarea>
-                </div>
-                <div class="mb-3">
-                    <div class="form-check">
-                        <input class="form-check-input" type="checkbox" id="isReleased">
-                        <label class="form-check-label" for="isReleased">アルバムリリース済み</label>
+                <!-- 同意事項 -->
+                <div class="terms-section">
+                    <div class="form-check mb-3">
+                        <input type="checkbox" class="form-check-input" name="agreementAll" required>
+                        <label class="form-check-label">所有権等権利紛争に関する全ての情報、他社発売音源の再発売に関する情報、発売国及びプラットフォームに関する情報に同意します。</label>
                     </div>
-                </div>
-            </div>
 
-            <!-- ファイルアップロード -->
-            <div class="form-section">
-                <h3 class="mb-4">ファイルアップロード</h3>
-                <div class="mb-3">
-                    <label for="imageUpload" class="form-label required-label">ジャケット画像（JPG形式、3000x3000）</label>
-                    <input type="file" class="form-control" id="imageUpload" accept=".jpg,.jpeg" required>
-                    <div class="image-upload-guide">
-                        推奨サイズ: 3000x3000ピクセル
+                    <div class="form-check mb-3">
+                        <input type="checkbox" class="form-check-input" name="rightsAgreement" required>
+                        <label class="form-check-label">所有権紛争通知に同意します。</label>
+                        <div class="terms-content">
+                            <p>本有料サービスは、有料利用会員の発売履歴が存在しない、新規の純粋な創作物を対象としています。</p>
+
+                            <p>会員は、流通対象コンテンツに関して、当社に独占的な流通事業権を付与するために必要な適法な著作権、著作隣接権、商標権、意匠権、パブリシティ権等の権利および／または本有料サービスの契約期間中有効な関連使用権限を有していることを保証し、当該コンテンツが第三者の著作権、著作隣接権、商標権、意匠権、パブリシティ権その他正当な法的権利または利益を侵害していないことを保証します。</p>
+
+                            <p>会員は、当社が有料利用契約に基づき、流通対象コンテンツに関して独占的な流通事業を行うにあたり、妨げとなるまたは支障をきたすような一切の約定（口頭・書面を問わず）を締結していないこと、またそのような約定を締結する義務も負っていないこと、さらに、流通対象コンテンツに関して流通事業に必要な一切の権利（著作隣接権を含む）を第三者に譲渡、ライセンス、贈与、担保提供その他の処分を行っておらず、そのような処分を行う義務も負っていないことを保証します。</p>
+
+                            <p>会員は、当社が有料利用契約に基づき、流通対象コンテンツに関して独占的な流通事業を行えるように、契約期間中、(i) 自ら当該コンテンツの流通事業を行わないこと、(ii) 当社以外の第三者に対して当該コンテンツの流通事業権を付与しないこと、(iii) 当該コンテンツの全部または一部を利用または再録音して新たな音源を制作・販売しないこと、またそのための契約を締結しないこと、(iv) その他当社の独占的流通事業権を侵害する一切の法的・事実的行為を行わないことを確約します。</p>
+
+                            <p>有料利用会員が発売したコンテンツについて、当社またはDSPに対し第三者が権利を主張した場合（DSPのカスタマーサポートウェブサイトを通じた間接的な主張も含む）、当社は会員に対し説明を求めることができ、当該説明に基づいて当社は会員を代理して最大2回まで権利を主張することができます。2回の主張後も権利が明確にならない場合や権利紛争が継続する場合、当社は権利の主張を中止または撤回することができます。</p>
+
+                            <p>有料利用会員の説明にもかかわらず、上記第三者の主張に基づく合理的な疑義が引き続き存在する場合、当社はSurroundio利用規約に従って会員に通知のうえ、当該音源および／またはコンテンツの有料サービスを直ちに中止し、該当する収益に対する精算金の支払いを保留することができ、当該保留金に対しては利息が発生しないものとします。ただし、上記第三者の主張に明確な法的根拠がある場合、または即時の中止が必要とされる緊急の事情がある場合には、会員への事前通知なしに当該音源および／またはコンテンツの有料サービスを即時中止し、収益の精算金の支払いを保留することができます。当社は、関連する紛争が法的手続きの確定や当事者間の合意などにより終了した場合、その結果に基づいて会員に対し保留していた精算金を支払います。</p>
+                        </div>
+                    </div>
+
+                    <div class="form-check mb-3">
+                        <input type="checkbox" class="form-check-input" name="reReleaseAgreement" required>
+                        <label class="form-check-label">他社発売音源の再発売情報に同意します。</label>
+                        <div class="terms-content">
+                            <p>本有料サービスでは、過去に他社にて発売または流通された経歴があるコンテンツの重複発売を許可いたしません。</p>
+
+                            <p>ただし、有料利用会員の要請により、既存の権利者から当社へコンテンツの流通権限が移管されることについての書面による同意書を、公文書または電子メールの形式で受領し、アルバム発売日の7日前までに当社宛（kmat0@surroundio.app）に提出した場合に限り、既に発売・流通されたコンテンツが含まれるアルバムの発売を承認します。期日内に当該書面同意書が提出されない場合は、当該トラックを含むアルバムの発売は却下されます。</p>
+
+                            <p>既存権利者の書面による同意手続を経ずにプラットフォームにコンテンツを登録し、アルバム発売を進行した後に、第三者または既存の権利者から権利主張がなされた場合、当社は有料利用会員の同意を得ることなく、該当アルバム全体または特定トラックの流通サービスを直ちに停止することができ、サービス期間中に発生した著作隣接権料の支払いを保留するか、原権利者に対して支払うことができます。</p>
+
+                            <p>万一、第三者または既存の権利者との間で、流通対象コンテンツに関して流通権限の侵害等の理由により紛争が発生した場合、会員は自己の責任と費用負担において当該紛争を解決し、当社が責任を負わないようにしなければなりません。また、これにより当社が費用を負担した場合は、その全額を補償しなければなりません。</p>
+                        </div>
+                    </div>
+
+                    <div class="form-check mb-3">
+                        <input type="checkbox" class="form-check-input" name="platformAgreement" required>
+                        <label class="form-check-label">Surroundio発売国及びプラットフォームガイドに同意します。</label>
+                        <div class="terms-content">
+                            <p>本有料サービスは、有料利用会員が登録・発売したコンテンツを、当社とコンテンツ流通契約関係にあるすべてのDSPおよび各DSPがサービスを提供する全地域に対して流通・供給することを原則とします。</p>
+
+                            <p>ただし、有料利用会員がプラットフォーム上で、特定のDSPまたは国に対してコンテンツの流通・供給を希望しない旨を当社に明示した場合、当社は有料利用会員の要請または条件に従ってコンテンツを流通・供給します。</p>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -386,420 +915,182 @@
     <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
     <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
     <script>
-        // Initialize datepicker and time input for the first song
         $(document).ready(function() {
-            // Add beforeunload event handler
-            window.addEventListener('beforeunload', function(e) {
-                // Cancel the event
+            let songCount = 0;
+
+            // 곡 추가 버튼 클릭 이벤트
+            $('#addSongButton').on('click', function() {
+                const originalSong = $('#songs-container .song-entry:first').clone();
+                songCount++;
+
+                // 새로운 곡 번호 설정
+                originalSong.find('.song-number').text(songCount + 1);
+                
+                // 모든 input, select, textarea 초기화 및 인덱스 업데이트
+                originalSong.find('input, select, textarea').each(function() {
+                    const elem = $(this);
+                    // name 속성 업데이트
+                    if (elem.attr('name')) {
+                        elem.attr('name', elem.attr('name').replace(/_\d+/, `_${songCount}`));
+                    }
+                    // id 속성 업데이트
+                    if (elem.attr('id')) {
+                        elem.attr('id', elem.attr('id').replace(/_\d+/, `_${songCount}`));
+                    }
+                    // 값 초기화
+                    elem.val('');
+                });
+
+                // 컨테이너 ID 업데이트
+                originalSong.find('[id]').each(function() {
+                    const elem = $(this);
+                    elem.attr('id', elem.attr('id').replace(/_\d+/, `_${songCount}`));
+                });
+
+                // 삭제 버튼 표시 및 이벤트 설정
+                originalSong.find('.remove-song').show().on('click', function() {
+                    if ($('.song-entry').length > 1) {
+                        $(this).closest('.song-entry').remove();
+                        updateSongNumbers();
+                    }
+                });
+
+                // 새로운 곡 추가
+                $('#songs-container').append(originalSong);
+                
+                // 모든 곡의 삭제 버튼 표시 (첫 번째 곡 제외)
+                if ($('.song-entry').length > 1) {
+                    $('.remove-song').show();
+                }
+            });
+
+            // 입력 필드 추가 버튼 클릭 이벤트
+            $(document).on('click', '.add-field', function(e) {
                 e.preventDefault();
-                // Chrome requires returnValue to be set
-                e.returnValue = 'ページを離れると、入力した内容が失われます。';
+                e.stopPropagation();
+                
+                const container = $(this).closest('.mb-3');
+                const inputGroup = $(this).closest('.input-group');
+                const newGroup = inputGroup.clone(true);
+                
+                // 입력 필드 초기화
+                newGroup.find('input').val('');
+                
+                // 새 입력 그룹 추가
+                container.append(newGroup);
+                
+                // 모든 삭제 버튼 활성화
+                container.find('.remove-field').prop('disabled', false);
             });
 
-            // Remove beforeunload event handler when form is submitted successfully
-            document.getElementById('albumForm').addEventListener('submit', function() {
-                window.removeEventListener('beforeunload', function(e) {
-                    e.preventDefault();
-                    e.returnValue = 'ページを離れると、入力した内容が失われます。';
-                });
-            });
-
-            $("#date_0").datepicker({
-                dateFormat: 'yy年mm月dd日',
-                monthNames: ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'],
-                dayNames: ['日曜日', '月曜日', '火曜日', '水曜日', '木曜日', '金曜日', '土曜日'],
-                dayNamesMin: ['日', '月', '火', '水', '木', '金', '土'],
-                showMonthAfterYear: true,
-                yearSuffix: '年'
-            });
-
-            // Time input formatting
-            $(document).on('input', '.time-input', function() {
-                let value = $(this).val().replace(/\D/g, '');
-                if (value.length > 6) {
-                    value = value.substr(0, 6);
-                }
-                if (value.length >= 4) {
-                    value = value.substr(0, 2) + ':' + value.substr(2, 2) + ':' + value.substr(4);
-                } else if (value.length >= 2) {
-                    value = value.substr(0, 2) + ':' + value.substr(2);
-                }
-                $(this).val(value);
-            });
-        });
-
-        let songCount = 1;
-        const MAX_SONGS = 3;
-
-        function addSongEntry() {
-            if (songCount >= MAX_SONGS) {
-                alert('最大3曲までアップロード可能です');
-                return;
-            }
-
-            const container = document.getElementById('songs-container');
-            const template = document.querySelector('.song-entry').cloneNode(true);
-            
-            // Update IDs and names
-            template.setAttribute('data-song-index', songCount);
-            
-            // Remove date field but keep duration for additional songs
-            const dateTimeFields = template.querySelector('.date-time-fields');
-            if (dateTimeFields && songCount > 0) {
-                const dateField = dateTimeFields.querySelector('[name="date[]"]').parentElement;
-                dateField.remove();
-                
-                // Update duration field container classes
-                const durationField = dateTimeFields.querySelector('[name="duration[]"]').parentElement;
-                dateTimeFields.classList.remove('row');
-                durationField.classList.remove('col-md-6');
-                durationField.classList.add('col-md-12');
-            }
-            
-            // Update IDs and clear values
-            template.querySelectorAll('[id]').forEach(element => {
-                const oldId = element.id;
-                const newId = oldId.replace(/_\d+$/, `_${songCount}`);
-                element.id = newId;
-                
-                // Clear input values
-                if (element.tagName === 'INPUT') {
-                    if (element.type === 'text' || element.type === 'file') {
-                        element.value = '';
-                    } else if (element.type === 'checkbox') {
-                        element.checked = false;
-                    }
-                }
-                
-                // Update data-index for classical-check
-                if (element.classList.contains('classical-check')) {
-                    element.setAttribute('data-index', songCount);
-                }
-            });
-
-            // Update label for attributes
-            template.querySelectorAll('label[for]').forEach(label => {
-                const oldFor = label.getAttribute('for');
-                const newFor = oldFor.replace(/_\d+$/, `_${songCount}`);
-                label.setAttribute('for', newFor);
-            });
-
-            // Update classical fields container ID
-            const classicalFields = template.querySelector('.classical-fields');
-            classicalFields.id = `classicalFields_${songCount}`;
-            classicalFields.style.display = 'none';
-
-            container.appendChild(template);
-            songCount++;
-
-            // Update add button state
-            if (songCount >= MAX_SONGS) {
-                document.getElementById('addSongButton').disabled = true;
-            }
-
-            // Show remove button if more than one song
-            document.getElementById('removeSongButton').style.display = songCount > 1 ? 'inline-block' : 'none';
-        }
-
-        function removeSongEntry() {
-            if (songCount <= 1) {
-                return;
-            }
-
-            const container = document.getElementById('songs-container');
-            container.removeChild(container.lastChild);
-            songCount--;
-
-            // Update button states
-            document.getElementById('addSongButton').disabled = false;
-            document.getElementById('removeSongButton').style.display = songCount > 1 ? 'inline-block' : 'none';
-        }
-
-        // Update classical fields toggle function
-        document.addEventListener('change', function(e) {
-            if (e.target.classList.contains('classical-check')) {
-                const index = e.target.getAttribute('data-index');
-                const fields = document.getElementById(`classicalFields_${index}`);
-                const inputs = fields.querySelectorAll('input[type="text"]');
-                
-                fields.style.display = e.target.checked ? 'block' : 'none';
-                
-                // Toggle required attribute based on checkbox state
-                inputs.forEach(input => {
-                    input.required = e.target.checked;
-                });
-            }
-        });
-
-        // Remove old functions that are no longer needed
-        function addMoreSongs() {}
-        function toggleClassicalFields() {}
-        function toggleAddClassicalFields() {}
-        function submitAdditionalSong() {}
-
-        // Update form submission to handle multiple songs
-        document.getElementById('albumForm').addEventListener('submit', async function(event) {
-            event.preventDefault();
-            if (!this.checkValidity()) {
-                event.stopPropagation();
-                this.classList.add('was-validated');
-                
-                // Find first invalid field and scroll to it
-                const firstInvalidField = this.querySelector(':invalid');
-                if (firstInvalidField) {
-                    firstInvalidField.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                }
-                return;
-            }
-
-            const formData = new FormData();
-            const submitButton = document.querySelector('button[type="submit"]');
-            let uploadComplete = false;
-
-            try {
-                submitButton.disabled = true;
-                submitButton.innerHTML = '申請中...';
-
-                // Basic information
-                formData.append('nameEn', document.getElementById('nameEn').value);
-                formData.append('nameKana', document.getElementById('nameKana').value);
-                formData.append('email', document.getElementById('email').value);
-                formData.append('password', document.getElementById('password').value);
-                formData.append('albumTitle', document.getElementById('albumTitle').value);
-
-                // Collect all songs data
-                document.querySelectorAll('.song-entry').forEach((songEntry, index) => {
-                    const songData = {
-                        songTitle: document.getElementById(`songTitle_${index}`).value,
-                        songTitleEn: document.getElementById(`songTitleEn_${index}`).value,
-                        duration: document.getElementById(`duration_${index}`).value || "00:00:00"
-                    };
-
-                    // Only add date for the first song
-                    if (index === 0) {
-                        songData.date = document.getElementById(`date_${index}`).value;
-                    }
-
-                    if (document.getElementById(`isClassical_${index}`).checked) {
-                        songData.composer = document.getElementById(`composer_${index}`).value;
-                        songData.opusNumber = document.getElementById(`opusNumber_${index}`).value;
-                        songData.movement = document.getElementById(`movement_${index}`).value;
-                        songData.tempo = document.getElementById(`tempo_${index}`).value;
-                    }
-
-                    const audioFile = document.getElementById(`audioUpload_${index}`).files[0];
-                    if (audioFile) {
-                        formData.append(`audio_${index}`, audioFile);
-                    }
-
-                    // Add song data as JSON string for each song
-                    formData.append(`songs[${index}]`, JSON.stringify(songData));
-                });
-
-                formData.append('artistInfo', document.getElementById('artistInfo').value);
-                formData.append('genre', document.getElementById('genre').value);
-                formData.append('isReleased', document.getElementById('isReleased').checked);
-                
-                // YouTube related fields
-                const youtubeMonetize = document.getElementById('youtubeYes').checked ? 'yes' : 'no';
-                const youtubeAgree = document.getElementById('youtubeAgree').checked;
-                
-                formData.append('youtubeMonetize', youtubeMonetize);
-                formData.append('youtubeAgree', youtubeAgree);
-
-                // Cover image
-                const imageFile = document.getElementById('imageUpload').files[0];
-                if (imageFile) {
-                    formData.append('image', imageFile);
-                }
-
-                const response = await fetch("https://pro-audio-jp-1.onrender.com/api/upload", {
-                    method: 'POST',
-                    body: formData,
-                    credentials: 'include',
-                    headers: {
-                        'Accept': 'application/json',
-                        'Origin': 'https://surroundio.today'
-                    }
-                });
-
-                if (!response.ok) {
-                    const errorText = await response.text();
-                    let errorMessage;
-                    try {
-                        const errorJson = JSON.parse(errorText);
-                        errorMessage = errorJson.message || 'アップロードに失敗しました';
-                    } catch (e) {
-                        errorMessage = errorText || 'サーバーエラーが発生しました';
-                    }
-                    throw new Error(errorMessage);
-                }
-
-                const result = await response.json();
-                console.log('Upload successful:', result);
-                uploadComplete = true;
-                alert("✅ アップロードが完了しました");
-                
-                await new Promise(resolve => setTimeout(resolve, 100));
-                this.reset();
-                document.querySelectorAll('.classical-fields').forEach(field => {
-                    field.style.display = 'none';
-                });
-                
-                // Reset song count and remove additional song entries
-                songCount = 1;
-                const container = document.getElementById('songs-container');
-                while (container.children.length > 1) {
-                    container.removeChild(container.lastChild);
-                }
-                document.getElementById('addSongButton').disabled = false;
-                document.getElementById('removeSongButton').style.display = 'none';
-
-                // Scroll to top of the page
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-
-            } catch (error) {
-                console.error("❌ アップロード失敗:", error);
-                let errorMessage = error.message;
-                if (error.response) {
-                    try {
-                        const errorData = await error.response.json();
-                        errorMessage = errorData.message || errorMessage;
-                    } catch (e) {
-                        console.error('Error parsing error response:', e);
-                    }
-                }
-                alert("❌ " + errorMessage);
-            } finally {
-                submitButton.disabled = false;
-                submitButton.innerHTML = '申請する';
-            }
-        });
-
-        // 파일 업로드 유효성 검사
-        document.getElementById('imageUpload').addEventListener('change', function(event) {
-            const file = event.target.files[0];
-            if (file) {
-                const img = new Image();
-                img.onload = function() {
-                    if (img.width !== 3000 || img.height !== 3000) {
-                        alert('画像サイズは3000x3000ピクセルである必要があります');
-                        event.target.value = '';
-                    }
-                };
-                img.src = URL.createObjectURL(file);
-            }
-        });
-
-        // PayPal Button Initialization
-        document.addEventListener('DOMContentLoaded', function() {
-            if (typeof paypal !== 'undefined') {
-                paypal.Buttons({
-                    style: {
-                        layout: 'vertical',
-                        color: 'gold',
-                        shape: 'rect',
-                        label: 'paypal'
-                    },
-                    createOrder: function(data, actions) {
-                        return actions.order.create({
-                            purchase_units: [{
-                                amount: {
-                                    value: '20000',
-                                    currency_code: 'JPY'
-                                },
-                                description: 'Surroundio オーディオ処理サービス'
-                            }]
-                        });
-                    },
-                    onApprove: function(data, actions) {
-                        return actions.order.capture().then(function(details) {
-                            const statusDiv = document.getElementById('payment-status');
-                            statusDiv.className = 'payment-status success';
-                            statusDiv.style.display = 'block';
-                            statusDiv.innerHTML = `
-                                <i class="fa fa-check-circle"></i> お支払いが完了しました。<br>
-                                取引ID: ${details.id}<br>
-                                ご利用ありがとうございます。
-                            `;
-                            console.log('Payment completed: ', details);
-                        });
-                    },
-                    onError: function(err) {
-                        const statusDiv = document.getElementById('payment-status');
-                        statusDiv.className = 'payment-status error';
-                        statusDiv.style.display = 'block';
-                        statusDiv.innerHTML = `
-                            <i class="fa fa-exclamation-circle"></i> 決済処理中にエラーが発生しました。<br>
-                            もう一度お試しください。
-                        `;
-                        console.error('PayPal Error:', err);
-                    }
-                }).render('#paypal-button-container')
-                .catch(function(error) {
-                    console.error('PayPal button render error:', error);
-                });
-            } else {
-                console.error('PayPal SDK not loaded');
-                const statusDiv = document.getElementById('payment-status');
-                statusDiv.className = 'payment-status error';
-                statusDiv.style.display = 'block';
-                statusDiv.innerHTML = `
-                    <i class="fa fa-exclamation-circle"></i> PayPal決済システムの読み込みに失敗しました。<br>
-                    ページを更新してもう一度お試しください。
-                `;
-            }
-        });
-
-        // 폼 제출 버튼 항상 활성화
-        document.addEventListener('DOMContentLoaded', function() {
-            document.querySelector('button[type="submit"]').disabled = false;
-        });
-
-        // 폼 데이터 변경 여부를 추적하는 변수
-        let formModified = false;
-
-        document.addEventListener('DOMContentLoaded', function() {
-            const form = document.getElementById('albumForm');
-            if (form) {
-                // 모든 입력 필드의 변경 감지
-                const inputs = form.querySelectorAll('input, textarea, select');
-                inputs.forEach(input => {
-                    input.addEventListener('input', () => {
-                        formModified = true;
-                    });
-                    input.addEventListener('change', () => {
-                        formModified = true;
-                    });
-                });
-
-                // 폼 제출 시 변경 플래그 초기화
-                form.addEventListener('submit', () => {
-                    formModified = false;
-                });
-            }
-
-            // 홈으로 가기 버튼에 경고 추가
-            const homeButton = document.querySelector('a[href="/index"]');
-            if (homeButton) {
-                homeButton.addEventListener('click', function(e) {
-                    if (formModified) {
-                        if (!confirm('入力内容が保存されていません。\nページを離れてもよろしいですか？')) {
-                            e.preventDefault();
-                        }
-                    }
-                });
-            }
-        });
-
-        // 페이지 이탈 시 경고
-        window.addEventListener('beforeunload', function(e) {
-            if (formModified) {
+            // 입력 필드 삭제 버튼 클릭 이벤트
+            $(document).on('click', '.remove-field', function(e) {
                 e.preventDefault();
-                e.returnValue = '入力内容が保存されていません。';
-                return e.returnValue;
+                e.stopPropagation();
+                
+                const container = $(this).closest('.mb-3');
+                const inputGroups = container.find('.input-group');
+                
+                if (inputGroups.length > 1) {
+                    $(this).closest('.input-group').remove();
+                    
+                    // 마지막 남은 입력 그룹의 삭제 버튼 비활성화
+                    if (inputGroups.length === 2) {
+                        container.find('.remove-field').last().prop('disabled', true);
+                    }
+                }
+            });
+
+            // 곡 번호 업데이트 함수
+            function updateSongNumbers() {
+                $('.song-entry').each(function(index) {
+                    $(this).find('.song-number').text(index + 1);
+                });
             }
+
+            // 초기 상태 설정
+            if ($('.song-entry').length === 1) {
+                $('.remove-song').hide();
+            }
+
+            // 각 섹션의 첫 번째 삭제 버튼 비활성화
+            $('.mb-3').each(function() {
+                if ($(this).find('.input-group').length === 1) {
+                    $(this).find('.remove-field').prop('disabled', true);
+                }
+            });
         });
+    </script>
+
+    <script>
+        // PayPal Button Configuration
+        paypal.Buttons({
+            style: {
+                layout: 'vertical',
+                color: 'blue',
+                shape: 'rect',
+                label: 'paypal'
+            },
+            createOrder: function(data, actions) {
+                return actions.order.create({
+                    purchase_units: [{
+                        amount: {
+                            value: '20000',
+                            currency_code: 'JPY'
+                        },
+                        description: 'Surroundio音楽配信サービス'
+                    }]
+                });
+            },
+            onApprove: function(data, actions) {
+                return actions.order.capture().then(function(details) {
+                    // Show success message
+                    const paymentStatus = document.getElementById('payment-status');
+                    paymentStatus.className = 'payment-status success';
+                    paymentStatus.style.display = 'block';
+                    paymentStatus.innerHTML = '決済が完了しました。ありがとうございます！';
+                    
+                    // Enable submit button
+                    document.querySelector('button[type="submit"]').disabled = false;
+                });
+            },
+            onError: function(err) {
+                // Show error message
+                const paymentStatus = document.getElementById('payment-status');
+                paymentStatus.className = 'payment-status error';
+                paymentStatus.style.display = 'block';
+                paymentStatus.innerHTML = '決済処理中にエラーが発生しました。もう一度お試しください。';
+                console.error('PayPal Error:', err);
+            }
+        }).render('#paypal-button-container');
+
+        // Disable submit button until payment is complete
+        document.querySelector('button[type="submit"]').disabled = true;
+
+        // Add payment status styles if not already present
+        if (!document.querySelector('style#payment-styles')) {
+            const style = document.createElement('style');
+            style.id = 'payment-styles';
+            style.textContent = `
+                .payment-status {
+                    margin-top: 15px;
+                    padding: 15px;
+                    border-radius: 5px;
+                    display: none;
+                }
+                .payment-status.success {
+                    background-color: #d4edda;
+                    color: #155724;
+                    border: 1px solid #c3e6cb;
+                }
+                .payment-status.error {
+                    background-color: #f8d7da;
+                    color: #721c24;
+                    border: 1px solid #f5c6cb;
+                }
+            `;
+            document.head.appendChild(style);
+        }
     </script>
 </body>
 </html> 

@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<html>
+<html lang="ja">
 
 <head>
-    <title>予約確認 - AI音声</title>
+    <title>予約確認 - Surroundio</title>
     <meta name="keywords" content="" />
     <meta name="description" content="" />
     <meta charset="UTF-8">
@@ -74,6 +74,99 @@
                 min-width: 600px;
             }
         }
+
+        .reservation-container {
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        .status-badge {
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        .status-pending {
+            background-color: #ffeeba;
+            color: #856404;
+        }
+        .status-complete {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .status-error {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        .album-details {
+            margin-top: 20px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .search-form {
+            margin-bottom: 30px;
+        }
+        .card {
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        .card-header {
+            background-color: #f8f9fa;
+            padding: 10px 15px;
+            border-bottom: 1px solid #ddd;
+        }
+        .card-header h4 {
+            margin: 0;
+            color: #333;
+        }
+        .card-body {
+            padding: 15px;
+        }
+        .song-entry {
+            border-bottom: 1px solid #eee;
+            padding-bottom: 15px;
+            margin-bottom: 15px;
+        }
+        .song-entry:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+        }
+        pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            background-color: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .status-completed {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .status-pending {
+            background-color: #ffeeba;
+            color: #856404;
+        }
+        .status-failed {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        ul {
+            padding-left: 20px;
+            margin-bottom: 0;
+        }
+        .artist-info, .creator-info, .song-details {
+            margin-bottom: 15px;
+        }
+        @media (max-width: 767px) {
+            .card-body {
+                padding: 10px;
+            }
+            pre {
+                font-size: 12px;
+            }
+        }
     </style>
 </head>
 
@@ -91,41 +184,33 @@
         </div>
     </div>
     <div class="templatemo-header-image"></div>
-    <div class="container">
-        <section id="reservation-check" class="templatemo-section">
-            <h2 class="text-uppercase text-center">予約確認</h2>
-            <div class="row margin-top-50">
-                <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12 col-lg-offset-3 col-md-offset-3 col-sm-offset-3">
-                    <form class="tm-reservation-form">
-                        <div class="form-group">
-                            <input type="email" id="userEmail" class="form-control" placeholder="メールアドレスを入力してください..." required />
-                        </div>
-                        <div class="form-group">
-                            <input type="password" id="memberKey" class="form-control" placeholder="パスワードを入力してください..." required />
-                        </div>
-                        <button type="button" onclick="checkReservation()" class="btn text-uppercase tm-dark-bg tm-orange-text tm-send-btn btn-gradient center-block">予約を確認</button>
-                    </form>
+    <div class="container reservation-container">
+        <h2 class="text-center">予約確認</h2>
+        
+        <form class="search-form" id="searchForm">
+            <div class="form-group">
+                <label for="reservationId">予約番号</label>
+                <input type="text" class="form-control" id="reservationId" required>
+            </div>
+            <div class="form-group">
+                <label for="email">メールアドレス</label>
+                <input type="email" class="form-control" id="email" required>
+            </div>
+            <button type="submit" class="btn btn-primary">検索</button>
+        </form>
+
+        <div id="resultContainer" style="display: none;">
+            <div class="album-details">
+                <h3>アルバム情報</h3>
+                <div id="albumInfo"></div>
+                <div class="status-section">
+                    <h4>処理状況</h4>
+                    <span id="statusBadge" class="status-badge"></span>
                 </div>
             </div>
-            <div id="reservationResults" class="row margin-top-50" style="display: none;">
-                <div class="col-lg-12">
-                    <table class="table table-bordered">
-                        <thead>
-                            <tr>
-                                <th>アルバム名</th>
-                                <th>お名前</th>
-                                <th>申請日</th>
-                                <th>曲数</th>
-                                <th>状態</th>
-                                <th>操作</th>
-                            </tr>
-                        </thead>
-                        <tbody id="reservationTableBody">
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </section>
+        </div>
+
+        <div id="errorMessage" class="alert alert-danger" style="display: none;"></div>
     </div>
     <footer class="templatemo-footer margin-top-50">
         <div class="container">
@@ -138,312 +223,162 @@
         <i class="fa fa-home fa-2x"></i>
     </a>
 
-    <script src="js/jquery-1.11.1.min.js"></script>
-    <script src="js/templatemo_script.js"></script>
+    <script src="https://code.jquery.com/jquery-1.11.1.min.js"></script>
     <script>
-        // DOM이 완전히 로드된 후 실행되도록 수정
-        document.addEventListener('DOMContentLoaded', function() {
-            // 엔터 키 이벤트 추가
-            document.getElementById('memberKey').addEventListener('keypress', function(e) {
-                if (e.key === 'Enter') {
-                    e.preventDefault();
-                    checkReservation();
-                }
-            });
+        document.getElementById('searchForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const reservationId = document.getElementById('reservationId').value;
+            const email = document.getElementById('email').value;
 
-            // 예약 확인 함수
-            async function checkReservation() {
-                const memberKey = document.getElementById('memberKey')?.value?.trim() || '';
-                const userEmail = document.getElementById('userEmail')?.value?.trim() || '';
-                const reservationResults = document.getElementById('reservationResults');
-
-                if (!memberKey) {
-                    alert('パスワードを入力してください');
-                    return;
-                }
-
-                if (!userEmail) {
-                    alert('メールアドレスを入力してください');
-                    return;
-                }
-
-                // admin 계정이 아닐 경우에만 이메일 유효성 검사
-                if (memberKey !== 'admin25' && !userEmail.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
-                    alert('有効なメールアドレスを入力してください');
-                    return;
-                }
-
-                try {
-                    const response = await fetch(`https://pro-audio-jp-1.onrender.com/api/reservations?key=${memberKey}&email=${encodeURIComponent(userEmail)}&password=${encodeURIComponent(memberKey)}`);
-                    const result = await response.json();
-
-                    if (response.ok) {
-                        displayReservations(result);
-                    } else {
-                        alert('照会失敗：' + result.message);
-                        if (reservationResults) {
-                            reservationResults.style.display = 'none';
-                        }
-                    }
-                } catch (error) {
-                    console.error('Error:', error);
-                    alert('照会に失敗しました。後でもう一度お試しください');
-                }
-            }
-
-            // 예약 정보 표시 함수
-            function displayReservations(reservations) {
-                const tableBody = document.getElementById('reservationTableBody');
-                const resultsDiv = document.getElementById('reservationResults');
-
-                if (!tableBody || !resultsDiv) return;
-
-                tableBody.innerHTML = '';
-
-                if (!reservations || reservations.length === 0) {
-                    tableBody.innerHTML = `<tr><td colspan="6" class="text-center">該当する予約情報が見つかりませんでした。</td></tr>`;
-                    resultsDiv.style.display = 'block';
-                    return;
-                }
-
-                // 삭제되지 않은 데이터만 필터링
-                const activeReservations = reservations.filter(reservation => {
-                    if (!reservation) return false;
-                    return !reservation.isDeleted && reservation.status !== '削除済み';
+            try {
+                const response = await fetch('/api/reservation/check', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        reservationId,
+                        email
+                    })
                 });
 
-                if (activeReservations.length === 0) {
-                    tableBody.innerHTML = `<tr><td colspan="6" class="text-center">該当する予約情報が見つかりませんでした。</td></tr>`;
-                    resultsDiv.style.display = 'block';
-                    return;
+                if (!response.ok) {
+                    throw new Error('予約情報が見つかりませんでした。');
                 }
 
-                const isAdmin = document.getElementById('memberKey')?.value?.trim() === 'admin25';
-
-                activeReservations.forEach(reservation => {
-                    if (!reservation) return;
-                    
-                    const date = new Date(reservation.createdAt);
-                    const formattedDate = `${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}日`;
-                    
-                    const row = document.createElement('tr');
-                    row.innerHTML = `
-                        <td>${reservation.albumTitle || ''}</td>
-                        <td>${reservation.nameKana || ''} (${reservation.nameEn || ''})</td>
-                        <td>${formattedDate}</td>
-                        <td>${reservation.songs?.length || 0}曲</td>
-                        <td>${reservation.status || '処理中'}</td>
-                        <td>
-                            ${isAdmin ? `
-                                <button onclick="toggleAccordion('${reservation._id}')" class="btn btn-info btn-sm mb-1" style="width: 100%;">
-                                    <i class="fa fa-eye"></i> 確認
-                                </button>
-                                <button onclick="deleteReservation('${reservation._id}')" class="delete-btn" data-id="${reservation._id}" style="width: 100%;">
-                                    <i class="fa fa-trash"></i> 削除
-                                </button>
-                            ` : '-'}
-                        </td>
-                    `;
-                    
-                    // 아코디언 콘텐츠를 위한 새로운 행 추가
-                    const accordionRow = document.createElement('tr');
-                    accordionRow.id = `accordion_${reservation._id}`;
-                    accordionRow.style.display = 'none';
-                    accordionRow.innerHTML = `
-                        <td colspan="6">
-                            <div class="p-3">
-                                <h4>詳細情報</h4>
-                                <div class="row">
-                                    <div class="col-md-6">
-                                        <p><strong>メールアドレス:</strong> ${reservation.email || ''}</p>
-                                        <p><strong>ジャンル:</strong> ${reservation.genre || ''}</p>
-                                        <p><strong>アーティスト情報:</strong> ${reservation.artistInfo || ''}</p>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <p><strong>YouTube収益化:</strong> ${reservation.youtubeMonetize === 'yes' ? '利用する' : '利用しない'}</p>
-                                        <p><strong>アルバムリリース:</strong> ${reservation.isReleased ? 'はい' : 'いいえ'}</p>
-                                    </div>
-                                </div>
-                                ${reservation.songs ? `
-                                    <h5 class="mt-3">曲情報</h5>
-                                    <div class="table-responsive">
-                                        <table class="table table-bordered">
-                                            <thead>
-                                                <tr>
-                                                    <th>曲名</th>
-                                                    <th>曲名（英語）</th>
-                                                    <th>再生時間</th>
-                                                    ${reservation.songs.some(song => song.isClassical) ? `
-                                                        <th>作曲家</th>
-                                                        <th>作品番号</th>
-                                                        <th>楽章</th>
-                                                        <th>速度記号</th>
-                                                    ` : ''}
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                ${reservation.songs.map(song => `
-                                                    <tr>
-                                                        <td>${song.songTitle || ''}</td>
-                                                        <td>${song.songTitleEn || ''}</td>
-                                                        <td>${song.duration || ''}</td>
-                                                        ${song.isClassical ? `
-                                                            <td>${song.composer || ''}</td>
-                                                            <td>${song.opusNumber || ''}</td>
-                                                            <td>${song.movement || ''}</td>
-                                                            <td>${song.tempo || ''}</td>
-                                                        ` : ''}
-                                                    </tr>
-                                                `).join('')}
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                ` : ''}
-                            </div>
-                        </td>
-                    `;
-                    
-                    tableBody.appendChild(row);
-                    tableBody.appendChild(accordionRow);
-                });
-
-                resultsDiv.style.display = 'block';
-            }
-
-            // 예약 삭제 함수
-            async function deleteReservation(id) {
-                if (!id) {
-                    console.error('Delete failed: No ID provided');
-                    alert('削除に失敗しました：IDが見つかりません');
-                    return;
-                }
-
-                // MongoDB ObjectId 형식 검증
-                if (!/^[0-9a-fA-F]{24}$/.test(id)) {
-                    console.error('Delete failed: Invalid MongoDB ID format', id);
-                    alert('削除に失敗しました：無効なID形式です');
-                    return;
-                }
-                
-                const memberKey = document.getElementById('memberKey')?.value?.trim() || '';
-                const userEmail = document.getElementById('userEmail')?.value?.trim() || '';
-                
-                if (memberKey !== 'admin25') {
-                    console.error('Delete failed: Not admin');
-                    alert('管理者権限がありません');
-                    return;
-                }
-
-                console.log('Attempting to delete reservation with ID:', id);
-                
-                if (!confirm(`この予約を削除してもよろしいですか？\nID: ${id}`)) {
-                    return;
-                }
-
-                try {
-                    // 삭제 API 엔드포인트로 변경
-                    const url = `https://pro-audio-jp-1.onrender.com/api/reservations?key=${memberKey}&email=${encodeURIComponent(userEmail)}&password=${memberKey}&id=${id}`;
-                    console.log('Delete API request details:', {
-                        url: url,
-                        method: 'DELETE',
-                        id: id,
-                        email: userEmail,
-                        key: memberKey,
-                        headers: {
-                            'Content-Type': 'application/json'
-                        }
-                    });
-
-                    const response = await fetch(url, {
-                        method: 'DELETE',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        credentials: 'include'  // CORS 인증 정보 포함
-                    });
-
-                    console.log('Delete API response status:', response.status);
-                    console.log('Delete API response headers:', Object.fromEntries([...response.headers]));
-                    
-                    let result;
-                    try {
-                        result = await response.json();
-                    } catch (e) {
-                        console.error('Failed to parse response JSON:', e);
-                        result = null;
-                    }
-                    
-                    console.log('Delete API response body:', result);
-
-                    if (response.ok) {
-                        alert('削除しました');
-                        // 삭제 후 데이터 새로고침 전에 약간의 지연을 추가
-                        setTimeout(async () => {
-                            await checkReservation();
-                        }, 1000);
-                    } else {
-                        let errorMessage = '削除に失敗しました';
-                        if (response.status === 404) {
-                            errorMessage = '該当するデータが見つかりません';
-                            console.error('Album not found in database:', {
-                                id: id,
-                                status: response.status,
-                                result: result
-                            });
-                        } else if (result && result.message) {
-                            errorMessage = `削除に失敗しました：${result.message}`;
-                        }
-                        console.error('Delete API error:', {
-                            status: response.status,
-                            result: result,
-                            id: id,
-                            email: userEmail,
-                            key: memberKey
-                        });
-                        alert(errorMessage);
-                    }
-                } catch (error) {
-                    console.error('Delete API request failed:', {
-                        error: error.toString(),
-                        stack: error.stack,
-                        id: id,
-                        email: userEmail,
-                        key: memberKey
-                    });
-                    alert('削除に失敗しました。サーバーエラーが発生しました。');
-                }
-            }
-
-            // 아코디언 토글 함수
-            function toggleAccordion(id) {
-                const accordionRow = document.getElementById(`accordion_${id}`);
-                if (!accordionRow) return;
-
-                // 현재 상태 확인
-                const isVisible = accordionRow.style.display === 'table-row';
-                
-                // 다른 모든 아코디언 패널을 닫음
-                document.querySelectorAll('[id^="accordion_"]').forEach(panel => {
-                    if (panel !== accordionRow) {
-                        panel.style.display = 'none';
-                    }
-                });
-
-                // 클릭된 패널의 상태를 토글
-                accordionRow.style.display = isVisible ? 'none' : 'table-row';
-            }
-
-            // 전역 스코프에 함수 추가
-            window.toggleAccordion = toggleAccordion;
-            window.checkReservation = checkReservation;
-            window.deleteReservation = deleteReservation;
-
-            // 검색 버튼에 이벤트 리스너 추가
-            const searchButton = document.querySelector('button[onclick="checkReservation()"]');
-            if (searchButton) {
-                searchButton.addEventListener('click', checkReservation);
+                const data = await response.json();
+                displayReservation(data);
+            } catch (error) {
+                document.getElementById('errorMessage').textContent = error.message;
+                document.getElementById('errorMessage').style.display = 'block';
+                document.getElementById('resultContainer').style.display = 'none';
             }
         });
+
+        function displayReservation(data) {
+            const albumInfo = document.getElementById('albumInfo');
+            const statusBadge = document.getElementById('statusBadge');
+            
+            // Clear previous content
+            albumInfo.innerHTML = '';
+            
+            // Display album information
+            albumInfo.innerHTML = `
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h4>基本情報</h4>
+                    </div>
+                    <div class="card-body">
+                        <p><strong>アルバム名（国内）:</strong> ${data.albumNameDomestic}</p>
+                        <p><strong>アルバム名（海外）:</strong> ${data.albumNameInternational}</p>
+                        <p><strong>アーティスト名（カナ）:</strong> ${data.artistNameKana}</p>
+                        <p><strong>アーティスト名（英文）:</strong> ${data.artistNameEnglish}</p>
+                        <p><strong>バージョン情報:</strong> ${data.versionInfo}</p>
+                        <p><strong>申請日:</strong> ${new Date(data.createdAt).toLocaleDateString('ja-JP')}</p>
+                        <p><strong>ジャンル:</strong> ${data.genre}</p>
+                    </div>
+                </div>
+
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h4>楽曲情報</h4>
+                    </div>
+                    <div class="card-body">
+                        ${data.songs.map((song, index) => `
+                            <div class="song-entry mb-4">
+                                <h5>楽曲 #${index + 1}</h5>
+                                <div class="artist-info">
+                                    <p><strong>メインアーティスト:</strong> ${song.mainArtists.join(', ')}</p>
+                                    <p><strong>参加アーティスト:</strong> ${song.participatingArtists.join(', ')}</p>
+                                    ${song.featuringArtists.length > 0 ? 
+                                        `<p><strong>フィーチャリングアーティスト:</strong> ${song.featuringArtists.join(', ')}</p>` : ''}
+                                    <p><strong>ミキシングエンジニア:</strong> ${song.mixingEngineers.join(', ')}</p>
+                                    <p><strong>レコーディングエンジニア:</strong> ${song.recordingEngineers.join(', ')}</p>
+                                    <p><strong>プロデューサー:</strong> ${song.producers.join(', ')}</p>
+                                </div>
+                                <div class="creator-info">
+                                    <p><strong>作詞:</strong> ${song.lyricists.join(', ')}</p>
+                                    <p><strong>作曲:</strong> ${song.composers.join(', ')}</p>
+                                    <p><strong>編曲:</strong> ${song.arrangers.join(', ')}</p>
+                                </div>
+                                <div class="song-details">
+                                    <p><strong>リメイク曲:</strong> ${song.isRemake ? 'はい' : 'いいえ'}</p>
+                                    <p><strong>外部購入ビート/サンプル使用:</strong> ${song.usesExternalBeat ? 'はい' : 'いいえ'}</p>
+                                    <p><strong>言語:</strong> ${song.language}</p>
+                                    ${song.lyrics ? `<p><strong>歌詞:</strong><br><pre>${song.lyrics}</pre></p>` : ''}
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h4>配信情報</h4>
+                    </div>
+                    <div class="card-body">
+                        <p><strong>配信プラットフォーム:</strong></p>
+                        <ul>
+                            ${data.platforms.map(platform => `<li>${platform}</li>`).join('')}
+                        </ul>
+                        ${data.excludedCountries.length > 0 ? `
+                            <p><strong>配信除外国:</strong></p>
+                            <ul>
+                                ${data.excludedCountries.map(country => `<li>${country}</li>`).join('')}
+                            </ul>
+                        ` : ''}
+                    </div>
+                </div>
+
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h4>YouTube収益化</h4>
+                    </div>
+                    <div class="card-body">
+                        <p><strong>収益化サービス:</strong> ${data.youtubeMonetize ? '利用する' : '利用しない'}</p>
+                        <p><strong>利用規約同意:</strong> ${data.youtubeAgree ? 'はい' : 'いいえ'}</p>
+                    </div>
+                </div>
+
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h4>同意事項</h4>
+                    </div>
+                    <div class="card-body">
+                        <p><strong>所有権等権利紛争に関する同意:</strong> ${data.agreements.all ? 'はい' : 'いいえ'}</p>
+                        <p><strong>所有権紛争通知に関する同意:</strong> ${data.agreements.rights ? 'はい' : 'いいえ'}</p>
+                        <p><strong>他社発売音源の再発売に関する同意:</strong> ${data.agreements.reRelease ? 'はい' : 'いいえ'}</p>
+                        <p><strong>発売国及びプラットフォームに関する同意:</strong> ${data.agreements.platform ? 'はい' : 'いいえ'}</p>
+                    </div>
+                </div>
+
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h4>支払い状況</h4>
+                    </div>
+                    <div class="card-body">
+                        <p><strong>状態:</strong> 
+                            <span class="status-badge status-${data.paymentStatus}">
+                                ${data.paymentStatus === 'completed' ? '完了' : 
+                                  data.paymentStatus === 'pending' ? '処理中' : '失敗'}
+                            </span>
+                        </p>
+                        ${data.paymentId ? `<p><strong>支払いID:</strong> ${data.paymentId}</p>` : ''}
+                    </div>
+                </div>
+            `;
+
+            // Set status badge
+            statusBadge.className = 'status-badge status-' + data.status.toLowerCase();
+            statusBadge.textContent = data.status === 'pending' ? '処理中' : 
+                                    data.status === 'completed' ? '完了' : 
+                                    data.status === 'error' ? 'エラー' : data.status;
+
+            // Show result container
+            document.getElementById('resultContainer').style.display = 'block';
+            document.getElementById('errorMessage').style.display = 'none';
+        }
     </script>
 </body>
 
