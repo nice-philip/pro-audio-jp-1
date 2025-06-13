@@ -445,8 +445,8 @@
             <div class="form-section">
                 <h3>アルバム全体の情報</h3>
                 <div class="mb-3">
-                    <label class="form-label required-label">アルバムカバー</label>
-                    <input type="file" class="form-control" name="albumCover" accept=".jpg,.jpeg,.png" required>
+                    <label for="albumCover" class="form-label required-label">アルバムカバー</label>
+                    <input type="file" class="form-control" id="albumCover" name="albumCover" accept=".jpg,.jpeg,.png" required>
                     <div class="alert alert-warning mt-2">
                         <p class="text-danger">※ 商標や商用イメージは使用できません</p>
                         <p><strong>アルバムカバーは以下の規格を必ず守ってください：</strong></p>
@@ -929,7 +929,7 @@
 
             <!-- 送信ボタン -->
             <div class="text-center mt-4">
-                <button type="submit" id="submitButton" class="btn btn-primary btn-lg">申請する</button>
+                <button type="submit" id="submitButton" class="btn btn-primary btn-lg" style="position: relative; z-index: 999; touch-action: manipulation;">申請する</button>
             </div>
         </form>
     </div>
