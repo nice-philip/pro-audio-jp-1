@@ -187,7 +187,7 @@
             <h1 class="mb-0">アルバム申請</h1>
             <div style="width: 100px;"></div>
         </div>
-        <form id="applicationForm" class="needs-validation" novalidate>
+        <form id="albumForm" class="needs-validation" novalidate>
             <!-- 基本情報 -->
             <div class="form-section">
                 <h3 class="mb-4">基本情報</h3>
@@ -1137,31 +1137,51 @@
             });
 
             // Form submission handler
-            $('#applicationForm').on('submit', async function(e) {
+            $('#albumForm').on('submit', async function(e) {
                 e.preventDefault();
-                console.log('Form submission started');
-                
-                const submitButton = $('#submitButton');
-                const originalText = submitButton.text();
-                submitButton.prop('disabled', true).text('送信中...');
                 
                 try {
-                    // Show loading message
-                    const loadingMessage = $('<div class="alert alert-info mt-3">ファイルをアップロード中です。しばらくお待ちください...</div>');
-                    $('#error-message').hide();
-                    $('#success-message').hide();
-                    loadingMessage.insertAfter(submitButton);
+                    // Change button text and disable it
+                    const submitButton = $('#submitButton');
+                    const originalText = submitButton.text();
+                    submitButton.prop('disabled', true).text('送信中...');
                     
                     // Create FormData
-                    const formData = new FormData(this);
+                    const formData = new FormData();
                     
                     // Add payment status
                     const payLater = $('#payLater').prop('checked');
                     formData.append('payLater', payLater);
                     
+                    // Add basic form fields manually to ensure they are included
+                    formData.append('releaseDate', $('#releaseDate').val());
+                    formData.append('email', $('#email').val());
+                    formData.append('password', $('#password').val());
+                    formData.append('albumNameDomestic', $('#albumNameDomestic').val());
+                    formData.append('albumNameInternational', $('#albumNameInternational').val());
+                    formData.append('artistNameKana', $('#artistNameKana').val());
+                    formData.append('artistNameEnglish', $('#artistNameEnglish').val());
+                    formData.append('versionInfo', $('#versionInfo').val());
+                    
+                    // Add genre (use the first selected genre)
+                    const firstGenre = $('select[name="genre"]').first().val();
+                    formData.append('genre', firstGenre);
+                    
                     // Add YouTube monetization status as boolean string
                     formData.append('youtubeMonetize', $('#youtubeMonetize').prop('checked').toString());
                     
+                    // Add other form fields
+                    formData.append('youtubeAgree', $('#youtubeAgree').prop('checked'));
+                    formData.append('rightsAgreement', $('input[name="rightsAgreement"]').prop('checked'));
+                    formData.append('reReleaseAgreement', $('input[name="reReleaseAgreement"]').prop('checked'));
+                    formData.append('platformAgreement', $('input[name="platformAgreement"]').prop('checked'));
+
+                    // Add image file
+                    const imageFile = $('input[name="albumCover"]')[0].files[0];
+                    if (imageFile) {
+                        formData.append('albumCover', imageFile);
+                    }
+
                     // Process songs data
                     const songEntries = $('.song-entry');
                     const songs = [];
@@ -1204,6 +1224,19 @@
                     // Add excluded countries array
                     const excludedCountries = Array.from($('input[name="excludedCountries[]"]:checked')).map(input => input.value);
                     formData.append('excludedCountries', JSON.stringify(excludedCountries));
+
+                    // Validate required fields before submission
+                    const requiredFields = [
+                        'releaseDate', 'email', 'password', 'albumNameDomestic', 
+                        'albumNameInternational', 'artistNameKana', 'artistNameEnglish'
+                    ];
+
+                    for (const field of requiredFields) {
+                        const value = formData.get(field);
+                        if (!value || value.trim() === '') {
+                            throw new Error(`必須フィールド「${field}」が入力されていません。`);
+                        }
+                    }
 
                     // Create AbortController with 60 second timeout
                     const controller = new AbortController();
@@ -1253,9 +1286,6 @@
                             throw new Error('サーバーから有効な応答がありませんでした。');
                         }
 
-                        // Remove loading message
-                        loadingMessage.remove();
-
                         // Success case
                         $('#successMessage').show().text(result.message || 'アップロードが完了しました！');
                         $('#errorMessage').hide();
@@ -1273,9 +1303,6 @@
                         }, 3000);
 
                     } catch (error) {
-                        // Remove loading message
-                        loadingMessage.remove();
-
                         console.error('Form submission error:', {
                             message: error.message,
                             stack: error.stack,
@@ -1402,7 +1429,7 @@
                     submitButton.textContent = '送信中...';
                     
                     // Submit the form
-                    document.getElementById('applicationForm').submit();
+                    document.getElementById('albumForm').submit();
                 }
             }, { passive: false });
         });
