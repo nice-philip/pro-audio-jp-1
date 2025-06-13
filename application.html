@@ -64,6 +64,19 @@
             display: inline-block;
             margin: 5px;
             color: #2C3333 !important;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+        }
+
+        @media (max-width: 768px) {
+            .btn-pastel {
+                width: 100%;
+                margin: 10px 0;
+                padding: 15px 25px;
+                font-size: 16px;
+                position: relative;
+                z-index: 1;
+            }
         }
 
         .classical-required::after {
@@ -850,89 +863,50 @@
             <!-- ジャンル選択 -->
             <div class="form-section">
                 <h3 class="mb-4">ジャンル</h3>
-                <div class="mb-3">
-                    <label for="genre" class="form-label required-label">ジャンルを選択</label>
-                    <select class="form-select" id="genre" name="genre" required>
-                        <option value="">ジャンルを選択してください</option>
-                        <option value="pop">ポップス</option>
-                        <option value="rock">ロック</option>
-                        <option value="jazz">ジャズ</option>
-                        <option value="classical">クラシック</option>
-                        <option value="electronic">エレクトロニック</option>
-                        <option value="hiphop">ヒップホップ</option>
-                        <option value="rb">R&B</option>
-                        <option value="folk">フォーク</option>
-                        <option value="world">ワールド</option>
-                        <option value="ambient">アンビエント</option>
-                        <option value="metal">メタル</option>
-                        <option value="blues">ブルース</option>
-                        <option value="country">カントリー</option>
-                        <option value="experimental">エクスペリメンタル</option>
-                        <option value="fusion">フュージョン</option>
-                    </select>
+                <div id="genre-container">
+                    <div class="genre-entry mb-3">
+                        <label class="form-label required-label">トラック1のジャンル</label>
+                        <div class="input-group">
+                            <select class="form-select" name="genre[]" required>
+                                <option value="">ジャンルを選択してください</option>
+                                <option value="pop">ポップス</option>
+                                <option value="rock">ロック</option>
+                                <option value="jazz">ジャズ</option>
+                                <option value="classical">クラシック</option>
+                                <option value="electronic">エレクトロニック</option>
+                                <option value="hiphop">ヒップホップ</option>
+                                <option value="rb">R&B</option>
+                                <option value="folk">フォーク</option>
+                                <option value="world">ワールド</option>
+                                <option value="ambient">アンビエント</option>
+                                <option value="metal">メタル</option>
+                                <option value="blues">ブルース</option>
+                                <option value="country">カントリー</option>
+                                <option value="experimental">エクスペリメンタル</option>
+                                <option value="fusion">フュージョン</option>
+                            </select>
+                            <div class="btn-group">
+                                <button type="button" class="btn btn-success add-genre">+</button>
+                                <button type="button" class="btn btn-danger remove-genre" disabled>-</button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
             <!-- YouTube収益化サービス -->
-            <div class="form-section">
-                <h3 class="mb-4">YouTube収益化サービス</h3>
-                <div class="mb-3">
-                    <div class="form-check">
-                        <input class="form-check-input" type="radio" name="youtubeMonetize" id="youtubeYes" required>
-                        <label class="form-check-label" for="youtubeYes">利用する</label>
-                    </div>
-                    <div class="form-check">
-                        <input class="form-check-input" type="radio" name="youtubeMonetize" id="youtubeNo">
-                        <label class="form-check-label" for="youtubeNo">利用しない</label>
-                    </div>
-                </div>
-
-                <div class="youtube-terms">
-                    <h4>YouTube収益化サービスの内容と注意事項</h4>
-                    <p>YouTube収益化サービス*1は第三者がYouTubeにアップロードした動画に会員様の楽曲が使用された場合、音源に関する権利として収益を得ることができるサービスです。ぜひご活用ください。詳しい内容は<a href="#" target="_blank">こちら</a>をクリックしてください。</p>
-                    
-                    <p>ただし、本サービスで配信された楽曲を使用してYouTubeに動画をアップロードする場合、YouTubeにて「著作権侵害の申し立て」と判断される可能性があります。その際、著作権者として「massenext株式会社（ナラスの代理人）」※2が表示されます。</p>
-                    
-                    <p>※ この場合の「著作権」は「原盤権（音源に関する権利）」を指します。「作詞または作曲に関する著作権」を指すものではありません。</p>
-                    
-                    <p>著作権侵害の申し立てを取り下げたい場合は、以下の情報と共にお問い合わせフォームよりご連絡ください：</p>
-                    <ul>
-                        <li>申し立てられた動画のURL</li>
-                        <li>対象楽曲タイトル</li>
-                        <li>対象リリースのJANコード</li>
-                    </ul>
-
-                    <p>「YouTube収益化サービス」の登録対象外となる楽曲は以下の通りです：</p>
-                    <ul>
-                        <li>パブリックドメインに帰属する知的創作物を含む楽曲（例：クラシック音楽の音源）</li>
-                        <li>第三者が権利を付与またはライセンスを付与した音源を含む楽曲（サンプリングされた音源、許諾された音源など）</li>
-                        <li>フリー音源（音楽制作ソフトウェアのループ音源素材、効果音、音源素材など）を含む楽曲</li>
-                        <li>原曲と異ならないカバー曲（例：有名アーティストの模倣曲）</li>
-                        <li>カラオケ、アカペラ、器楽曲、断片、リマスタリング、原曲のライブバージョンなど</li>
-                        <li>オリジナルエディション以外のアルバム（コンピレーションエディション、リマスターエディション、ベストエディション、DJミックスエディションなど）</li>
-                        <li>30秒未満の楽曲</li>
-                        <li>音楽以外のポッドキャスト、スピーチ、インタビュー、朗読会およびその他のコンテンツ</li>
-                        <li>区別が困難な楽曲（例：自然音、環境音、ヨガ、睡眠）</li>
-                        <li>当社以外のサービスを通じてYouTubeの「YouTube収益化サービス」に登録された楽曲</li>
-                    </ul>
-
-                    <p>※1 「YouTube収益化サービス」に登録すると、YouTube Musicへの配信も自動的に行われます。</p>
-                    <p>※2 ナラスはYouTube（Google）と音楽契約を結んでいるmassenext株式会社とビジネス提携を結んでいます。「YouTube収益化サービス」は音楽エージェントサイトZULAを運営する株式会社massenextを通じて運営・管理されます。YouTubeでの「著作権」という表記には「マスター権利」も含まれており、ここでの「著作権」は「マスター権利」を表します。</p>
-                </div>
-
-                <div class="form-check mb-3">
-                    <input class="form-check-input" type="checkbox" id="youtubeAgree" required>
-                    <label class="form-check-label" for="youtubeAgree">利用規約に同意します</label>
-                </div>
-            </div>
-
-            <!-- PayPal Section -->
             <div class="form-section">
                 <h3 class="mb-4">お支払い</h3>
                 <div class="row">
                     <div class="col-md-12 mb-3">
                         <div class="alert alert-info" role="alert">
                             <i class="fa fa-info-circle"></i> 料金: 20,000円 (税込)
+                        </div>
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="checkbox" id="payLater" name="payLater">
+                            <label class="form-check-label" for="payLater">
+                                後で支払う（申請後に支払い方法をご案内いたします）
+                            </label>
                         </div>
                         <div id="paypal-button-container" class="text-center"></div>
                         <div id="payment-status" class="payment-status"></div>
@@ -942,9 +916,28 @@
 
             <!-- 送信ボタン -->
             <div class="text-center mt-4">
-                <button type="submit" class="btn btn-primary btn-lg">申請する</button>
+                <button type="submit" id="submitButton" class="btn btn-primary btn-lg">申請する</button>
             </div>
         </form>
+    </div>
+
+    <!-- Success Modal -->
+    <div class="modal fade" id="successModal" tabindex="-1" aria-labelledby="successModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="successModalLabel">申請完了</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>申請が正常に完了しました。</p>
+                    <p>ご登録いただいたメールアドレスに確認メールをお送りしましたので、ご確認ください。</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">閉じる</button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <div class="container">
@@ -960,6 +953,7 @@
     <script>
         $(document).ready(function() {
             let songCount = 0;
+            let genreCount = 1;
 
             // Set minimum date to 3 weeks from today
             const releaseDateInput = document.getElementById('releaseDate');
@@ -1109,12 +1103,17 @@
                 e.preventDefault();
                 
                 try {
-                    // Show loading state
-                    $('#submitButton').prop('disabled', true);
-                    $('#loadingSpinner').show();
+                    // Change button text and disable it
+                    const submitButton = $('#submitButton');
+                    const originalText = submitButton.text();
+                    submitButton.prop('disabled', true).text('送信中...');
                     
                     // Create FormData
                     const formData = new FormData();
+                    
+                    // Add payment status
+                    const payLater = $('#payLater').prop('checked');
+                    formData.append('payLater', payLater);
                     
                     // Add basic form fields manually to ensure they are included
                     formData.append('releaseDate', $('#releaseDate').val());
@@ -1260,14 +1259,16 @@
                         }
 
                         // Success case
-                        $('#successMessage')
-                            .show()
-                            .text(result.message || 'アップロードが完了しました！');
+                        $('#successMessage').show().text(result.message || 'アップロードが完了しました！');
                         $('#errorMessage').hide();
 
-                        // Redirect after success
+                        // Show success modal
+                        const successModal = new bootstrap.Modal(document.getElementById('successModal'));
+                        successModal.show();
+
+                        // Reset button after 3 seconds
                         setTimeout(() => {
-                            window.location.href = 'success.html';
+                            submitButton.prop('disabled', false).text(originalText);
                         }, 3000);
 
                     } catch (error) {
@@ -1297,6 +1298,9 @@
                         errorMessage.html(errorText).show();
                         $('#successMessage').hide();
 
+                        // Reset button
+                        submitButton.prop('disabled', false).text(originalText);
+
                         // Scroll to error message
                         errorMessage[0]?.scrollIntoView({ behavior: 'smooth' });
 
@@ -1325,12 +1329,14 @@
                     errorMessage.html(errorText).show();
                     $('#successMessage').hide();
 
+                    // Reset button
+                    submitButton.prop('disabled', false).text(originalText);
+
                     // Scroll to error message
                     errorMessage[0]?.scrollIntoView({ behavior: 'smooth' });
 
                 } finally {
                     // Reset loading state
-                    $('#submitButton').prop('disabled', false);
                     $('#loadingSpinner').hide();
                 }
             });
@@ -1340,6 +1346,40 @@
                 if (document.visibilityState === 'hidden' && window.currentUpload) {
                     window.currentUpload.abort();
                     window.currentUpload = null;
+                }
+            });
+
+            // Genre section handlers
+            $(document).on('click', '.add-genre', function() {
+                const container = $('#genre-container');
+                const newEntry = container.find('.genre-entry:first').clone();
+                genreCount++;
+                
+                // Update label and select
+                newEntry.find('label').text(`トラック${genreCount}のジャンル`);
+                newEntry.find('select').val('');
+                
+                // Enable remove button
+                newEntry.find('.remove-genre').prop('disabled', false);
+                
+                container.append(newEntry);
+            });
+
+            $(document).on('click', '.remove-genre', function() {
+                const container = $('#genre-container');
+                if (container.find('.genre-entry').length > 1) {
+                    $(this).closest('.genre-entry').remove();
+                    genreCount--;
+                    
+                    // Update remaining labels
+                    container.find('.genre-entry').each(function(index) {
+                        $(this).find('label').text(`トラック${index + 1}のジャンル`);
+                    });
+                    
+                    // Disable remove button if only one entry remains
+                    if (container.find('.genre-entry').length === 1) {
+                        container.find('.remove-genre').prop('disabled', true);
+                    }
                 }
             });
         });
@@ -1383,6 +1423,40 @@
                 console.error('PayPal Error:', err);
             }
         }).render('#paypal-button-container');
+
+        // Check if device is mobile
+        function isMobileDevice() {
+            return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        }
+
+        // Initialize payment section based on device
+        document.addEventListener('DOMContentLoaded', function() {
+            const paypalSection = document.querySelector('.form-section:has(#paypal-button-container)');
+            const paymentStatus = document.getElementById('payment-status');
+            
+            if (isMobileDevice()) {
+                // Add pay later option for mobile
+                const payLaterDiv = document.createElement('div');
+                payLaterDiv.className = 'form-check mb-3';
+                payLaterDiv.innerHTML = `
+                    <input class="form-check-input" type="checkbox" id="payLater" name="payLater">
+                    <label class="form-check-label" for="payLater">
+                        後で支払う（申請後に支払い方法をご案内いたします）
+                    </label>
+                `;
+                paypalSection.insertBefore(payLaterDiv, document.getElementById('paypal-button-container'));
+                
+                // Hide PayPal button initially
+                document.getElementById('paypal-button-container').style.display = 'none';
+                
+                // Toggle PayPal button based on checkbox
+                document.getElementById('payLater').addEventListener('change', function() {
+                    const paypalContainer = document.getElementById('paypal-button-container');
+                    paypalContainer.style.display = this.checked ? 'none' : 'block';
+                    paymentStatus.style.display = 'none';
+                });
+            }
+        });
     </script>
 
     <script>
