@@ -51,7 +51,7 @@ const upload = multer({
         cb(null, true);
     },
     limits: {
-        fileSize: 100 * 1024 * 1024
+        fileSize: 100 * 1024 * 1024 // 100MB
     }
 });
 
@@ -88,7 +88,9 @@ router.post('/', upload.fields([
 
         let songs = [];
         try {
-            songs = req.body.songs.map(songStr => JSON.parse(songStr));
+            songs = Array.isArray(req.body.songs)
+                ? req.body.songs.map(s => (typeof s === 'string' ? JSON.parse(s) : s))
+                : [];
         } catch (error) {
             throw new Error('楽曲データの解析に失敗しました。');
         }
