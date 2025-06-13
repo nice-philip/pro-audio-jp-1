@@ -1137,238 +1137,46 @@
             });
 
             // Form submission handler
-            $('#albumForm').on('submit', async function(e) {
+            $('#albumForm').on('submit', async function (e) {
                 e.preventDefault();
-                
+
+                console.log('✅ [submit] 실행됨');
+
+                const formData = new FormData(this);
+
+                for (const [key, value] of formData.entries()) {
+                    console.log('📦 formData 항목:', key, value);
+                }
+
+                // 파일 필드가 있는지 확인
+                const hasAudio = formData.has('audioFiles');
+                const hasCover = formData.has('albumCover');
+
+                console.log('🎧 audioFiles 있음?', hasAudio);
+                console.log('🎨 albumCover 있음?', hasCover);
+
+                if (!hasAudio || !hasCover) {
+                    alert('파일이 누락되었습니다. 모바일에서는 수동으로 파일을 다시 선택해 주세요.');
+                    return;
+                }
+
                 try {
-                    // Change button text and disable it
-                    const submitButton = $('#submitButton');
-                    const originalText = submitButton.text();
-                    submitButton.prop('disabled', true).text('送信中...');
-                    
-                    // Create FormData
-                    const formData = new FormData();
-                    
-                    // Add payment status
-                    const payLater = $('#payLater').prop('checked');
-                    formData.append('payLater', payLater);
-                    
-                    // Add basic form fields manually to ensure they are included
-                    formData.append('releaseDate', $('#releaseDate').val());
-                    formData.append('email', $('#email').val());
-                    formData.append('password', $('#password').val());
-                    formData.append('albumNameDomestic', $('#albumNameDomestic').val());
-                    formData.append('albumNameInternational', $('#albumNameInternational').val());
-                    formData.append('artistNameKana', $('#artistNameKana').val());
-                    formData.append('artistNameEnglish', $('#artistNameEnglish').val());
-                    formData.append('versionInfo', $('#versionInfo').val());
-                    
-                    // Add genre (use the first selected genre)
-                    const firstGenre = $('select[name="genre"]').first().val();
-                    formData.append('genre', firstGenre);
-                    
-                    // Add YouTube monetization status as boolean string
-                    formData.append('youtubeMonetize', $('#youtubeMonetize').prop('checked').toString());
-                    
-                    // Add other form fields
-                    formData.append('youtubeAgree', $('#youtubeAgree').prop('checked'));
-                    formData.append('rightsAgreement', $('input[name="rightsAgreement"]').prop('checked'));
-                    formData.append('reReleaseAgreement', $('input[name="reReleaseAgreement"]').prop('checked'));
-                    formData.append('platformAgreement', $('input[name="platformAgreement"]').prop('checked'));
-
-                    // Add image file
-                    const imageFile = $('input[name="albumCover"]')[0].files[0];
-                    if (imageFile) {
-                        formData.append('albumCover', imageFile);
-                    }
-
-                    // Process songs data
-                    const songEntries = $('.song-entry');
-                    const songs = [];
-
-                    songEntries.each(function(index) {
-                        const entry = $(this);
-                        const songData = {
-                            mainArtist: Array.from(entry.find(`[name^="mainArtist_${index}"]`)).map(input => input.value).filter(Boolean),
-                            participatingArtist: Array.from(entry.find(`[name^="participatingArtist_${index}"]`)).map(input => input.value).filter(Boolean),
-                            featuring: Array.from(entry.find(`[name^="featuring_${index}"]`)).map(input => input.value).filter(Boolean),
-                            mixingEngineer: Array.from(entry.find(`[name^="mixingEngineer_${index}"]`)).map(input => input.value).filter(Boolean),
-                            recordingEngineer: Array.from(entry.find(`[name^="recordingEngineer_${index}"]`)).map(input => input.value).filter(Boolean),
-                            producer: Array.from(entry.find(`[name^="producer_${index}"]`)).map(input => input.value).filter(Boolean),
-                            lyricist: Array.from(entry.find(`[name^="lyricist_${index}"]`)).map(input => input.value).filter(Boolean),
-                            composer: Array.from(entry.find(`[name^="composer_${index}"]`)).map(input => input.value).filter(Boolean),
-                            arranger: Array.from(entry.find(`[name^="arranger_${index}"]`)).map(input => input.value).filter(Boolean),
-                            isRemake: entry.find(`[name="isRemake_${index}"]:checked`).val() || 'no',
-                            usesExternalBeat: entry.find(`[name="usesExternalBeat_${index}"]:checked`).val() || 'no',
-                            language: entry.find(`[name="language_${index}"]`).val() || 'japanese',
-                            lyrics: entry.find(`[name="lyrics_${index}"]`).val() || '',
-                            hasExplicitContent: entry.find(`[name="hasExplicitContent_${index}"]`).prop('checked')
-                        };
-
-                        songs.push(songData);
-
-                        // Add audio file
-                        const audioFile = entry.find('input[type="file"][accept=".wav"]')[0].files[0];
-                        if (audioFile) {
-                            formData.append('audioFiles', audioFile);
-                        }
+                    const response = await fetch('https://pro-audio-jp-1.onrender.com/api/upload', {
+                        method: 'POST',
+                        body: formData
                     });
 
-                    // Add songs array as JSON string
-                    formData.append('songs', JSON.stringify(songs));
+                    const result = await response.json();
+                    console.log('📥 서버 응답:', result);
 
-                    // Add platforms array
-                    const selectedPlatforms = Array.from($('input[name="platforms[]"]:checked')).map(input => input.value);
-                    formData.append('platforms', JSON.stringify(selectedPlatforms));
-
-                    // Add excluded countries array
-                    const excludedCountries = Array.from($('input[name="excludedCountries[]"]:checked')).map(input => input.value);
-                    formData.append('excludedCountries', JSON.stringify(excludedCountries));
-
-                    // Validate required fields before submission
-                    const requiredFields = [
-                        'releaseDate', 'email', 'password', 'albumNameDomestic', 
-                        'albumNameInternational', 'artistNameKana', 'artistNameEnglish'
-                    ];
-
-                    for (const field of requiredFields) {
-                        const value = formData.get(field);
-                        if (!value || value.trim() === '') {
-                            throw new Error(`必須フィールド「${field}」が入力されていません。`);
-                        }
+                    if (response.ok) {
+                        alert('✅ 제출 성공');
+                    } else {
+                        alert('🚫 제출 실패: ' + result.message);
                     }
-
-                    // Create AbortController with 60 second timeout
-                    const controller = new AbortController();
-                    const timeoutId = setTimeout(() => controller.abort(), 60000);
-
-                    try {
-                        const response = await fetch('https://pro-audio-jp-1.onrender.com/api/upload', {
-                            method: 'POST',
-                            body: formData,
-                            signal: controller.signal,
-                            headers: {
-                                'Accept': 'application/json',
-                                'Origin': 'https://surroundio.today'
-                            },
-                            mode: 'cors',
-                            credentials: 'same-origin',
-                            keepalive: true,
-                            referrerPolicy: 'no-referrer'
-                        });
-
-                        let responseText;
-                        try {
-                            responseText = await response.text();
-                            console.log('Response text:', responseText);
-                        } catch (textError) {
-                            console.error('Error reading response text:', textError);
-                            responseText = '';
-                        }
-
-                        // Try to parse as JSON if possible
-                        let result;
-                        try {
-                            result = responseText ? JSON.parse(responseText) : null;
-                        } catch (e) {
-                            console.warn('Failed to parse response as JSON:', e);
-                            result = null;
-                        }
-
-                        if (!response.ok) {
-                            throw new Error(
-                                result?.message || 
-                                `サーバーエラー (${response.status}): ${responseText || '応答内容なし'}`
-                            );
-                        }
-
-                        if (!result) {
-                            throw new Error('サーバーから有効な応答がありませんでした。');
-                        }
-
-                        // Success case
-                        $('#successMessage').show().text(result.message || 'アップロードが完了しました！');
-                        $('#errorMessage').hide();
-
-                        // Show success modal
-                        const successModal = new bootstrap.Modal(document.getElementById('successModal'));
-                        successModal.show();
-
-                        // Scroll to top of the page
-                        window.scrollTo({ top: 0, behavior: 'smooth' });
-
-                        // Reset button after 3 seconds
-                        setTimeout(() => {
-                            submitButton.prop('disabled', false).text(originalText);
-                        }, 3000);
-
-                    } catch (error) {
-                        console.error('Form submission error:', {
-                            message: error.message,
-                            stack: error.stack,
-                            type: error.constructor.name,
-                            formDataEntries: Array.from(formData.entries()).map(([key, value]) => {
-                                if (value instanceof File) {
-                                    return [key, `File: ${value.name} (${value.size} bytes)`];
-                                }
-                                return [key, value];
-                            })
-                        });
-
-                        // Show error message
-                        const errorMessage = $('#errorMessage');
-                        let errorText = `エラーが発生しました: ${error.message}`;
-
-                        // Add technical details in development
-                        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-                            errorText += '\n\nTechnical Details:';
-                            errorText += `\nError Type: ${error.constructor.name}`;
-                            errorText += `\nStack Trace: ${error.stack}`;
-                        }
-
-                        errorMessage.html(errorText).show();
-                        $('#successMessage').hide();
-
-                        // Reset button immediately on error
-                        submitButton.prop('disabled', false).text(originalText);
-
-                        // Scroll to error message
-                        errorMessage[0]?.scrollIntoView({ behavior: 'smooth' });
-
-                    } finally {
-                        clearTimeout(timeoutId);
-                    }
-
-                } catch (error) {
-                    console.error('Form submission error:', {
-                        message: error.message,
-                        stack: error.stack,
-                        type: error.constructor.name
-                    });
-
-                    // Show error message
-                    const errorMessage = $('#errorMessage');
-                    let errorText = `エラーが発生しました: ${error.message}`;
-
-                    // Add technical details in development
-                    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-                        errorText += '\n\nTechnical Details:';
-                        errorText += `\nError Type: ${error.constructor.name}`;
-                        errorText += `\nStack Trace: ${error.stack}`;
-                    }
-
-                    errorMessage.html(errorText).show();
-                    $('#successMessage').hide();
-
-                    // Reset button immediately on error
-                    submitButton.prop('disabled', false).text(originalText);
-
-                    // Scroll to error message
-                    errorMessage[0]?.scrollIntoView({ behavior: 'smooth' });
-
-                } finally {
-                    // Reset loading state
-                    $('#loadingSpinner').hide();
+                } catch (err) {
+                    console.error('❌ 제출 중 오류:', err);
+                    alert('제출 중 오류 발생: ' + err.message);
                 }
             });
             
