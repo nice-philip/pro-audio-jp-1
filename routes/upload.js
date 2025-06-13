@@ -20,19 +20,14 @@ const s3Client = new S3Client({
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
         let uploadPath = 'uploads/';
-        
-        // 파일 타입에 따른 서브디렉토리 설정
         if (file.fieldname === 'image') {
             uploadPath += 'images/';
-        } else if (file.fieldname.startsWith('audio_')) {
+        } else if (file.fieldname === 'audioFiles') {
             uploadPath += 'audio/';
         } else {
             return cb(new Error('Invalid file field'));
         }
-        
-        // 디렉토리가 없으면 생성
         fs.mkdirSync(uploadPath, { recursive: true });
-        
         cb(null, uploadPath);
     },
     filename: function (req, file, cb) {
@@ -48,7 +43,7 @@ const upload = multer({
             if (!file.originalname.match(/\.(jpg|jpeg)$/)) {
                 return cb(new Error('JPG 形式の画像のみアップロード可能です。'), false);
             }
-        } else if (file.fieldname === 'audio') {
+        } else if (file.fieldname === 'audioFiles') {
             if (!file.originalname.match(/\.(wav)$/)) {
                 return cb(new Error('WAV 形式の音声ファイルのみアップロード可能です。'), false);
             }
@@ -56,41 +51,29 @@ const upload = multer({
         cb(null, true);
     },
     limits: {
-        fileSize: 100 * 1024 * 1024 // 100MB
+        fileSize: 100 * 1024 * 1024
     }
 });
 
-// S3에 파일 업로드하는 함수
+// S3에 파일 업로드
 async function uploadToS3(file, type) {
-    try {
-        const fileStream = fs.createReadStream(file.path);
-        const key = `${type}/${path.basename(file.path)}`;
-        
-        const uploadParams = {
-            Bucket: process.env.AWS_BUCKET_NAME,
-            Key: key,
-            Body: fileStream,
-            ContentType: file.mimetype
-        };
-
-        await s3Client.send(new PutObjectCommand(uploadParams));
-        
-        // 로컬 파일 삭제
-        fs.unlinkSync(file.path);
-        
-        return `https://${process.env.AWS_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${key}`;
-    } catch (error) {
-        console.error('S3 upload error:', error);
-        throw error;
-    }
+    const fileStream = fs.createReadStream(file.path);
+    const key = `${type}/${path.basename(file.path)}`;
+    const uploadParams = {
+        Bucket: process.env.AWS_BUCKET_NAME,
+        Key: key,
+        Body: fileStream,
+        ContentType: file.mimetype
+    };
+    await s3Client.send(new PutObjectCommand(uploadParams));
+    fs.unlinkSync(file.path);
+    return `https://${process.env.AWS_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${key}`;
 }
 
 // 메인 앨범 업로드
 router.post('/', upload.fields([
     { name: 'image', maxCount: 1 },
-    { name: 'audio_0', maxCount: 1 },
-    { name: 'audio_1', maxCount: 1 },
-    { name: 'audio_2', maxCount: 1 }
+    { name: 'audioFiles', maxCount: 3 }
 ]), async (req, res) => {
     try {
         console.log('Received files:', req.files);
@@ -103,10 +86,8 @@ router.post('/', upload.fields([
         const imageFile = req.files['image'][0];
         const imageUrl = await uploadToS3(imageFile, 'images');
 
-        // Parse songs data from the request body
         let songs = [];
         try {
-            // Each song is already a JSON string in the array
             songs = req.body.songs.map(songStr => JSON.parse(songStr));
         } catch (error) {
             throw new Error('楽曲データの解析に失敗しました。');
@@ -116,13 +97,11 @@ router.post('/', upload.fields([
             throw new Error('楽曲は1曲から3曲までアップロード可能です。');
         }
 
-        // Process each song and its audio file
         const processedSongs = await Promise.all(songs.map(async (song, index) => {
-            const audioFile = req.files[`audio_${index}`]?.[0];
+            const audioFile = req.files['audioFiles']?.[index];
             if (!audioFile) {
                 throw new Error(`${index + 1}曲目の音声ファイルが見つかりません。`);
             }
-
             const audioUrl = await uploadToS3(audioFile, 'audio');
 
             const songData = {
@@ -133,16 +112,14 @@ router.post('/', upload.fields([
                 isClassical: song.isClassical
             };
 
-            // 날짜 문자열이 유효한 경우에만 date 필드 추가
             if (song.date && song.date !== 'Invalid Date') {
                 try {
-                    // 일본어 날짜 형식(yyyy年mm月dd日)을 ISO 형식으로 변환
                     const dateStr = song.date.replace(/年|月|日/g, '-').slice(0, -1);
                     const parsedDate = new Date(dateStr);
                     if (!isNaN(parsedDate.getTime())) {
                         songData.date = parsedDate;
                     }
-                } catch (error) {
+                } catch {
                     console.warn('Invalid date format:', song.date);
                 }
             }
@@ -183,8 +160,6 @@ router.post('/', upload.fields([
         });
     } catch (error) {
         console.error('Upload error:', error);
-        
-        // 에러 발생 시 업로드된 파일 삭제
         if (req.files) {
             Object.values(req.files).forEach(files => {
                 files.forEach(file => {
@@ -194,7 +169,6 @@ router.post('/', upload.fields([
                 });
             });
         }
-        
         res.status(400).json({
             message: error.message || 'アップロードに失敗しました。',
             error: error.message
@@ -202,19 +176,21 @@ router.post('/', upload.fields([
     }
 });
 
-// 追加曲アップロード
-router.post('/:albumId/song', upload.single('audio'), async (req, res) => {
+// 추가 곡 업로드
+router.post('/:albumId/song', upload.single('audioFiles'), async (req, res) => {
     try {
         const album = await Album.findById(req.params.albumId);
         if (!album) {
             throw new Error('アルバムが見つかりません。');
         }
 
+        const audioUrl = await uploadToS3(req.file, 'audio');
+
         const songData = {
             title: req.body.songTitle,
             titleEn: req.body.songTitleEn,
             duration: req.body.time,
-            audioUrl: req.file.path,
+            audioUrl: audioUrl,
             isClassical: req.body.isClassical === 'true'
         };
 
@@ -235,11 +211,9 @@ router.post('/:albumId/song', upload.single('audio'), async (req, res) => {
             song: songData
         });
     } catch (error) {
-        // エラー発生時にアップロードされたファイルを削除
         if (req.file && fs.existsSync(req.file.path)) {
             fs.unlinkSync(req.file.path);
         }
-        
         res.status(400).json({
             message: error.message || '曲の追加に失敗しました。',
             error: error.message
@@ -247,4 +221,4 @@ router.post('/:albumId/song', upload.single('audio'), async (req, res) => {
     }
 });
 
-module.exports = router; 
+module.exports = router;

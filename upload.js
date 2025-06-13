@@ -24,8 +24,20 @@ const storage = multer.memoryStorage();
 
 const upload = multer({
     storage: storage,
+    fileFilter: function (req, file, cb) {
+        if (file.fieldname === 'albumCover') {
+            if (!file.originalname.match(/\.(jpg|jpeg|png)$/)) {
+                return cb(new Error('JPG/PNG 形式の画像のみアップロード可能です。'), false);
+            }
+        } else if (file.fieldname === 'audioFiles') {
+            if (!file.originalname.match(/\.(wav)$/)) {
+                return cb(new Error('WAV 形式の音声ファイルのみアップロード可能です。'), false);
+            }
+        }
+        cb(null, true);
+    },
     limits: {
-        fileSize: 2 * 1024 * 1024 * 1024, // 2GB
+        fileSize: 100 * 1024 * 1024, // 100MB
         files: 50 // 최대 파일 수
     }
 });
@@ -68,7 +80,7 @@ async function uploadToS3(file, folder) {
 // ✅ 앨범 업로드 처리 라우터
 router.post('/', upload.fields([
     { name: 'albumCover', maxCount: 1 },
-    { name: 'audio', maxCount: 50 }
+    { name: 'audioFiles', maxCount: 3 }
 ]), async (req, res) => {
     console.log('Upload request received');
     
@@ -90,7 +102,7 @@ router.post('/', upload.fields([
         }
 
         // 오디오 파일 검증
-        if (!req.files.audio || req.files.audio.length === 0) {
+        if (!req.files.audioFiles || req.files.audioFiles.length === 0) {
             return res.status(400).json({
                 success: false,
                 message: '少なくとも1つの音声ファイルが必要です'
@@ -99,7 +111,7 @@ router.post('/', upload.fields([
 
         // 파일 업로드 처리
         const albumCoverFile = req.files.albumCover[0];
-        const audioFiles = req.files.audio;
+        const audioFiles = req.files.audioFiles;
 
         // 앨범 커버 S3 업로드
         const coverKey = `covers/${Date.now()}-${crypto.randomBytes(8).toString('hex')}${path.extname(albumCoverFile.originalname)}`;
