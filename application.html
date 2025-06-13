@@ -1200,16 +1200,6 @@
                     const excludedCountries = Array.from($('input[name="excludedCountries[]"]:checked')).map(input => input.value);
                     formData.append('excludedCountries', JSON.stringify(excludedCountries));
 
-                    // Debug log for FormData contents
-                    console.log('FormData contents:');
-                    for (let pair of formData.entries()) {
-                        if (pair[1] instanceof File) {
-                            console.log(`${pair[0]}: File(name=${pair[1].name}, type=${pair[1].type}, size=${pair[1].size})`);
-                        } else {
-                            console.log(`${pair[0]}: ${pair[1]}`);
-                        }
-                    }
-
                     // Validate required fields before submission
                     const requiredFields = [
                         'releaseDate', 'email', 'password', 'albumNameDomestic', 
@@ -1240,13 +1230,6 @@
                             credentials: 'same-origin',
                             keepalive: true,
                             referrerPolicy: 'no-referrer'
-                        });
-
-                        // Log response details
-                        console.log('Response status:', response.status);
-                        console.log('Response headers:', {
-                            contentType: response.headers.get('content-type'),
-                            contentLength: response.headers.get('content-length')
                         });
 
                         let responseText;
@@ -1286,6 +1269,9 @@
                         const successModal = new bootstrap.Modal(document.getElementById('successModal'));
                         successModal.show();
 
+                        // Scroll to top of the page
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+
                         // Reset button after 3 seconds
                         setTimeout(() => {
                             submitButton.prop('disabled', false).text(originalText);
@@ -1318,7 +1304,7 @@
                         errorMessage.html(errorText).show();
                         $('#successMessage').hide();
 
-                        // Reset button
+                        // Reset button immediately on error
                         submitButton.prop('disabled', false).text(originalText);
 
                         // Scroll to error message
@@ -1349,7 +1335,7 @@
                     errorMessage.html(errorText).show();
                     $('#successMessage').hide();
 
-                    // Reset button
+                    // Reset button immediately on error
                     submitButton.prop('disabled', false).text(originalText);
 
                     // Scroll to error message
