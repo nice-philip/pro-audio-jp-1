@@ -149,6 +149,31 @@
             cursor: pointer;
             margin-left: 10px;
         }
+        /* Add these styles to the existing style section */
+        #submitButton {
+            position: relative;
+            z-index: 999;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+            min-height: 44px;
+            min-width: 44px;
+            cursor: pointer;
+            user-select: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+        }
+
+        @media (max-width: 768px) {
+            #submitButton {
+                width: 100%;
+                margin: 10px 0;
+                padding: 15px 25px;
+                font-size: 16px;
+                position: relative;
+                z-index: 999;
+            }
+        }
     </style>
 </head>
 <body>
@@ -929,7 +954,7 @@
 
             <!-- 送信ボタン -->
             <div class="text-center mt-4">
-                <button type="submit" id="submitButton" class="btn btn-primary btn-lg" style="position: relative; z-index: 999; touch-action: manipulation;">申請する</button>
+                <button type="submit" id="submitButton" class="btn btn-primary btn-lg" style="position: relative; z-index: 999; touch-action: manipulation; -webkit-tap-highlight-color: transparent; min-height: 44px; min-width: 44px;">申請する</button>
             </div>
         </form>
     </div>
@@ -1388,6 +1413,25 @@
                     }
                 }
             });
+
+            // Add touch event handling for the submit button
+            const submitButton = document.getElementById('submitButton');
+            
+            // Prevent default touch behavior and handle form submission
+            submitButton.addEventListener('touchstart', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                // Only proceed if the button is not disabled
+                if (!submitButton.disabled) {
+                    // Change button state
+                    submitButton.disabled = true;
+                    submitButton.textContent = '送信中...';
+                    
+                    // Submit the form
+                    document.getElementById('albumForm').submit();
+                }
+            }, { passive: false });
         });
     </script>
 
