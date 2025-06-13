@@ -80,7 +80,7 @@ async function uploadToS3(file, folder) {
 // ✅ 앨범 업로드 처리 라우터
 router.post('/', upload.fields([
     { name: 'albumCover', maxCount: 1 },
-    { name: 'audioFiles', maxCount: 3 }
+    { name: 'audioFiles', maxCount: 10 }
 ]), async (req, res) => {
     console.log('Upload request received');
     
@@ -167,7 +167,7 @@ router.post('/', upload.fields([
             platforms: req.body.platforms ? JSON.parse(req.body.platforms) : [],
             excludedCountries: req.body.excludedCountries ? JSON.parse(req.body.excludedCountries) : [],
             genre: req.body.genre,
-            youtubeMonetize: req.body.youtubeMonetize || 'no',
+            youtubeMonetize: req.body.youtubeMonetize === 'on' ? 'yes' : 'no',
             youtubeAgree: req.body.youtubeAgree === 'true',
             rightsAgreement: req.body.rightsAgreement === 'true',
             reReleaseAgreement: req.body.reReleaseAgreement === 'true',
