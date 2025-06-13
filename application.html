@@ -867,23 +867,16 @@
                     <div class="genre-entry mb-3">
                         <label class="form-label required-label">トラック1のジャンル</label>
                         <div class="input-group">
-                            <select class="form-select" name="genre[]" required>
-                                <option value="">ジャンルを選択してください</option>
-                                <option value="pop">ポップス</option>
-                                <option value="rock">ロック</option>
-                                <option value="jazz">ジャズ</option>
-                                <option value="classical">クラシック</option>
-                                <option value="electronic">エレクトロニック</option>
-                                <option value="hiphop">ヒップホップ</option>
-                                <option value="rb">R&B</option>
-                                <option value="folk">フォーク</option>
-                                <option value="world">ワールド</option>
-                                <option value="ambient">アンビエント</option>
-                                <option value="metal">メタル</option>
-                                <option value="blues">ブルース</option>
-                                <option value="country">カントリー</option>
-                                <option value="experimental">エクスペリメンタル</option>
-                                <option value="fusion">フュージョン</option>
+                            <select class="form-select" name="genre" required>
+                                <option value="" disabled selected>ジャンルを選択してください</option>
+                                <option value="rock">ロック (Rock)</option>
+                                <option value="pop">ポップ (Pop)</option>
+                                <option value="jazz">ジャズ (Jazz)</option>
+                                <option value="classical">クラシック (Classical)</option>
+                                <option value="electronic">エレクトロニック (Electronic)</option>
+                                <option value="hiphop">ヒップホップ (Hip-Hop)</option>
+                                <option value="country">カントリー (Country)</option>
+                                <option value="experimental">エクスペリメンタル (Experimental)</option>
                             </select>
                             <div class="btn-group">
                                 <button type="button" class="btn btn-success add-genre">+</button>
@@ -895,6 +888,26 @@
             </div>
 
             <!-- YouTube収益化サービス -->
+            <div class="form-section">
+                <h3 class="mb-4">YouTube収益化サービス</h3>
+                <div class="mb-3">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="youtubeMonetize" name="youtubeMonetize">
+                        <label class="form-check-label" for="youtubeMonetize">利用する</label>
+                    </div>
+                </div>
+
+                <div class="youtube-terms">
+                    <p>YouTube収益化サービスに関する同意事項をご確認ください。</p>
+                    <ul>
+                        <li>YouTube収益化サービスを利用する場合、当社はあなたのコンテンツをYouTubeに掲載し、広告を表示することができます。</li>
+                        <li>広告収入は当社と共有される場合があります。</li>
+                        <li>YouTubeの利用規約に同意する必要があります。</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- お支払い -->
             <div class="form-section">
                 <h3 class="mb-4">お支払い</h3>
                 <div class="row">
@@ -1124,8 +1137,15 @@
                     formData.append('artistNameKana', $('#artistNameKana').val());
                     formData.append('artistNameEnglish', $('#artistNameEnglish').val());
                     formData.append('versionInfo', $('#versionInfo').val());
-                    formData.append('genre', $('#genre').val());
-                    formData.append('youtubeMonetize', $('input[name="youtubeMonetize"]:checked').val() || 'no');
+                    
+                    // Add genre (use the first selected genre)
+                    const firstGenre = $('select[name="genre"]').first().val();
+                    formData.append('genre', firstGenre);
+                    
+                    // Add YouTube monetization status as boolean string
+                    formData.append('youtubeMonetize', $('#youtubeMonetize').prop('checked').toString());
+                    
+                    // Add other form fields
                     formData.append('youtubeAgree', $('#youtubeAgree').prop('checked'));
                     formData.append('rightsAgreement', $('input[name="rightsAgreement"]').prop('checked'));
                     formData.append('reReleaseAgreement', $('input[name="reReleaseAgreement"]').prop('checked'));
