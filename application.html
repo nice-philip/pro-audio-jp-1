@@ -1146,6 +1146,12 @@
                     const originalText = submitButton.text();
                     submitButton.prop('disabled', true).text('送信中...');
                     
+                    // Show loading message
+                    const loadingMessage = $('<div class="alert alert-info mt-3">ファイルをアップロード中です。しばらくお待ちください...</div>');
+                    $('#error-message').hide();
+                    $('#success-message').hide();
+                    loadingMessage.insertAfter(submitButton);
+                    
                     // Create FormData
                     const formData = new FormData();
                     
@@ -1286,6 +1292,9 @@
                             throw new Error('サーバーから有効な応答がありませんでした。');
                         }
 
+                        // Remove loading message
+                        loadingMessage.remove();
+
                         // Success case
                         $('#successMessage').show().text(result.message || 'アップロードが完了しました！');
                         $('#errorMessage').hide();
@@ -1303,6 +1312,9 @@
                         }, 3000);
 
                     } catch (error) {
+                        // Remove loading message
+                        loadingMessage.remove();
+
                         console.error('Form submission error:', {
                             message: error.message,
                             stack: error.stack,
