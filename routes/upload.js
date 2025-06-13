@@ -88,9 +88,16 @@ router.post('/', upload.fields([
 
         let songs = [];
         try {
-            songs = Array.isArray(req.body.songs)
-                ? req.body.songs.map(s => (typeof s === 'string' ? JSON.parse(s) : s))
-                : [];
+            const rawSongs = req.body.songs;
+            if (Array.isArray(rawSongs)) {
+                songs = rawSongs.map(s =>
+                    typeof s === 'string' ? JSON.parse(s) : s
+                );
+            } else if (typeof rawSongs === 'string') {
+                songs = [JSON.parse(rawSongs)];
+            } else if (typeof rawSongs === 'object') {
+                songs = [rawSongs];
+            }
         } catch (error) {
             throw new Error('楽曲データの解析に失敗しました。');
         }
