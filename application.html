@@ -1418,19 +1418,19 @@
             const submitButton = document.getElementById('submitButton');
             
             // Prevent default touch behavior
-            submitButton.addEventListener('touchstart', function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-            }, { passive: false });
+           // submitButton.addEventListener('touchstart', function(e) {
+               // e.preventDefault();
+               // e.stopPropagation();
+            //}, { passive: false });
 
             // Handle touch end
-            submitButton.addEventListener('touchend', function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-                if (!submitButton.disabled) {
-                    submitButton.click();
-                }
-            }, { passive: false });
+            //submitButton.addEventListener('touchend', function(e) {
+                //e.preventDefault();
+               // e.stopPropagation();
+               // if (!submitButton.disabled) {
+                  //  submitButton.click();
+               // }
+           // }, { passive: false });
         });
     </script>
 
