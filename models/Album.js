@@ -153,4 +153,4 @@ const albumSchema = new mongoose.Schema({
     }
 });
 
-module.exports = mongoose.model('Album', albumSchema);
+module.exports = mongoose.model('Album', albumSchema, 'albums-jp');
