@@ -1,50 +1,107 @@
 const express = require('express');
-const router = express.Router();
 const multer = require('multer');
-const AWS = require('aws-sdk');
-const Album = require('../models/Album');
+const { S3Client, PutObjectCommand } = require('@aws-sdk/client-s3');
+const { v4: uuidv4 } = require('uuid');
 const mongoose = require('mongoose');
+const Album = require('./models/Album');
+const path = require('path');
+const crypto = require('crypto');
 
-// AWS S3 설정
-const s3 = new AWS.S3({
-  accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-  secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-  region: process.env.AWS_REGION
+const router = express.Router();
+
+// MongoDB 연결 확인
+mongoose.connection.on('connected', () => {
+    console.log('MongoDB connected successfully in upload.js');
 });
 
-// Multer 설정
-const storage = multer.memoryStorage();
-const upload = multer({
-  storage: storage,
-  limits: {
-    fileSize: 10 * 1024 * 1024 // 10MB 제한
-  },
-  fileFilter: (req, file, cb) => {
-    if (file.mimetype.startsWith('audio/')) {
-      cb(null, true);
-    } else {
-      cb(new Error('Only audio files are allowed'));
+mongoose.connection.on('error', (err) => {
+    console.error('MongoDB connection error in upload.js:', err);
+});
+
+// S3 설정
+const s3Client = new S3Client({
+    region: process.env.AWS_REGION,
+    credentials: {
+        accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY
     }
-  }
 });
 
-// MongoDB 연결
-mongoose.connect(process.env.MONGODB_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true
+// Multer 메모리 저장소 설정
+const storage = multer.memoryStorage();
+
+const upload = multer({
+    storage: storage,
+    fileFilter: function(req, file, cb) {
+        if (file.fieldname === 'albumCover') {
+            if (!file.originalname.match(/\.(jpg|jpeg|png)$/)) {
+                return cb(new Error('JPG/PNG 形式の画像のみアップロード可能です。'), false);
+            }
+            // 이미지 파일 크기 제한 (10MB)
+            if (file.size > 10 * 1024 * 1024) {
+                return cb(new Error('画像ファイルは10MB以下にしてください。'), false);
+            }
+        } else if (file.fieldname === 'audioFiles') {
+            if (!file.originalname.match(/\.(wav)$/)) {
+                return cb(new Error('WAV 形式の音声ファイルのみアップロード可能です。'), false);
+            }
+            // 오디오 파일 크기 제한 (50MB)
+            if (file.size > 50 * 1024 * 1024) {
+                return cb(new Error('音声ファイルは50MB以下にしてください。'), false);
+            }
+        }
+        cb(null, true);
+    },
+    limits: {
+        fileSize: 50 * 1024 * 1024, // 50MB
+        files: 10
+    }
 });
 
-// 업로드 처리
-router.post('/', upload.array('songs', 10), async (req, res) => {
-  try {
+// S3 업로드 함수
+const uploadToS3 = async (file, key) => {
+    try {
+        await s3Client.send(new PutObjectCommand({
+            Bucket: process.env.AWS_BUCKET_NAME,
+            Key: key,
+            Body: file.buffer,
+            ContentType: file.mimetype
+        }));
+        return true;
+    } catch (error) {
+        console.error('S3 upload error:', error);
+        throw new Error('ファイルのアップロードに失敗しました。');
+    }
+};
+
+// Helper function to parse array fields
+const parseArrayField = (value) => {
+    if (!value) return [];
+    if (Array.isArray(value)) return value;
+    if (typeof value === 'string') {
+        try {
+            const parsed = JSON.parse(value);
+            return Array.isArray(parsed) ? parsed : [parsed];
+        } catch {
+            return value.split(',').map(v => v.trim());
+        }
+    }
+    return [value];
+};
+
+// 앨범 업로드 처리 라우터
+router.post('/', upload.fields([
+    { name: 'albumCover', maxCount: 1 },
+    { name: 'audioFiles', maxCount: 10 }
+]), async(req, res) => {
     console.log('Upload request received');
     console.log('Request body:', req.body);
 
     // 필수 필드 검증
     const requiredFields = {
-      artistNameKana: req.body.nameKana,
-      artistNameEnglish: req.body.nameEn,
-      versionInfo: req.body.albumTitle // albumTitle을 versionInfo로 사용
+      artistNameKana: req.body.artistNameKana,
+      artistNameEnglish: req.body.artistNameEnglish,
+      versionInfo: req.body.versionInfo
     };
 
     console.log('Required fields:', requiredFields);
@@ -59,81 +116,114 @@ router.post('/', upload.array('songs', 10), async (req, res) => {
       });
     }
 
-    // 앨범 데이터 생성
-    const albumData = {
-      artistNameKana: req.body.nameKana,
-      artistNameEnglish: req.body.nameEn,
-      versionInfo: req.body.albumTitle,
-      releaseDate: req.body.releaseDate,
-      email: req.body.email,
-      password: req.body.password,
-      albumNameDomestic: req.body.albumNameDomestic,
-      albumNameInternational: req.body.albumNameInternational,
-      artistInfo: req.body.artistInfo,
-      songs: [],
-      platforms: req.body.platforms || [],
-      youtubeMonetize: req.body.youtubeMonetize === 'on',
-      payLater: req.body.payLater === 'true'
-    };
+    try {
+        if (!req.body || !req.files) {
+            return res.status(400).json({ success: false, message: 'ファイルまたはフォームデータが不足しています' });
+        }
 
-    // 곡 정보 처리
-    const songCount = parseInt(req.body.songCount) || 0;
-    for (let i = 0; i < songCount; i++) {
-      const songData = {
-        title: req.body[`title_${i}`],
-        titleEn: req.body[`titleEn_${i}`],
-        duration: {
-          min: parseInt(req.body[`duration_min_${i}`]),
-          sec: parseInt(req.body[`duration_sec_${i}`])
-        },
-        genre: req.body[`genre_${i}`],
-        mainArtist: req.body[`mainArtist_${i}`] || [],
-        participatingArtist: req.body[`participatingArtist_${i}`] || [],
-        featuring: req.body[`featuring_${i}`] || [],
-        mixingEngineer: req.body[`mixingEngineer_${i}`] || [],
-        recordingEngineer: req.body[`recordingEngineer_${i}`] || [],
-        producer: req.body[`producer_${i}`] || [],
-        lyricist: req.body[`lyricist_${i}`] || [],
-        composer: req.body[`composer_${i}`] || [],
-        arranger: req.body[`arranger_${i}`] || [],
-        isRemake: req.body[`isRemake_${i}`] === 'yes',
-        usesExternalBeat: req.body[`usesExternalBeat_${i}`] === 'yes',
-        language: req.body[`language_${i}`],
-        lyrics: req.body[`lyrics_${i}`]
-      };
+        if (!req.files.albumCover || !req.files.albumCover[0]) {
+            return res.status(400).json({ success: false, message: 'アルバムカバーが必要です' });
+        }
 
-      // 곡 파일 업로드 처리
-      if (req.files && req.files[i]) {
-        const file = req.files[i];
-        const params = {
-          Bucket: process.env.AWS_BUCKET_NAME,
-          Key: `songs/${Date.now()}-${file.originalname}`,
-          Body: file.buffer,
-          ContentType: file.mimetype
+        if (!req.files.audioFiles || req.files.audioFiles.length === 0) {
+            return res.status(400).json({ success: false, message: '少なくとも1つの音声ファイルが必要です' });
+        }
+
+        const albumCoverFile = req.files.albumCover[0];
+        const audioFiles = req.files.audioFiles;
+
+        // 앨범 커버 업로드
+        const coverKey = `covers/${Date.now()}-${crypto.randomBytes(8).toString('hex')}${path.extname(albumCoverFile.originalname)}`;
+        await uploadToS3(albumCoverFile, coverKey);
+
+        // 오디오 파일 업로드 및 곡 정보 매핑
+        const uploadedSongs = await Promise.all(audioFiles.map(async(file, index) => {
+            const audioKey = `audio/${Date.now()}-${crypto.randomBytes(8).toString('hex')}${path.extname(file.originalname)}`;
+            await uploadToS3(file, audioKey);
+
+            // Get duration values and ensure they are numbers
+            const minutes = parseInt(req.body[`duration_min_${index}`]) || 0;
+            const seconds = parseInt(req.body[`duration_sec_${index}`]) || 0;
+
+            // Validate duration values
+            if (minutes < 0 || seconds < 0 || seconds > 59) {
+                throw new Error('Invalid duration values');
+            }
+
+            return {
+                title: req.body[`title_${index}`] || '',
+                titleEn: req.body[`titleEn_${index}`] || '',
+                duration: {
+                    minutes: minutes,
+                    seconds: seconds
+                },
+                genre: req.body[`genre_${index}`] || '',
+                mainArtist: parseArrayField(req.body[`mainArtist_${index}`]),
+                participatingArtist: parseArrayField(req.body[`participatingArtist_${index}`]),
+                featuring: parseArrayField(req.body[`featuring_${index}`]),
+                mixingEngineer: parseArrayField(req.body[`mixingEngineer_${index}`]),
+                recordingEngineer: parseArrayField(req.body[`recordingEngineer_${index}`]),
+                producer: parseArrayField(req.body[`producer_${index}`]),
+                lyricist: parseArrayField(req.body[`lyricist_${index}`]),
+                composer: parseArrayField(req.body[`composer_${index}`]),
+                arranger: parseArrayField(req.body[`arranger_${index}`]),
+                audioUrl: `https://${process.env.AWS_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${audioKey}`,
+                isRemake: req.body[`isRemake_${index}`] === 'yes',
+                usesExternalBeat: req.body[`usesExternalBeat_${index}`] === 'yes',
+                language: req.body[`language_${index}`] || 'instrumental',
+                lyrics: req.body[`lyrics_${index}`] || '',
+                hasExplicitContent: req.body[`hasExplicitContent_${index}`] === 'true'
+            };
+        }));
+
+        // Create album data
+        const albumData = {
+            artistNameKana: requiredFields.artistNameKana,
+            artistNameEnglish: requiredFields.artistNameEnglish,
+            versionInfo: requiredFields.versionInfo,
+            releaseDate: new Date(req.body.releaseDate),
+            email: req.body.email,
+            password: req.body.password,
+            albumNameDomestic: req.body.albumNameDomestic,
+            albumNameInternational: req.body.albumNameInternational,
+            songs: uploadedSongs,
+            albumCover: `https://${process.env.AWS_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${coverKey}`,
+            platforms: parseArrayField(req.body.platforms),
+            excludedCountries: parseArrayField(req.body.excludedCountries),
+            rightsAgreement: req.body.rightsAgreement === 'true',
+            reReleaseAgreement: req.body.reReleaseAgreement === 'true',
+            platformAgreement: req.body.platformAgreement === 'true',
+            paymentStatus: 'pending',
+            paymentAmount: 20000,
+            payLater: req.body.payLater === 'true'
         };
 
-        const uploadResult = await s3.upload(params).promise();
-        songData.audioFile = uploadResult.Location;
-      }
+        const album = new Album(albumData);
+        await album.save();
 
-      albumData.songs.push(songData);
+        res.status(200).json({
+            success: true,
+            message: 'アルバムが正常に登録されました',
+            albumId: album._id
+        });
+
+    } catch (error) {
+        console.error('Upload error:', error);
+
+        if (error.name === 'ValidationError') {
+            return res.status(400).json({
+                success: false,
+                message: '入力データが無効です',
+                errors: Object.values(error.errors).map(err => err.message)
+            });
+        }
+
+        res.status(500).json({
+            success: false,
+            message: 'サーバーエラーが発生しました',
+            error: error.message
+        });
     }
-
-    // 앨범 저장
-    const album = new Album(albumData);
-    await album.save();
-
-    res.status(200).json({
-      message: 'Album uploaded successfully',
-      albumId: album._id
-    });
-
-  } catch (error) {
-    console.error('Upload error:', error);
-    res.status(500).json({
-      error: error.message
-    });
-  }
 });
 
-module.exports = router; 
+module.exports = router;

@@ -1478,9 +1478,29 @@
                 buttonText.text('送信中...');
                 spinner.show();
 
+                // Validate required fields before submission
+                const artistNameKana = $('#artistNameKana').val();
+                const artistNameEnglish = $('#artistNameEnglish').val();
+                const versionInfo = $('#versionInfo').val();
+
+                if (!artistNameKana || !artistNameEnglish || !versionInfo) {
+                    const errorMessage = $('#errorMessage');
+                    errorMessage.html('必須項目が入力されていません：アーティスト名（カナ）、アーティスト名（English）、バージョン情報').show();
+                    $('#successMessage').hide();
+                    submitButton.prop('disabled', false);
+                    buttonText.text(originalText);
+                    spinner.hide();
+                    return;
+                }
+
                 const formData = new FormData(this);
                 const payLater = $('#payLater').prop('checked');
                 formData.append('payLater', payLater);
+
+                // Ensure required fields are properly set
+                formData.set('artistNameKana', $('#artistNameKana').val());
+                formData.set('artistNameEnglish', $('#artistNameEnglish').val());
+                formData.set('versionInfo', $('#versionInfo').val());
 
                 // Handle platforms data - append each item individually
                 $('input[name="platforms[]"]:checked').each(function() {

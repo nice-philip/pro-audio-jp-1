@@ -18,7 +18,7 @@ console.log('Environment:', {
     AWS_SECRET_ACCESS_KEY: process.env.AWS_SECRET_ACCESS_KEY ? '(set)' : '(not set)'
 });
 
-const uploadRoutes = require('./upload');
+const uploadRoutes = require('./routes/upload');
 const Album = require('./models/Album');
 
 const app = express();
