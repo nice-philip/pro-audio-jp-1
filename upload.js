@@ -2,6 +2,7 @@ const express = require('express');
 const multer = require('multer');
 const { S3Client, PutObjectCommand } = require('@aws-sdk/client-s3');
 const { v4: uuidv4 } = require('uuid');
+const mongoose = require('mongoose');
 const Album = require('./models/Album');
 const path = require('path');
 const crypto = require('crypto');
@@ -38,6 +39,15 @@ const upload = multer({
         fileSize: 100 * 1024 * 1024, // 100MB
         files: 50 // 최대 파일 수
     }
+});
+
+// MongoDB 연결 확인
+mongoose.connection.on('connected', () => {
+    console.log('MongoDB connected successfully');
+});
+
+mongoose.connection.on('error', (err) => {
+    console.error('MongoDB connection error:', err);
 });
 
 // 앨범 업로드 처리 라우터
@@ -165,7 +175,8 @@ router.post('/', upload.fields([
 
         res.status(500).json({
             success: false,
-            message: 'サーバーエラーが発生しました'
+            message: 'サーバーエラーが発生しました',
+            error: error.message
         });
     }
 });
