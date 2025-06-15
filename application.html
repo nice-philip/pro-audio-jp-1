@@ -1487,14 +1487,18 @@
                 formData.append('payLater', payLater);
 
                 // Handle platforms data
-                $('input[name="platforms[]"]:checked').each(function(index) {
-                    formData.append(`platforms[${index}]`, $(this).val());
+                const platforms = [];
+                $('input[name="platforms[]"]:checked').each(function() {
+                    platforms.push($(this).val());
                 });
+                formData.append('platforms', platforms.join(','));
 
                 // Handle excluded countries data
-                $('input[name="excludedCountries[]"]:checked').each(function(index) {
-                    formData.append(`excludedCountries[${index}]`, $(this).val());
+                const excludedCountries = [];
+                $('input[name="excludedCountries[]"]:checked').each(function() {
+                    excludedCountries.push($(this).val());
                 });
+                formData.append('excludedCountries', excludedCountries.join(','));
 
                 try {
                     const controller = new AbortController();
