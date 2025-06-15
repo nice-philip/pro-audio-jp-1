@@ -3,11 +3,31 @@ const multer = require('multer');
 const { S3Client, PutObjectCommand } = require('@aws-sdk/client-s3');
 const { v4: uuidv4 } = require('uuid');
 const mongoose = require('mongoose');
-const Album = require('./models/Album');
 const path = require('path');
 const crypto = require('crypto');
 
 const router = express.Router();
+
+// MongoDB 연결 확인
+mongoose.connection.on('connected', () => {
+    console.log('MongoDB connected successfully in upload.js');
+});
+
+mongoose.connection.on('error', (err) => {
+    console.error('MongoDB connection error in upload.js:', err);
+});
+
+// Album 모델 초기화
+let Album;
+try {
+    Album = mongoose.model('Album');
+} catch (error) {
+    if (error.name === 'MissingSchemaError') {
+        Album = require('./models/Album');
+    } else {
+        throw error;
+    }
+}
 
 // S3 설정
 const s3Client = new S3Client({
@@ -39,15 +59,6 @@ const upload = multer({
         fileSize: 100 * 1024 * 1024, // 100MB
         files: 50 // 최대 파일 수
     }
-});
-
-// MongoDB 연결 확인
-mongoose.connection.on('connected', () => {
-    console.log('MongoDB connected successfully');
-});
-
-mongoose.connection.on('error', (err) => {
-    console.error('MongoDB connection error:', err);
 });
 
 // 앨범 업로드 처리 라우터
@@ -181,4 +192,4 @@ router.post('/', upload.fields([
     }
 });
 
-module.exports = router; 
+module.exports = router;
