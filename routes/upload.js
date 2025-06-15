@@ -90,33 +90,27 @@ const parseArrayField = (value) => {
 };
 
 // 앨범 업로드 처리 라우터
-router.post('/', upload.fields([
-    { name: 'albumCover', maxCount: 1 },
-    { name: 'audioFiles', maxCount: 10 }
-]), async(req, res) => {
-    console.log('Upload request received');
-    console.log('Request body:', req.body);
-
-    // 필수 필드 검증
-    const requiredFields = {
-      artistNameKana: req.body.artistNameKana,
-      artistNameEnglish: req.body.artistNameEnglish,
-      versionInfo: req.body.versionInfo
-    };
-
-    console.log('Required fields:', requiredFields);
-
-    const missingFields = Object.entries(requiredFields)
-      .filter(([_, value]) => !value || value.trim() === '')
-      .map(([key]) => key);
-
-    if (missingFields.length > 0) {
-      return res.status(400).json({
-        error: `Missing required fields: ${missingFields.join(', ')}`
-      });
-    }
-
+router.post('/upload', upload.fields([
+    { name: 'audioFiles', maxCount: 10 },
+    { name: 'albumCover', maxCount: 1 }
+]), async (req, res) => {
     try {
+        console.log('Request body:', req.body);
+        console.log('Required fields:', {
+            artistNameKana: req.body.artistNameKana,
+            artistNameEnglish: req.body.artistNameEnglish,
+            versionInfo: req.body.versionInfo
+        });
+
+        // Validate required fields
+        const { artistNameKana, artistNameEnglish, versionInfo } = req.body;
+        if (!artistNameKana || !artistNameEnglish || !versionInfo) {
+            return res.status(400).json({
+                success: false,
+                message: '必須項目が入力されていません：アーティスト名（カナ）、アーティスト名（English）、バージョン情報'
+            });
+        }
+
         if (!req.body || !req.files) {
             return res.status(400).json({ success: false, message: 'ファイルまたはフォームデータが不足しています' });
         }
@@ -178,9 +172,9 @@ router.post('/', upload.fields([
 
         // Create album data
         const albumData = {
-            artistNameKana: requiredFields.artistNameKana,
-            artistNameEnglish: requiredFields.artistNameEnglish,
-            versionInfo: requiredFields.versionInfo,
+            artistNameKana,
+            artistNameEnglish,
+            versionInfo,
             releaseDate: new Date(req.body.releaseDate),
             email: req.body.email,
             password: req.body.password,
