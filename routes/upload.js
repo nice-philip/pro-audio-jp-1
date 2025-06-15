@@ -90,7 +90,7 @@ const parseArrayField = (value) => {
 };
 
 // 앨범 업로드 처리 라우터
-router.post('/upload', upload.fields([
+router.post('/', upload.fields([
     { name: 'audioFiles', maxCount: 10 },
     { name: 'albumCover', maxCount: 1 }
 ]), async (req, res) => {
