@@ -95,6 +95,12 @@ router.post('/', upload.fields([
     { name: 'audioFiles', maxCount: 10 }
 ]), async(req, res) => {
     console.log('Upload request received');
+    console.log('Request body:', req.body);
+    console.log('Required fields:', {
+        artistNameKana: req.body.artistNameKana,
+        artistNameEnglish: req.body.artistNameEnglish,
+        versionInfo: req.body.versionInfo
+    });
 
     try {
         if (!req.body || !req.files) {
@@ -156,15 +162,33 @@ router.post('/', upload.fields([
             };
         }));
 
+        // Validate required fields
+        const requiredFields = {
+            artistNameKana: req.body.artistNameKana,
+            artistNameEnglish: req.body.artistNameEnglish,
+            versionInfo: req.body.versionInfo
+        };
+
+        const missingFields = Object.entries(requiredFields)
+            .filter(([_, value]) => !value || value.trim() === '')
+            .map(([key]) => key);
+
+        if (missingFields.length > 0) {
+            return res.status(400).json({
+                message: `Missing required fields: ${missingFields.join(', ')}`
+            });
+        }
+
+        // Create album data
         const albumData = {
+            artistNameKana: req.body.artistNameKana,
+            artistNameEnglish: req.body.artistNameEnglish,
+            versionInfo: req.body.versionInfo,
             releaseDate: new Date(req.body.releaseDate),
             email: req.body.email,
             password: req.body.password,
             albumNameDomestic: req.body.albumNameDomestic,
             albumNameInternational: req.body.albumNameInternational,
-            artistNameKana: req.body.artistNameKana,
-            artistNameEnglish: req.body.artistNameEnglish,
-            versionInfo: req.body.versionInfo,
             songs: uploadedSongs,
             albumCover: `https://${process.env.AWS_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${coverKey}`,
             platforms: parseArrayField(req.body.platforms),
@@ -176,11 +200,6 @@ router.post('/', upload.fields([
             paymentAmount: 20000,
             payLater: req.body.payLater === 'true'
         };
-
-        // Validate required fields
-        if (!req.body.artistNameKana || !req.body.artistNameEnglish || !req.body.versionInfo) {
-            throw new Error('Missing required fields: artistNameKana, artistNameEnglish, or versionInfo');
-        }
 
         const album = new Album(albumData);
         await album.save();
