@@ -1486,19 +1486,15 @@
                 const payLater = $('#payLater').prop('checked');
                 formData.append('payLater', payLater);
 
-                // Handle platforms data as array
-                const platforms = [];
-                $('input[name="platforms[]"]:checked').each(function() {
-                    platforms.push($(this).val());
+                // Handle platforms data
+                $('input[name="platforms[]"]:checked').each(function(index) {
+                    formData.append(`platforms[${index}]`, $(this).val());
                 });
-                formData.append('platforms', JSON.stringify(platforms));
 
-                // Handle excluded countries data as array
-                const excludedCountries = [];
-                $('input[name="excludedCountries[]"]:checked').each(function() {
-                    excludedCountries.push($(this).val());
+                // Handle excluded countries data
+                $('input[name="excludedCountries[]"]:checked').each(function(index) {
+                    formData.append(`excludedCountries[${index}]`, $(this).val());
                 });
-                formData.append('excludedCountries', JSON.stringify(excludedCountries));
 
                 try {
                     const controller = new AbortController();
