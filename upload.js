@@ -134,6 +134,9 @@ router.post('/', upload.fields([
 
             // 노래 정보 구성
             return {
+                songNameJapanese: req.body[`songNameJapanese_${index}`],
+                songNameEnglish: req.body[`songNameEnglish_${index}`],
+                genre: req.body[`genre_${index}`],
                 mainArtist: req.body[`mainArtist_${index}`]?.split(',') || [],
                 participatingArtist: req.body[`participatingArtist_${index}`]?.split(',') || [],
                 featuring: req.body[`featuring_${index}`]?.split(',') || [],
@@ -144,9 +147,9 @@ router.post('/', upload.fields([
                 composer: req.body[`composer_${index}`]?.split(',') || [],
                 arranger: req.body[`arranger_${index}`]?.split(',') || [],
                 audioUrl: `https://${process.env.AWS_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${audioKey}`,
-                isRemake: req.body[`isRemake_${index}`] || 'no',
-                usesExternalBeat: req.body[`usesExternalBeat_${index}`] || 'no',
-                language: req.body[`language_${index}`] || 'japanese',
+                isRemake: req.body[`isRemake_${index}`],
+                usesExternalBeat: req.body[`usesExternalBeat_${index}`],
+                language: req.body[`language_${index}`],
                 lyrics: req.body[`lyrics_${index}`] || '',
                 hasExplicitContent: req.body[`hasExplicitContent_${index}`] === 'true'
             };
@@ -157,9 +160,9 @@ router.post('/', upload.fields([
             releaseDate: req.body.releaseDate,
             email: req.body.email,
             password: req.body.password,
-            albumNameDomestic: req.body.albumNameDomestic,
-            albumNameInternational: req.body.albumNameInternational,
-            artistNameKana: req.body.artistNameKana,
+            albumNameJapanese: req.body.albumNameJapanese,
+            albumNameEnglish: req.body.albumNameEnglish,
+            artistNameJapanese: req.body.artistNameJapanese,
             artistNameEnglish: req.body.artistNameEnglish,
             versionInfo: req.body.versionInfo,
             songs: uploadedSongs,
@@ -167,12 +170,14 @@ router.post('/', upload.fields([
             platforms: req.body.platforms ? JSON.parse(req.body.platforms) : [],
             excludedCountries: req.body.excludedCountries ? JSON.parse(req.body.excludedCountries) : [],
             genre: req.body.genre,
-            youtubeMonetize: req.body.youtubeMonetize === 'on' ? 'yes' : 'no',
+            youtubeMonetize: req.body.youtubeMonetize === 'true',
             youtubeAgree: req.body.youtubeAgree === 'true',
             rightsAgreement: req.body.rightsAgreement === 'true',
             reReleaseAgreement: req.body.reReleaseAgreement === 'true',
             platformAgreement: req.body.platformAgreement === 'true',
-            paymentStatus: 'completed'
+            paymentStatus: 'pending',
+            paymentAmount: 20000,
+            payLater: req.body.payLater === 'true'
         };
 
         // MongoDB에 앨범 저장

@@ -1,6 +1,67 @@
 const mongoose = require('mongoose');
 
 const songSchema = new mongoose.Schema({
+    songNameJapanese: {
+        type: String,
+        required: true
+    },
+    songNameEnglish: {
+        type: String,
+        required: true
+    },
+    genre: {
+        type: String,
+        required: true,
+        enum: [
+            'rock',
+            'pop',
+            'jazz',
+            'classical',
+            'electronic',
+            'hiphop',
+            'country',
+            'experimental',
+            'folk',
+            'blues',
+            'r&b',
+            'soul',
+            'funk',
+            'reggae',
+            'latin',
+            'world',
+            'ambient',
+            'newage',
+            'metal',
+            'punk',
+            'indie',
+            'alternative',
+            'dance',
+            'house',
+            'techno',
+            'trance',
+            'dubstep',
+            'drumandbass',
+            'trap',
+            'futurebass',
+            'lofi',
+            'synthwave',
+            'vaporwave',
+            'chillout',
+            'lounge',
+            'jpop',
+            'kpop',
+            'anime',
+            'game',
+            'orchestral',
+            'soundtrack',
+            'children',
+            'holiday',
+            'religious',
+            'spoken',
+            'comedy',
+            'other'
+        ]
+    },
     mainArtist: [String],
     participatingArtist: [String],
     featuring: [String],
@@ -10,19 +71,23 @@ const songSchema = new mongoose.Schema({
     lyricist: [String],
     composer: [String],
     arranger: [String],
-    audioUrl: String,
+    audioUrl: {
+        type: String,
+        required: true
+    },
     isRemake: {
         type: String,
         enum: ['yes', 'no'],
-        default: 'no'
+        required: true
     },
     usesExternalBeat: {
         type: String,
         enum: ['yes', 'no'],
-        default: 'no'
+        required: true
     },
     language: {
         type: String,
+        required: true,
         enum: [
             'instrumental',
             'japanese',
@@ -44,8 +109,7 @@ const songSchema = new mongoose.Schema({
             'thai',
             'turkish',
             'persian'
-        ],
-        default: 'japanese'
+        ]
     },
     lyrics: String,
     hasExplicitContent: {
@@ -67,15 +131,15 @@ const albumSchema = new mongoose.Schema({
         type: String,
         required: true
     },
-    albumNameDomestic: {
+    albumNameJapanese: {
         type: String,
         required: true
     },
-    albumNameInternational: {
+    albumNameEnglish: {
         type: String,
         required: true
     },
-    artistNameKana: {
+    artistNameJapanese: {
         type: String,
         required: true
     },
@@ -122,9 +186,8 @@ const albumSchema = new mongoose.Schema({
         ]
     },
     youtubeMonetize: {
-        type: String,
-        enum: ['yes', 'no'],
-        default: 'no'
+        type: Boolean,
+        default: false
     },
     youtubeAgree: {
         type: Boolean,
@@ -147,10 +210,18 @@ const albumSchema = new mongoose.Schema({
         enum: ['pending', 'completed', 'failed'],
         default: 'pending'
     },
+    paymentAmount: {
+        type: Number,
+        default: 20000 // 20,000円 (税込)
+    },
+    payLater: {
+        type: Boolean,
+        default: false
+    },
     createdAt: {
         type: Date,
         default: Date.now
     }
 });
 
-module.exports = mongoose.model('Album', albumSchema);
+module.exports = mongoose.model('Album', albumSchema, 'albums-jp');
