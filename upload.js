@@ -3,6 +3,7 @@ const multer = require('multer');
 const { S3Client, PutObjectCommand } = require('@aws-sdk/client-s3');
 const { v4: uuidv4 } = require('uuid');
 const mongoose = require('mongoose');
+const Album = require('./models/Album');
 const path = require('path');
 const crypto = require('crypto');
 
@@ -16,18 +17,6 @@ mongoose.connection.on('connected', () => {
 mongoose.connection.on('error', (err) => {
     console.error('MongoDB connection error in upload.js:', err);
 });
-
-// Album 모델 초기화
-let Album;
-try {
-    Album = mongoose.model('Album');
-} catch (error) {
-    if (error.name === 'MissingSchemaError') {
-        Album = require('./models/Album');
-    } else {
-        throw error;
-    }
-}
 
 // S3 설정
 const s3Client = new S3Client({
