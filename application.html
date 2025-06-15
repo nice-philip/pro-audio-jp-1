@@ -1491,14 +1491,14 @@
                 $('input[name="platforms[]"]:checked').each(function() {
                     platforms.push($(this).val());
                 });
-                formData.append('platforms', platforms.join(','));
+                formData.append('platforms[]', platforms);
 
                 // Handle excluded countries data
                 const excludedCountries = [];
                 $('input[name="excludedCountries[]"]:checked').each(function() {
                     excludedCountries.push($(this).val());
                 });
-                formData.append('excludedCountries', excludedCountries.join(','));
+                formData.append('excludedCountries[]', excludedCountries);
 
                 try {
                     const controller = new AbortController();
