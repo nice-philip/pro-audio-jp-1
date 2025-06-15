@@ -37,18 +37,42 @@ const upload = multer({
             if (!file.originalname.match(/\.(jpg|jpeg|png)$/)) {
                 return cb(new Error('JPG/PNG 形式の画像のみアップロード可能です。'), false);
             }
+            // 이미지 파일 크기 제한 (10MB)
+            if (file.size > 10 * 1024 * 1024) {
+                return cb(new Error('画像ファイルは10MB以下にしてください。'), false);
+            }
         } else if (file.fieldname === 'audioFiles') {
             if (!file.originalname.match(/\.(wav)$/)) {
                 return cb(new Error('WAV 形式の音声ファイルのみアップロード可能です。'), false);
+            }
+            // 오디오 파일 크기 제한 (50MB)
+            if (file.size > 50 * 1024 * 1024) {
+                return cb(new Error('音声ファイルは50MB以下にしてください。'), false);
             }
         }
         cb(null, true);
     },
     limits: {
-        fileSize: 100 * 1024 * 1024,
-        files: 50
+        fileSize: 50 * 1024 * 1024, // 50MB
+        files: 10
     }
 });
+
+// S3 업로드 함수
+const uploadToS3 = async (file, key) => {
+    try {
+        await s3Client.send(new PutObjectCommand({
+            Bucket: process.env.AWS_BUCKET_NAME,
+            Key: key,
+            Body: file.buffer,
+            ContentType: file.mimetype
+        }));
+        return true;
+    } catch (error) {
+        console.error('S3 upload error:', error);
+        throw new Error('ファイルのアップロードに失敗しました。');
+    }
+};
 
 // 앨범 업로드 처리 라우터
 router.post('/', upload.fields([
@@ -73,41 +97,45 @@ router.post('/', upload.fields([
         const albumCoverFile = req.files.albumCover[0];
         const audioFiles = req.files.audioFiles;
 
+        // 앨범 커버 업로드
         const coverKey = `covers/${Date.now()}-${crypto.randomBytes(8).toString('hex')}${path.extname(albumCoverFile.originalname)}`;
-        await s3Client.send(new PutObjectCommand({
-            Bucket: process.env.AWS_BUCKET_NAME,
-            Key: coverKey,
-            Body: albumCoverFile.buffer,
-            ContentType: albumCoverFile.mimetype
-        }));
+        await uploadToS3(albumCoverFile, coverKey);
 
+        // 오디오 파일 업로드
         const uploadedSongs = await Promise.all(audioFiles.map(async(file, index) => {
             const audioKey = `audio/${Date.now()}-${crypto.randomBytes(8).toString('hex')}${path.extname(file.originalname)}`;
-            await s3Client.send(new PutObjectCommand({
-                Bucket: process.env.AWS_BUCKET_NAME,
-                Key: audioKey,
-                Body: file.buffer,
-                ContentType: file.mimetype
-            }));
+            await uploadToS3(file, audioKey);
 
-            const getArray = (field) => Array.isArray(field) ? field : (field ? [field] : []);
+            const getArray = (field) => {
+                if (!field) return [];
+                if (Array.isArray(field)) return field;
+                if (typeof field === 'string') {
+                    try {
+                        const parsed = JSON.parse(field);
+                        return Array.isArray(parsed) ? parsed : [parsed];
+                    } catch {
+                        return field.split(',').map(v => v.trim());
+                    }
+                }
+                return [field];
+            };
 
             return {
                 songNameJapanese: req.body[`songNameJapanese_${index}`],
                 songNameEnglish: req.body[`songNameEnglish_${index}`],
                 genre: req.body[`genre_${index}`],
-                mainArtist: getArray(req.body[`mainArtist_${index}[]`]),
-                participatingArtist: getArray(req.body[`participatingArtist_${index}[]`]),
-                featuring: getArray(req.body[`featuring_${index}[]`]),
-                mixingEngineer: getArray(req.body[`mixingEngineer_${index}[]`]),
-                recordingEngineer: getArray(req.body[`recordingEngineer_${index}[]`]),
-                producer: getArray(req.body[`producer_${index}[]`]),
-                lyricist: getArray(req.body[`lyricist_${index}[]`]),
-                composer: getArray(req.body[`composer_${index}[]`]),
-                arranger: getArray(req.body[`arranger_${index}[]`]),
+                mainArtist: getArray(req.body[`mainArtist_${index}`]),
+                participatingArtist: getArray(req.body[`participatingArtist_${index}`]),
+                featuring: getArray(req.body[`featuring_${index}`]),
+                mixingEngineer: getArray(req.body[`mixingEngineer_${index}`]),
+                recordingEngineer: getArray(req.body[`recordingEngineer_${index}`]),
+                producer: getArray(req.body[`producer_${index}`]),
+                lyricist: getArray(req.body[`lyricist_${index}`]),
+                composer: getArray(req.body[`composer_${index}`]),
+                arranger: getArray(req.body[`arranger_${index}`]),
                 audioUrl: `https://${process.env.AWS_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${audioKey}`,
-                isRemake: req.body[`isRemake_${index}`],
-                usesExternalBeat: req.body[`usesExternalBeat_${index}`],
+                isRemake: req.body[`isRemake_${index}`] === 'true',
+                usesExternalBeat: req.body[`usesExternalBeat_${index}`] === 'true',
                 language: req.body[`language_${index}`],
                 lyrics: req.body[`lyrics_${index}`] || '',
                 hasExplicitContent: req.body[`hasExplicitContent_${index}`] === 'true'
@@ -115,14 +143,21 @@ router.post('/', upload.fields([
         }));
 
         const parseArrayField = (value) => {
+            console.log('parseArrayField input:', { value, type: typeof value });
             if (!value) return [];
-            try {
-                const parsed = JSON.parse(value);
-                if (Array.isArray(parsed)) return parsed;
-                return [parsed];
-            } catch {
-                return value.split(',').map(v => v.trim());
+            if (Array.isArray(value)) return value;
+            if (typeof value === 'string') {
+                try {
+                    const parsed = JSON.parse(value);
+                    console.log('JSON parsed result:', parsed);
+                    return Array.isArray(parsed) ? parsed : [parsed];
+                } catch (e) {
+                    console.log('JSON parse failed, using split:', e.message);
+                    return value.split(',').map(v => v.trim());
+                }
             }
+            console.log('Returning single value as array');
+            return [value];
         };
 
         const albumData = {

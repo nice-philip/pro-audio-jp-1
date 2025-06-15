@@ -1546,14 +1546,12 @@
                         $('#paymentInstructions').show();
                     }
 
-                    // Force scroll to top immediately
-                    window.scrollTo(0, 0);
-                    document.body.scrollTop = 0;
-                    document.documentElement.scrollTop = 0;
-
-                    // Show success modal
-                    const successModal = new bootstrap.Modal(document.getElementById('successModal'));
-                    successModal.show();
+                    // Force scroll to top immediately before showing modal
+                    $('html, body').animate({ scrollTop: 0 }, 300, function() {
+                        // Show success modal after scroll completes
+                        const successModal = new bootstrap.Modal(document.getElementById('successModal'));
+                        successModal.show();
+                    });
 
                     // Reset form
                     $('#albumForm')[0].reset();
@@ -1574,9 +1572,11 @@
                     let errorText = `エラーが発生しました: ${error.message}`;
                     errorMessage.html(errorText).show();
                     $('#successMessage').hide();
-                    errorMessage[0] ?.scrollIntoView({
-                        behavior: 'smooth'
-                    });
+                    
+                    // Smooth scroll to error message
+                    $('html, body').animate({
+                        scrollTop: errorMessage.offset().top - 100
+                    }, 300);
 
                 } finally {
                     // Reset button state
