@@ -3,7 +3,7 @@ const multer = require('multer');
 const { S3Client, PutObjectCommand } = require('@aws-sdk/client-s3');
 const { v4: uuidv4 } = require('uuid');
 const mongoose = require('mongoose');
-const Album = require('./models/Album');
+const Album = require('../models/Album');
 const path = require('path');
 const crypto = require('crypto');
 
