@@ -57,16 +57,13 @@ const upload = multer({
 
 // Helper function to parse array fields
 const parseArrayField = (value) => {
-    if (!value) return [];
-    if (Array.isArray(value)) return value;
     if (typeof value === 'string') {
-        try {
-            return JSON.parse(value);
-        } catch {
-            return value.split(',').map(item => item.trim());
-        }
+        return value.split(',').map(v => v.trim());
+    } else if (Array.isArray(value)) {
+        return value; // 이미 배열이면 그대로 사용
+    } else {
+        return []; // 예외 처리
     }
-    return [];
 };
 
 // S3에 파일 업로드

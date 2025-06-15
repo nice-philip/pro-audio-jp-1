@@ -1486,19 +1486,15 @@
                 const payLater = $('#payLater').prop('checked');
                 formData.append('payLater', payLater);
 
-                // Handle platforms data
-                const platforms = [];
+                // Handle platforms data - append each item individually
                 $('input[name="platforms[]"]:checked').each(function() {
-                    platforms.push($(this).val());
+                    formData.append('platforms[]', $(this).val());
                 });
-                formData.append('platforms[]', platforms);
 
-                // Handle excluded countries data
-                const excludedCountries = [];
+                // Handle excluded countries data - append each item individually
                 $('input[name="excludedCountries[]"]:checked').each(function() {
-                    excludedCountries.push($(this).val());
+                    formData.append('excludedCountries[]', $(this).val());
                 });
-                formData.append('excludedCountries[]', excludedCountries);
 
                 try {
                     const controller = new AbortController();
@@ -1550,15 +1546,13 @@
                         $('#paymentInstructions').show();
                     }
 
+                    // Force scroll to top immediately before showing modal
+                    document.body.scrollTop = 0; // For Safari
+                    document.documentElement.scrollTop = 0; // For Chrome, Firefox, IE and Opera
+
                     // Show success modal
                     const successModal = new bootstrap.Modal(document.getElementById('successModal'));
                     successModal.show();
-
-                    // Scroll to top smoothly
-                    window.scrollTo({
-                        top: 0,
-                        behavior: 'smooth'
-                    });
 
                     // Reset form
                     $('#albumForm')[0].reset();
@@ -1607,14 +1601,29 @@
                         $('#payment-status').removeClass('error').addClass('success')
                             .html('支払いが完了しました。')
                             .show();
+                        // Store payment status in form data
+                        $('#payment-status').data('paid', true);
                     });
                 },
                 onError: function(err) {
+                    console.error('PayPal Error:', err);
                     $('#payment-status').removeClass('success').addClass('error')
                         .html('支払い処理中にエラーが発生しました。')
                         .show();
+                    // Store payment status in form data
+                    $('#payment-status').data('paid', false);
+                },
+                onCancel: function() {
+                    $('#payment-status').removeClass('success').addClass('error')
+                        .html('支払いがキャンセルされました。')
+                        .show();
+                    // Store payment status in form data
+                    $('#payment-status').data('paid', false);
                 }
-            }).render('#paypal-button-container');
+            }).render('#paypal-button-container').catch(function(error) {
+                console.error('PayPal Button Render Error:', error);
+                $('#paypal-button-container').html('<div class="alert alert-danger">PayPalボタンの読み込みに失敗しました。ページを更新して再度お試しください。</div>');
+            });
 
             // Toggle PayPal button visibility based on pay later checkbox
             $('#payLater').on('change', function() {
