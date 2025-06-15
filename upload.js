@@ -162,9 +162,9 @@ router.post('/', upload.fields([
             password: req.body.password,
             albumNameDomestic: req.body.albumNameDomestic,
             albumNameInternational: req.body.albumNameInternational,
-            artistNameKana: req.body.artistNameKana || '',
-            artistNameEnglish: req.body.artistNameEnglish || '',
-            versionInfo: req.body.versionInfo || '',
+            artistNameKana: req.body.artistNameKana,
+            artistNameEnglish: req.body.artistNameEnglish,
+            versionInfo: req.body.versionInfo,
             songs: uploadedSongs,
             albumCover: `https://${process.env.AWS_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${coverKey}`,
             platforms: parseArrayField(req.body.platforms),
@@ -178,7 +178,7 @@ router.post('/', upload.fields([
         };
 
         // Validate required fields
-        if (!albumData.artistNameKana || !albumData.artistNameEnglish || !albumData.versionInfo) {
+        if (!req.body.artistNameKana || !req.body.artistNameEnglish || !req.body.versionInfo) {
             throw new Error('Missing required fields: artistNameKana, artistNameEnglish, or versionInfo');
         }
 
