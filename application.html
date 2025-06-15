@@ -530,11 +530,9 @@
                         <input type="text" id="artistNameEnglish" name="artistNameEnglish" class="form-control" required>
                     </div>
                 </div>
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <label for="versionInfo" class="form-label required-label">バージョン情報</label>
-                        <input type="text" id="versionInfo" name="versionInfo" class="form-control" required>
-                    </div>
+                <div class="mb-3">
+                    <label for="versionInfo" class="form-label required-label">バージョン情報</label>
+                    <input type="text" id="versionInfo" name="versionInfo" class="form-control" required>
                 </div>
             </div>
 
@@ -1589,10 +1587,12 @@
                     errorMessage.html(errorText).show();
                     $('#successMessage').hide();
                     
-                    // Smooth scroll to error message
-                    $('html, body').animate({
-                        scrollTop: errorMessage.offset().top - 100
-                    }, 300);
+                    // Smooth scroll to error message with null check
+                    if (errorMessage.length && errorMessage.offset()) {
+                        $('html, body').animate({
+                            scrollTop: errorMessage.offset().top - 100
+                        }, 300);
+                    }
 
                 } finally {
                     // Reset button state
