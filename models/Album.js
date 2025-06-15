@@ -5,8 +5,8 @@ const songSchema = new mongoose.Schema({
     title: { type: String, required: true }, // Japanese title
     titleEn: { type: String, required: true }, // English title
     duration: {
-        minutes: { type: Number, required: true },
-        seconds: { type: Number, required: true }
+        minutes: { type: Number, required: true, min: 0 },
+        seconds: { type: Number, required: true, min: 0, max: 59 }
     },
     genre: { 
         type: String, 

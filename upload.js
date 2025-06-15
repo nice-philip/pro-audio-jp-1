@@ -125,6 +125,11 @@ router.post('/', upload.fields([
             const minutes = parseInt(req.body[`duration_min_${index}`]) || 0;
             const seconds = parseInt(req.body[`duration_sec_${index}`]) || 0;
 
+            // Validate duration values
+            if (minutes < 0 || seconds < 0 || seconds > 59) {
+                throw new Error('Invalid duration values');
+            }
+
             return {
                 title: req.body[`title_${index}`] || '',
                 titleEn: req.body[`titleEn_${index}`] || '',
@@ -157,9 +162,9 @@ router.post('/', upload.fields([
             password: req.body.password,
             albumNameDomestic: req.body.albumNameDomestic,
             albumNameInternational: req.body.albumNameInternational,
-            artistNameKana: req.body.artistNameKana,
-            artistNameEnglish: req.body.artistNameEnglish,
-            versionInfo: req.body.versionInfo,
+            artistNameKana: req.body.artistNameKana || '',
+            artistNameEnglish: req.body.artistNameEnglish || '',
+            versionInfo: req.body.versionInfo || '',
             songs: uploadedSongs,
             albumCover: `https://${process.env.AWS_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${coverKey}`,
             platforms: parseArrayField(req.body.platforms),
@@ -171,6 +176,11 @@ router.post('/', upload.fields([
             paymentAmount: 20000,
             payLater: req.body.payLater === 'true'
         };
+
+        // Validate required fields
+        if (!albumData.artistNameKana || !albumData.artistNameEnglish || !albumData.versionInfo) {
+            throw new Error('Missing required fields: artistNameKana, artistNameEnglish, or versionInfo');
+        }
 
         const album = new Album(albumData);
         await album.save();
