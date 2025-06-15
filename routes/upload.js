@@ -55,6 +55,20 @@ const upload = multer({
     }
 });
 
+// Helper function to parse array fields
+const parseArrayField = (value) => {
+    if (!value) return [];
+    if (Array.isArray(value)) return value;
+    if (typeof value === 'string') {
+        try {
+            return JSON.parse(value);
+        } catch {
+            return value.split(',').map(item => item.trim());
+        }
+    }
+    return [];
+};
+
 // S3에 파일 업로드
 async function uploadToS3(file, type) {
     const fileStream = fs.createReadStream(file.path);
@@ -148,6 +162,8 @@ router.post('/', upload.fields([
             genre: req.body.genre,
             youtubeMonetize: req.body.youtubeMonetize,
             youtubeAgree: req.body.youtubeAgree === 'true',
+            platforms: parseArrayField(req.body.platforms),
+            excludedCountries: parseArrayField(req.body.excludedCountries),
             songs: processedSongs
         };
 
