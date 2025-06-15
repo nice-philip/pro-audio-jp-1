@@ -32,7 +32,7 @@ const storage = multer.memoryStorage();
 
 const upload = multer({
     storage: storage,
-    fileFilter: function (req, file, cb) {
+    fileFilter: function(req, file, cb) {
         if (file.fieldname === 'albumCover') {
             if (!file.originalname.match(/\.(jpg|jpeg|png)$/)) {
                 return cb(new Error('JPG/PNG 形式の画像のみアップロード可能です。'), false);
@@ -45,8 +45,8 @@ const upload = multer({
         cb(null, true);
     },
     limits: {
-        fileSize: 100 * 1024 * 1024, // 100MB
-        files: 50 // 최대 파일 수
+        fileSize: 100 * 1024 * 1024,
+        files: 50
     }
 });
 
@@ -54,39 +54,25 @@ const upload = multer({
 router.post('/', upload.fields([
     { name: 'albumCover', maxCount: 1 },
     { name: 'audioFiles', maxCount: 10 }
-]), async (req, res) => {
+]), async(req, res) => {
     console.log('Upload request received');
-    
+
     try {
-        // 필수 필드 검증
         if (!req.body || !req.files) {
-            return res.status(400).json({
-                success: false,
-                message: 'ファイルまたはフォームデータが不足しています'
-            });
+            return res.status(400).json({ success: false, message: 'ファイルまたはフォームデータが不足しています' });
         }
 
-        // 앨범 커버 검증
         if (!req.files.albumCover || !req.files.albumCover[0]) {
-            return res.status(400).json({
-                success: false,
-                message: 'アルバムカバーが必要です'
-            });
+            return res.status(400).json({ success: false, message: 'アルバムカバーが必要です' });
         }
 
-        // 오디오 파일 검증
         if (!req.files.audioFiles || req.files.audioFiles.length === 0) {
-            return res.status(400).json({
-                success: false,
-                message: '少なくとも1つの音声ファイルが必要です'
-            });
+            return res.status(400).json({ success: false, message: '少なくとも1つの音声ファイルが必要です' });
         }
 
-        // 파일 업로드 처리
         const albumCoverFile = req.files.albumCover[0];
         const audioFiles = req.files.audioFiles;
 
-        // 앨범 커버 S3 업로드
         const coverKey = `covers/${Date.now()}-${crypto.randomBytes(8).toString('hex')}${path.extname(albumCoverFile.originalname)}`;
         await s3Client.send(new PutObjectCommand({
             Bucket: process.env.AWS_BUCKET_NAME,
@@ -95,8 +81,7 @@ router.post('/', upload.fields([
             ContentType: albumCoverFile.mimetype
         }));
 
-        // 오디오 파일 S3 업로드
-        const uploadedSongs = await Promise.all(audioFiles.map(async (file, index) => {
+        const uploadedSongs = await Promise.all(audioFiles.map(async(file, index) => {
             const audioKey = `audio/${Date.now()}-${crypto.randomBytes(8).toString('hex')}${path.extname(file.originalname)}`;
             await s3Client.send(new PutObjectCommand({
                 Bucket: process.env.AWS_BUCKET_NAME,
@@ -105,20 +90,21 @@ router.post('/', upload.fields([
                 ContentType: file.mimetype
             }));
 
-            // 노래 정보 구성
+            const getArray = (field) => Array.isArray(field) ? field : (field ? [field] : []);
+
             return {
                 songNameJapanese: req.body[`songNameJapanese_${index}`],
                 songNameEnglish: req.body[`songNameEnglish_${index}`],
                 genre: req.body[`genre_${index}`],
-                mainArtist: Array.isArray(req.body[`mainArtist_${index}[]`]) ? req.body[`mainArtist_${index}[]`] : (req.body[`mainArtist_${index}[]`] ? [req.body[`mainArtist_${index}[]`]] : []),
-                participatingArtist: Array.isArray(req.body[`participatingArtist_${index}[]`]) ? req.body[`participatingArtist_${index}[]`] : (req.body[`participatingArtist_${index}[]`] ? [req.body[`participatingArtist_${index}[]`]] : []),
-                featuring: Array.isArray(req.body[`featuring_${index}[]`]) ? req.body[`featuring_${index}[]`] : (req.body[`featuring_${index}[]`] ? [req.body[`featuring_${index}[]`]] : []),
-                mixingEngineer: Array.isArray(req.body[`mixingEngineer_${index}[]`]) ? req.body[`mixingEngineer_${index}[]`] : (req.body[`mixingEngineer_${index}[]`] ? [req.body[`mixingEngineer_${index}[]`]] : []),
-                recordingEngineer: Array.isArray(req.body[`recordingEngineer_${index}[]`]) ? req.body[`recordingEngineer_${index}[]`] : (req.body[`recordingEngineer_${index}[]`] ? [req.body[`recordingEngineer_${index}[]`]] : []),
-                producer: Array.isArray(req.body[`producer_${index}[]`]) ? req.body[`producer_${index}[]`] : (req.body[`producer_${index}[]`] ? [req.body[`producer_${index}[]`]] : []),
-                lyricist: Array.isArray(req.body[`lyricist_${index}[]`]) ? req.body[`lyricist_${index}[]`] : (req.body[`lyricist_${index}[]`] ? [req.body[`lyricist_${index}[]`]] : []),
-                composer: Array.isArray(req.body[`composer_${index}[]`]) ? req.body[`composer_${index}[]`] : (req.body[`composer_${index}[]`] ? [req.body[`composer_${index}[]`]] : []),
-                arranger: Array.isArray(req.body[`arranger_${index}[]`]) ? req.body[`arranger_${index}[]`] : (req.body[`arranger_${index}[]`] ? [req.body[`arranger_${index}[]`]] : []),
+                mainArtist: getArray(req.body[`mainArtist_${index}[]`]),
+                participatingArtist: getArray(req.body[`participatingArtist_${index}[]`]),
+                featuring: getArray(req.body[`featuring_${index}[]`]),
+                mixingEngineer: getArray(req.body[`mixingEngineer_${index}[]`]),
+                recordingEngineer: getArray(req.body[`recordingEngineer_${index}[]`]),
+                producer: getArray(req.body[`producer_${index}[]`]),
+                lyricist: getArray(req.body[`lyricist_${index}[]`]),
+                composer: getArray(req.body[`composer_${index}[]`]),
+                arranger: getArray(req.body[`arranger_${index}[]`]),
                 audioUrl: `https://${process.env.AWS_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${audioKey}`,
                 isRemake: req.body[`isRemake_${index}`],
                 usesExternalBeat: req.body[`usesExternalBeat_${index}`],
@@ -128,7 +114,17 @@ router.post('/', upload.fields([
             };
         }));
 
-        // 앨범 데이터 생성
+        const parseArrayField = (value) => {
+            if (!value) return [];
+            try {
+                const parsed = JSON.parse(value);
+                if (Array.isArray(parsed)) return parsed;
+                return [parsed];
+            } catch {
+                return value.split(',').map(v => v.trim());
+            }
+        };
+
         const albumData = {
             releaseDate: req.body.releaseDate,
             email: req.body.email,
@@ -140,8 +136,8 @@ router.post('/', upload.fields([
             versionInfo: req.body.versionInfo,
             songs: uploadedSongs,
             albumCover: `https://${process.env.AWS_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${coverKey}`,
-            platforms: req.body.platforms ? JSON.parse(req.body.platforms) : [],
-            excludedCountries: req.body.excludedCountries ? JSON.parse(req.body.excludedCountries) : [],
+            platforms: parseArrayField(req.body.platforms),
+            excludedCountries: parseArrayField(req.body.excludedCountries),
             rightsAgreement: req.body.rightsAgreement === 'true',
             reReleaseAgreement: req.body.reReleaseAgreement === 'true',
             platformAgreement: req.body.platformAgreement === 'true',
@@ -150,11 +146,9 @@ router.post('/', upload.fields([
             payLater: req.body.payLater === 'true'
         };
 
-        // MongoDB에 앨범 저장
         const album = new Album(albumData);
         await album.save();
 
-        // 성공 응답
         res.status(200).json({
             success: true,
             message: 'アルバムが正常に登録されました',
@@ -163,8 +157,7 @@ router.post('/', upload.fields([
 
     } catch (error) {
         console.error('Upload error:', error);
-        
-        // 구체적인 에러 메시지 반환
+
         if (error.name === 'ValidationError') {
             return res.status(400).json({
                 success: false,
