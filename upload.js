@@ -74,6 +74,21 @@ const uploadToS3 = async (file, key) => {
     }
 };
 
+// Helper function to parse array fields
+const parseArrayField = (value) => {
+    if (!value) return [];
+    if (Array.isArray(value)) return value;
+    if (typeof value === 'string') {
+        try {
+            const parsed = JSON.parse(value);
+            return Array.isArray(parsed) ? parsed : [parsed];
+        } catch {
+            return value.split(',').map(v => v.trim());
+        }
+    }
+    return [value];
+};
+
 // 앨범 업로드 처리 라우터
 router.post('/', upload.fields([
     { name: 'albumCover', maxCount: 1 },
@@ -101,67 +116,43 @@ router.post('/', upload.fields([
         const coverKey = `covers/${Date.now()}-${crypto.randomBytes(8).toString('hex')}${path.extname(albumCoverFile.originalname)}`;
         await uploadToS3(albumCoverFile, coverKey);
 
-        // 오디오 파일 업로드
+        // 오디오 파일 업로드 및 곡 정보 매핑
         const uploadedSongs = await Promise.all(audioFiles.map(async(file, index) => {
             const audioKey = `audio/${Date.now()}-${crypto.randomBytes(8).toString('hex')}${path.extname(file.originalname)}`;
             await uploadToS3(file, audioKey);
 
-            const getArray = (field) => {
-                if (!field) return [];
-                if (Array.isArray(field)) return field;
-                if (typeof field === 'string') {
-                    try {
-                        const parsed = JSON.parse(field);
-                        return Array.isArray(parsed) ? parsed : [parsed];
-                    } catch {
-                        return field.split(',').map(v => v.trim());
-                    }
-                }
-                return [field];
-            };
+            // Get duration values and ensure they are numbers
+            const minutes = parseInt(req.body[`duration_min_${index}`]) || 0;
+            const seconds = parseInt(req.body[`duration_sec_${index}`]) || 0;
 
             return {
-                songNameJapanese: req.body[`songNameJapanese_${index}`],
-                songNameEnglish: req.body[`songNameEnglish_${index}`],
-                genre: req.body[`genre_${index}`],
-                mainArtist: getArray(req.body[`mainArtist_${index}`]),
-                participatingArtist: getArray(req.body[`participatingArtist_${index}`]),
-                featuring: getArray(req.body[`featuring_${index}`]),
-                mixingEngineer: getArray(req.body[`mixingEngineer_${index}`]),
-                recordingEngineer: getArray(req.body[`recordingEngineer_${index}`]),
-                producer: getArray(req.body[`producer_${index}`]),
-                lyricist: getArray(req.body[`lyricist_${index}`]),
-                composer: getArray(req.body[`composer_${index}`]),
-                arranger: getArray(req.body[`arranger_${index}`]),
+                title: req.body[`title_${index}`] || '',
+                titleEn: req.body[`titleEn_${index}`] || '',
+                duration: {
+                    minutes: minutes,
+                    seconds: seconds
+                },
+                genre: req.body[`genre_${index}`] || '',
+                mainArtist: parseArrayField(req.body[`mainArtist_${index}`]),
+                participatingArtist: parseArrayField(req.body[`participatingArtist_${index}`]),
+                featuring: parseArrayField(req.body[`featuring_${index}`]),
+                mixingEngineer: parseArrayField(req.body[`mixingEngineer_${index}`]),
+                recordingEngineer: parseArrayField(req.body[`recordingEngineer_${index}`]),
+                producer: parseArrayField(req.body[`producer_${index}`]),
+                lyricist: parseArrayField(req.body[`lyricist_${index}`]),
+                composer: parseArrayField(req.body[`composer_${index}`]),
+                arranger: parseArrayField(req.body[`arranger_${index}`]),
                 audioUrl: `https://${process.env.AWS_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${audioKey}`,
-                isRemake: req.body[`isRemake_${index}`] === 'true',
-                usesExternalBeat: req.body[`usesExternalBeat_${index}`] === 'true',
-                language: req.body[`language_${index}`],
+                isRemake: req.body[`isRemake_${index}`] === 'yes',
+                usesExternalBeat: req.body[`usesExternalBeat_${index}`] === 'yes',
+                language: req.body[`language_${index}`] || 'instrumental',
                 lyrics: req.body[`lyrics_${index}`] || '',
                 hasExplicitContent: req.body[`hasExplicitContent_${index}`] === 'true'
             };
         }));
 
-        const parseArrayField = (value) => {
-            console.log('parseArrayField input:', { value, type: typeof value });
-            if (!value) return [];
-            if (Array.isArray(value)) return value;
-            if (typeof value === 'string') {
-                try {
-                    const parsed = JSON.parse(value);
-                    console.log('JSON parsed result:', parsed);
-                    return Array.isArray(parsed) ? parsed : [parsed];
-                } catch (e) {
-                    console.log('JSON parse failed, using split:', e.message);
-                    return value.split(',').map(v => v.trim());
-                }
-            }
-            console.log('Returning single value as array');
-            return [value];
-        };
-
         const albumData = {
-            releaseDate: req.body.releaseDate,
+            releaseDate: new Date(req.body.releaseDate),
             email: req.body.email,
             password: req.body.password,
             albumNameDomestic: req.body.albumNameDomestic,
