@@ -1546,9 +1546,10 @@
                         $('#paymentInstructions').show();
                     }
 
-                    // Force scroll to top immediately before showing modal
-                    document.body.scrollTop = 0; // For Safari
-                    document.documentElement.scrollTop = 0; // For Chrome, Firefox, IE and Opera
+                    // Force scroll to top immediately
+                    window.scrollTo(0, 0);
+                    document.body.scrollTop = 0;
+                    document.documentElement.scrollTop = 0;
 
                     // Show success modal
                     const successModal = new bootstrap.Modal(document.getElementById('successModal'));
