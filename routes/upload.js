@@ -102,9 +102,36 @@ router.post('/', upload.fields([
             versionInfo: req.body.versionInfo
         });
 
-        // Validate required fields
-        const { artistNameKana, artistNameEnglish, versionInfo } = req.body;
+        // Add detailed validation logging
+        console.log('Raw values:', {
+            artistNameKana: req.body.artistNameKana,
+            artistNameEnglish: req.body.artistNameEnglish,
+            versionInfo: req.body.versionInfo
+        });
+
+        // Validate required fields with more detailed logging
+        const artistNameKana = req.body.artistNameKana?.toString().trim();
+        const artistNameEnglish = req.body.artistNameEnglish?.toString().trim();
+        const versionInfo = req.body.versionInfo?.toString().trim();
+
+        console.log('Processed values:', {
+            artistNameKana,
+            artistNameEnglish,
+            versionInfo
+        });
+
+        console.log('Validation check:', {
+            hasArtistNameKana: Boolean(artistNameKana),
+            hasArtistNameEnglish: Boolean(artistNameEnglish),
+            hasVersionInfo: Boolean(versionInfo)
+        });
+
         if (!artistNameKana || !artistNameEnglish || !versionInfo) {
+            console.log('Validation failed:', {
+                artistNameKana: !!artistNameKana,
+                artistNameEnglish: !!artistNameEnglish,
+                versionInfo: !!versionInfo
+            });
             return res.status(400).json({
                 success: false,
                 message: '必須項目が入力されていません：アーティスト名（カナ）、アーティスト名（English）、バージョン情報'
