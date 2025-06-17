@@ -104,6 +104,63 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 app.use('/api/upload', uploadRoutes);
 
+// 예약 조회 API - 일반 사용자용
+app.post('/api/reservation/check', async (req, res) => {
+    try {
+        const { email, password } = req.body;
+        
+        if (!email || !password) {
+            return res.status(400).json({ message: 'メールアドレスとパスワードを入力してください。' });
+        }
+
+        // 이메일과 패스워드로 예약 정보 조회
+        const reservation = await Album.findOne({ 
+            email: email.toLowerCase().trim(), 
+            password: password 
+        });
+
+        if (!reservation) {
+            return res.status(404).json({ message: '予約情報が見つかりませんでした。メールアドレスとパスワードを確認してください。' });
+        }
+
+        res.json(reservation);
+    } catch (error) {
+        console.error('Reservation check error:', error);
+        res.status(500).json({ message: 'サーバーエラーが発生しました。' });
+    }
+});
+
+// 예약 조회 API - 관리자용
+app.post('/api/reservation/admin', async (req, res) => {
+    try {
+        const { password } = req.body;
+        
+        // 관리자 권한 확인
+        if (password !== 'admin25') {
+            return res.status(403).json({ message: '管理者権限がありません。' });
+        }
+
+        // 전체 예약 목록 조회
+        const reservations = await Album.find({}).sort({ createdAt: -1 });
+        
+        // 간단한 통계 계산
+        const stats = {
+            total: reservations.length,
+            audioOnly: reservations.filter(r => r.serviceType === 'audioOnly').length,
+            fullService: reservations.filter(r => r.serviceType === 'fullService').length,
+            payLater: reservations.filter(r => r.payLater === true).length
+        };
+
+        res.json({
+            reservations,
+            stats
+        });
+    } catch (error) {
+        console.error('Admin reservation check error:', error);
+        res.status(500).json({ message: 'サーバーエラーが発生しました。' });
+    }
+});
+
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
 });

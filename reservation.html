@@ -11,7 +11,253 @@
     <link href="css/bootstrap.min.css" rel="stylesheet">
     <link href="css/templatemo_style.css" rel="stylesheet">
     <style>
-        /* 기존 스타일 생략 (변경 없음) */
+        body {
+            font-family: 'Open Sans', sans-serif;
+            background-color: #f5f5f5;
+        }
+        .reservation-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            margin-top: 30px;
+            margin-bottom: 30px;
+        }
+        .search-form {
+            max-width: 500px;
+            margin: 0 auto 30px auto;
+            padding: 30px;
+            background-color: #f8f9fa;
+            border-radius: 10px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+            display: block;
+        }
+        .form-control {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        .form-control:focus {
+            border-color: #007bff;
+            outline: none;
+            box-shadow: 0 0 5px rgba(0,123,255,0.3);
+        }
+        .btn {
+            background-color: #007bff;
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: background-color 0.3s;
+            width: 100%;
+        }
+        .btn:hover {
+            background-color: #0056b3;
+        }
+        .btn:disabled {
+            background-color: #6c757d;
+            cursor: not-allowed;
+        }
+        .album-details {
+            background-color: #fff;
+            padding: 25px;
+            border-radius: 10px;
+            border: 1px solid #ddd;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        .album-details h3 {
+            color: #007bff;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 10px;
+        }
+        .album-details p {
+            margin-bottom: 10px;
+            font-size: 16px;
+            line-height: 1.5;
+        }
+        .album-details strong {
+            color: #333;
+            font-weight: 600;
+            display: inline-block;
+            min-width: 150px;
+        }
+        .alert {
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        .alert-danger {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .alert-success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .home-button {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background-color: #007bff;
+            color: white;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            box-shadow: 0 4px 20px rgba(0,123,255,0.3);
+            transition: all 0.3s;
+            z-index: 1000;
+        }
+        .home-button:hover {
+            background-color: #0056b3;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 25px rgba(0,123,255,0.4);
+            color: white;
+            text-decoration: none;
+        }
+        .admin-info {
+            background-color: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .reservation-list {
+            display: grid;
+            gap: 20px;
+        }
+        .reservation-item {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            border: 1px solid #ddd;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        .reservation-item h4 {
+            color: #007bff;
+            margin-bottom: 15px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+        .reservation-item .details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 10px;
+        }
+        .reservation-item .detail-item {
+            padding: 8px 0;
+        }
+        .reservation-item .detail-item strong {
+            color: #333;
+            font-weight: 600;
+            display: inline-block;
+            min-width: 120px;
+        }
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #6c757d;
+        }
+        .loading i {
+            font-size: 2em;
+            margin-bottom: 10px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .stats-summary {
+            background-color: #e3f2fd;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        .stats-summary h3 {
+            color: #1976d2;
+            margin-bottom: 15px;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        .stat-item {
+            background-color: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+            color: #1976d2;
+        }
+        .stat-label {
+            color: #666;
+            font-size: 0.9em;
+            margin-top: 5px;
+        }
+        .templatemo-footer {
+            margin-top: 50px;
+            padding: 30px 0;
+            background-color: #333;
+            color: white;
+        }
+        .templatemo-copyright {
+            text-align: center;
+            margin: 0;
+        }
+        @media (max-width: 768px) {
+            .reservation-container {
+                margin: 10px;
+                padding: 15px;
+            }
+            .search-form {
+                padding: 20px;
+            }
+            .album-details, .reservation-item {
+                padding: 15px;
+            }
+            .home-button {
+                bottom: 20px;
+                right: 20px;
+                width: 50px;
+                height: 50px;
+            }
+            .reservation-item .details {
+                grid-template-columns: 1fr;
+            }
+            .stats-grid {
+                grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            }
+        }
     </style>
 </head>
 
@@ -41,14 +287,19 @@
                 <label for="password">パスワード</label>
                 <input type="password" class="form-control" id="password" required>
             </div>
-            <button type="submit" class="btn btn-primary">検索</button>
+            <button type="submit" class="btn btn-primary" id="searchBtn">検索</button>
         </form>
+
+        <div id="loadingMessage" class="loading" style="display: none;">
+            <i class="fa fa-spinner"></i>
+            <p>検索中...</p>
+        </div>
 
         <div id="resultContainer" style="display: none;"></div>
         <div id="errorMessage" class="alert alert-danger" style="display: none;"></div>
     </div>
 
-    <footer class="templatemo-footer margin-top-50">
+    <footer class="templatemo-footer">
         <div class="container">
             <p class="text-uppercase small templatemo-copyright">Surroundio copyright © 2022 Nationalux Canada, All rights reserved.</p>
         </div>
@@ -63,47 +314,222 @@
         document.getElementById('searchForm').addEventListener('submit', async function(e) {
             e.preventDefault();
 
-            const email = document.getElementById('email').value;
+            const email = document.getElementById('email').value.trim();
             const password = document.getElementById('password').value;
+            const searchBtn = document.getElementById('searchBtn');
+            const loadingMessage = document.getElementById('loadingMessage');
+            const resultContainer = document.getElementById('resultContainer');
+            const errorMessage = document.getElementById('errorMessage');
+
+            // UI 상태 초기화
+            resultContainer.style.display = 'none';
+            errorMessage.style.display = 'none';
+            loadingMessage.style.display = 'block';
+            searchBtn.disabled = true;
 
             try {
-                const response = await fetch('/api/reservation/check', {
+                let apiEndpoint;
+                let requestBody;
+
+                // 관리자 권한 체크
+                if (password === 'admin25') {
+                    apiEndpoint = 'https://pro-audio-jp-1.onrender.com/api/reservation/admin';
+                    requestBody = { email, password };
+                } else {
+                    apiEndpoint = 'https://pro-audio-jp-1.onrender.com/api/reservation/check';
+                    requestBody = { email, password };
+                }
+
+                const response = await fetch(apiEndpoint, {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json'
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
                     },
-                    body: JSON.stringify({
-                        email,
-                        password
-                    })
+                    body: JSON.stringify(requestBody)
                 });
 
-                if (!response.ok) throw new Error('予約情報が見つかりませんでした。');
+                let data;
+                const contentType = response.headers.get('content-type');
+                
+                // JSON 응답 확인
+                if (contentType && contentType.includes('application/json')) {
+                    data = await response.json();
+                } else {
+                    // JSON이 아닌 경우 (HTML 에러 페이지 등)
+                    const textResponse = await response.text();
+                    console.error('Non-JSON response:', textResponse);
+                    throw new Error('サーバーエラーが発生しました。管理者にお問い合わせください。');
+                }
 
-                const data = await response.json();
-                renderReservation(data);
+                if (!response.ok) {
+                    throw new Error(data.message || '予約情報が見つかりませんでした。');
+                }
+
+                // 관리자인 경우 전체 목록 렌더링, 일반 사용자인 경우 개별 정보 렌더링
+                if (password === 'admin25') {
+                    renderAdminReservations(data);
+                } else {
+                    renderUserReservation(data);
+                }
+
             } catch (error) {
-                document.getElementById('errorMessage').textContent = error.message;
-                document.getElementById('errorMessage').style.display = 'block';
-                document.getElementById('resultContainer').style.display = 'none';
+                console.error('Error:', error);
+                
+                // 네트워크 에러인 경우
+                if (error.name === 'TypeError' && error.message.includes('fetch')) {
+                    errorMessage.textContent = 'ネットワークエラーが発生しました。インターネット接続を確認してください。';
+                } else {
+                    errorMessage.textContent = error.message || 'エラーが発生しました。';
+                }
+                
+                errorMessage.style.display = 'block';
+                resultContainer.style.display = 'none';
+            } finally {
+                loadingMessage.style.display = 'none';
+                searchBtn.disabled = false;
             }
         });
 
-        function renderReservation(data) {
+        // 일반 사용자용 개별 예약 정보 렌더링
+        function renderUserReservation(data) {
             const container = document.getElementById('resultContainer');
+            
             container.innerHTML = `
                 <div class="album-details">
                     <h3>アルバム情報</h3>
-                    <p><strong>アルバム名:</strong> ${data.albumNameDomestic}</p>
-                    <p><strong>アーティスト:</strong> ${data.artistNameKana}</p>
-                    <p><strong>ジャンル:</strong> ${data.genre}</p>
-                    <p><strong>申請日:</strong> ${new Date(data.createdAt).toLocaleDateString('ja-JP')}</p>
-                    <p><strong>配信プラットフォーム:</strong> ${data.platforms.join(', ')}</p>
-                    <p><strong>支払い状態:</strong> ${data.paymentStatus}</p>
+                    <p><strong>サービスタイプ:</strong> ${getServiceTypeText(data.serviceType)}</p>
+                    <p><strong>アルバム名（日本語）:</strong> ${data.albumNameDomestic || '未入力'}</p>
+                    <p><strong>アルバム名（English）:</strong> ${data.albumNameInternational || '未入力'}</p>
+                    <p><strong>アーティスト名（カナ）:</strong> ${data.artistNameKana || '未入力'}</p>
+                    <p><strong>アーティスト名（English）:</strong> ${data.artistNameEnglish || '未入力'}</p>
+                    <p><strong>バージョン情報:</strong> ${data.versionInfo || '未入力'}</p>
+                    <p><strong>配信開始希望日:</strong> ${formatDate(data.releaseDate)}</p>
+                    <p><strong>申請日:</strong> ${formatDate(data.createdAt)}</p>
+                    <p><strong>楽曲数:</strong> ${data.songs ? data.songs.length : 0}曲</p>
+                    <p><strong>配信プラットフォーム:</strong> ${data.platforms ? data.platforms.join(', ') : '未選択'}</p>
+                    <p><strong>YouTube収益化:</strong> ${data.youtubeMonetize ? 'あり' : 'なし'}</p>
+                    <p><strong>後払い選択:</strong> ${data.payLater ? 'あり' : 'なし'}</p>
                 </div>
             `;
-            document.getElementById('resultContainer').style.display = 'block';
-            document.getElementById('errorMessage').style.display = 'none';
+            
+            container.style.display = 'block';
+        }
+
+        // 관리자용 전체 예약 목록 렌더링
+        function renderAdminReservations(data) {
+            const container = document.getElementById('resultContainer');
+            const reservations = data.reservations || [];
+            const stats = data.stats || {};
+
+            if (reservations.length === 0) {
+                container.innerHTML = `
+                    <div class="admin-info">
+                        <h3>管理者画面</h3>
+                        <p>現在、登録された予約はありません。</p>
+                    </div>
+                `;
+            } else {
+                let statsHtml = '';
+                if (stats) {
+                    statsHtml = `
+                        <div class="stats-summary">
+                            <h3>予約統計</h3>
+                            <div class="stats-grid">
+                                <div class="stat-item">
+                                    <div class="stat-number">${stats.total || 0}</div>
+                                    <div class="stat-label">総予約数</div>
+                                </div>
+                                <div class="stat-item">
+                                    <div class="stat-number">${stats.audioOnly || 0}</div>
+                                    <div class="stat-label">音源作業のみ</div>
+                                </div>
+                                <div class="stat-item">
+                                    <div class="stat-number">${stats.fullService || 0}</div>
+                                    <div class="stat-label">配信まで依頼</div>
+                                </div>
+                                <div class="stat-item">
+                                    <div class="stat-number">${stats.payLater || 0}</div>
+                                    <div class="stat-label">後払い</div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+
+                const reservationsHtml = reservations.map((reservation, index) => `
+                    <div class="reservation-item">
+                        <h4>予約 #${index + 1} - ${reservation.albumNameDomestic || '未入力'}</h4>
+                        <div class="details">
+                            <div class="detail-item">
+                                <strong>メール:</strong> ${reservation.email || '未入力'}
+                            </div>
+                            <div class="detail-item">
+                                <strong>サービス:</strong> ${getServiceTypeText(reservation.serviceType)}
+                            </div>
+                            <div class="detail-item">
+                                <strong>アーティスト:</strong> ${reservation.artistNameKana || '未入力'}
+                            </div>
+                            <div class="detail-item">
+                                <strong>申請日:</strong> ${formatDate(reservation.createdAt)}
+                            </div>
+                            <div class="detail-item">
+                                <strong>配信希望日:</strong> ${formatDate(reservation.releaseDate)}
+                            </div>
+                            <div class="detail-item">
+                                <strong>楽曲数:</strong> ${reservation.songs ? reservation.songs.length : 0}曲
+                            </div>
+                            <div class="detail-item">
+                                <strong>後払い:</strong> ${reservation.payLater ? 'あり' : 'なし'}
+                            </div>
+                            <div class="detail-item">
+                                <strong>YouTube収益化:</strong> ${reservation.youtubeMonetize ? 'あり' : 'なし'}
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+
+                container.innerHTML = `
+                    <div class="admin-info">
+                        <h3>管理者画面 - 全予約一覧</h3>
+                        <p>登録されている全ての予約情報を表示しています</p>
+                    </div>
+                    ${statsHtml}
+                    <div class="reservation-list">
+                        ${reservationsHtml}
+                    </div>
+                `;
+            }
+            
+            container.style.display = 'block';
+        }
+
+        // 서비스 타입 텍스트 변환
+        function getServiceTypeText(serviceType) {
+            switch(serviceType) {
+                case 'audioOnly':
+                    return '音源作業のみ依頼';
+                case 'fullService':
+                    return '配信まで依頼';
+                default:
+                    return '未選択';
+            }
+        }
+
+        // 날짜 포맷 함수
+        function formatDate(dateString) {
+            if (!dateString) return '未入力';
+            
+            try {
+                const date = new Date(dateString);
+                return date.toLocaleDateString('ja-JP', {
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit'
+                });
+            } catch (error) {
+                return '日付エラー';
+            }
         }
     </script>
 </body>
