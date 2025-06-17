@@ -463,6 +463,146 @@
                 padding: 1rem;
             }
         }
+
+        /* サービス選択スタイル */
+        .service-option {
+            padding: 20px;
+            border: 2px solid #000000;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            background-color: #ffffff;
+        }
+
+        .service-option:hover {
+            border-color: #000000;
+            background-color: #f8f9fa;
+        }
+
+        .service-option .form-check-input {
+            position: absolute;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            margin: 0;
+            cursor: pointer;
+            z-index: 1;
+        }
+
+        .service-option .form-check-label {
+            width: 100%;
+            cursor: pointer;
+            position: relative;
+            z-index: 0;
+        }
+
+        .service-option .form-check-label h4 {
+            margin-bottom: 0.5rem;
+            color: #2C3333;
+        }
+
+        .service-option .form-check-label p {
+            margin-bottom: 0;
+            font-size: 0.9rem;
+        }
+
+        .service-option .form-check-input:checked + .form-check-label {
+            color: #0d6efd;
+        }
+
+        .service-option .form-check-input:checked + .form-check-label h4 {
+            color: #0d6efd;
+        }
+
+        .disabled-field {
+            background-color: #d6d8db;
+            position: relative;
+        }
+
+        .disabled-field::before {
+            content: "入力不要";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 5px 15px;
+            border-radius: 5px;
+            font-size: 1.2rem;
+            z-index: 1000;
+            display: none;
+        }
+
+        .disabled-field:hover::before {
+            display: block;
+        }
+
+        .disabled-field input,
+        .disabled-field select,
+        .disabled-field textarea {
+            background-color: #c4c6c9 !important;
+            cursor: not-allowed;
+            opacity: 0.8;
+        }
+
+        .disabled-field label {
+            color: #495057;
+        }
+
+        .disabled-field .form-check-input {
+            cursor: not-allowed;
+        }
+
+        .disabled-field .accordion-button {
+            background-color: #c4c6c9;
+            color: #495057;
+        }
+
+        .disabled-field .accordion-button::after {
+            opacity: 0.5;
+        }
+
+        /* サービス選択セクションのスタイル */
+        .form-section:first-of-type {
+            background-color: #ffffff !important;
+        }
+
+        /* アルバム情報セクションのスタイル */
+        .form-section:nth-of-type(2) {
+            background-color: #ffffff !important;
+        }
+
+        .form-section:nth-of-type(2) .form-control,
+        .form-section:nth-of-type(2) .form-control:disabled {
+            background-color: #ffffff !important;
+            opacity: 1 !important;
+        }
+
+        .form-section:nth-of-type(2) .disabled-field {
+            background-color: #ffffff !important;
+        }
+
+        .form-section:nth-of-type(2) .disabled-field input {
+            background-color: #ffffff !important;
+            opacity: 1 !important;
+        }
+
+        .service-option:hover {
+            border-color: #000000;
+            background-color: #f8f9fa;
+        }
+
+        .service-option .form-check-input:checked + .form-check-label + .service-option,
+        .service-option .form-check-input:checked ~ .service-option {
+            border-color: #000000;
+            border-width: 3px;
+            box-shadow: 0 0 0 0.25rem rgba(0, 0, 0, 0.15);
+        }
     </style>
 </head>
 
@@ -477,6 +617,32 @@
             <h1 class="mb-0">アルバム申請</h1>
             <div style="width: 100px;"></div>
         </div>
+
+        <!-- サービス選択 -->
+        <div class="form-section mb-4">
+            <h3 class="mb-4">サービス選択</h3>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-check service-option">
+                        <input class="form-check-input" type="radio" name="serviceType" id="audioOnly" value="audioOnly" checked>
+                        <label class="form-check-label" for="audioOnly">
+                            <h4>音源作業のみ依頼</h4>
+                            <p class="text-muted">音源の加工・編集のみを依頼します</p>
+                        </label>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-check service-option">
+                        <input class="form-check-input" type="radio" name="serviceType" id="fullService" value="fullService">
+                        <label class="form-check-label" for="fullService">
+                            <h4>配信まで依頼</h4>
+                            <p class="text-muted">音源の加工から配信まで全てを依頼します</p>
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <form id="albumForm" class="needs-validation" novalidate>
             <!-- 基本情報 -->
             <div class="form-section">
@@ -1244,11 +1410,11 @@
                 <div class="row">
                     <div class="col-md-12 mb-3">
                         <div class="alert alert-info" role="alert">
-                            <i class="fa fa-info-circle"></i> 料金: 20,000円 (税込)
+                            <i class="fa fa-info-circle"></i> 料金: 20,000円 (税込) <span class="text-danger fw-bold">プロモーション期間中のみ</span>
                         </div>
                         <div class="form-check mb-3">
                             <input class="form-check-input" type="checkbox" id="payLater" name="payLater">
-                            <label class="form-check-label" for="payLater">
+                            <label class="form-check-label fw-bold" for="payLater">
                                 後で支払う（申請後に支払い方法をご案内いたします）
                             </label>
                         </div>
@@ -1353,8 +1519,10 @@
             const minDate = new Date(today);
             minDate.setDate(today.getDate() + 21); // 3 weeks = 21 days
 
+            // 7월 8일로 고정 설정
+            const fixedDate = '2024-07-08';
             releaseDateInput.min = minDate.toISOString().split('T')[0];
-            releaseDateInput.value = minDate.toISOString().split('T')[0];
+            releaseDateInput.value = fixedDate;
 
             // Enable submit button initially
             document.querySelector('button[type="submit"]').disabled = false;
@@ -1495,6 +1663,16 @@
                 e.preventDefault();
                 
                 debug.log('=== Form Submission Start ===');
+                
+                // 필수 필드 validation 수행
+                const validationResult = validateRequiredFields();
+                if (!validationResult.isValid) {
+                    // 첫 번째 문제 필드로 스크롤
+                    $('html, body').animate({
+                        scrollTop: validationResult.firstErrorField.offset().top - 100
+                    }, 500);
+                    return;
+                }
                 
                 // 버튼 상태 변경
                 const submitButton = $('#submitButton');
@@ -1648,6 +1826,122 @@
                 }
             });
 
+            // 필수 필드 validation 함수
+            function validateRequiredFields() {
+                // 기존 에러 스타일 제거
+                $('.form-control, .form-select, .form-check-input').removeClass('is-invalid');
+                $('.invalid-feedback').hide();
+                
+                let isValid = true;
+                let firstErrorField = null;
+                
+                // 필수 필드 목록 정의
+                const requiredFields = [
+                    { selector: '#email', name: 'メールアドレス' },
+                    { selector: '#password', name: 'パスワード' },
+                    { selector: '#albumNameDomestic', name: 'アルバム名（日本語）' },
+                    { selector: '#albumNameInternational', name: 'アルバム名（English）' },
+                    { selector: '#artistNameKana', name: 'アーティスト名（カナ）' },
+                    { selector: '#artistNameEnglish', name: 'アーティスト名（English）' },
+                    { selector: 'input[name="audioFiles"]', name: '音声ファイル' },
+                    { selector: 'input[name="albumCover"]', name: 'アルバムカバー' }
+                ];
+                
+                // audioOnly 모드가 아닌 경우에만 versionInfo 체크
+                if (!$('#audioOnly').is(':checked')) {
+                    requiredFields.push({ selector: '#versionInfo', name: 'バージョン情報' });
+                }
+                
+                // 각 필수 필드 검증
+                requiredFields.forEach(field => {
+                    const $field = $(field.selector);
+                    const value = $field.val();
+                    
+                    if (!value || value.trim() === '' || (field.selector === 'input[name="audioFiles"]' && $field[0].files.length === 0) || (field.selector === 'input[name="albumCover"]' && $field[0].files.length === 0)) {
+                        $field.addClass('is-invalid');
+                        $field.css('border-color', '#dc3545');
+                        
+                        // 커스텀 에러 메시지 표시
+                        let errorMsg = $field.siblings('.invalid-feedback');
+                        if (errorMsg.length === 0) {
+                            errorMsg = $('<div class="invalid-feedback"></div>').insertAfter($field);
+                        }
+                        errorMsg.text(`${field.name}を入力してください`).show();
+                        
+                        if (!firstErrorField) {
+                            firstErrorField = $field;
+                        }
+                        isValid = false;
+                    }
+                });
+                
+                // 곡 정보 검증
+                $('.song-entry').each(function(index) {
+                    const songRequiredFields = [
+                        { selector: `input[name="title_${index}"]`, name: '楽曲タイトル（日本語）' },
+                        { selector: `input[name="titleEn_${index}"]`, name: '楽曲タイトル（English）' },
+                        { selector: `input[name="duration_min_${index}"]`, name: '再生時間（分）' },
+                        { selector: `input[name="duration_sec_${index}"]`, name: '再生時間（秒）' },
+                        { selector: `select[name="genre_${index}"]`, name: 'ジャンル' }
+                    ];
+                    
+                    songRequiredFields.forEach(field => {
+                        const $field = $(field.selector);
+                        if ($field.length > 0) {
+                            const value = $field.val();
+                            
+                            if (!value || value.trim() === '') {
+                                $field.addClass('is-invalid');
+                                $field.css('border-color', '#dc3545');
+                                
+                                let errorMsg = $field.siblings('.invalid-feedback');
+                                if (errorMsg.length === 0) {
+                                    errorMsg = $('<div class="invalid-feedback"></div>').insertAfter($field);
+                                }
+                                errorMsg.text(`${field.name}を入力してください`).show();
+                                
+                                if (!firstErrorField) {
+                                    firstErrorField = $field;
+                                }
+                                isValid = false;
+                            }
+                        }
+                    });
+                });
+                
+                // 동의사항 체크박스 검증
+                const agreementFields = [
+                    { selector: 'input[name="rightsAgreement"]', name: '所有権等権利紛争に関する同意' },
+                    { selector: 'input[name="reReleaseAgreement"]', name: '他社発売音源の再発売に関する同意' },
+                    { selector: 'input[name="platformAgreement"]', name: '発売国及びプラットフォームに関する同意' }
+                ];
+                
+                agreementFields.forEach(field => {
+                    const $field = $(field.selector);
+                    if (!$field.is(':checked')) {
+                        $field.addClass('is-invalid');
+                        $field.closest('.form-check').css('border', '2px solid #dc3545').css('padding', '5px').css('border-radius', '5px');
+                        
+                        if (!firstErrorField) {
+                            firstErrorField = $field;
+                        }
+                        isValid = false;
+                    } else {
+                        $field.closest('.form-check').css('border', '').css('padding', '').css('border-radius', '');
+                    }
+                });
+                
+                return { isValid, firstErrorField };
+            }
+
+            // 입력 시 에러 스타일 제거
+            $(document).on('input change', '.form-control, .form-select, .form-check-input', function() {
+                $(this).removeClass('is-invalid');
+                $(this).css('border-color', '');
+                $(this).siblings('.invalid-feedback').hide();
+                $(this).closest('.form-check').css('border', '').css('padding', '').css('border-radius', '');
+            });
+
             // PayPal button initialization
             paypal.Buttons({
                 createOrder: function(data, actions) {
@@ -1656,7 +1950,10 @@
                             amount: {
                                 value: '20000'
                             }
-                        }]
+                        }],
+                        application_context: {
+                            shipping_preference: 'NO_SHIPPING'
+                        }
                     });
                 },
                 onApprove: function(data, actions) {
@@ -1664,7 +1961,6 @@
                         $('#payment-status').removeClass('error').addClass('success')
                             .html('支払いが完了しました。')
                             .show();
-                        // Store payment status in form data
                         $('#payment-status').data('paid', true);
                     });
                 },
@@ -1673,15 +1969,20 @@
                     $('#payment-status').removeClass('success').addClass('error')
                         .html('支払い処理中にエラーが発生しました。')
                         .show();
-                    // Store payment status in form data
                     $('#payment-status').data('paid', false);
                 },
                 onCancel: function() {
                     $('#payment-status').removeClass('success').addClass('error')
                         .html('支払いがキャンセルされました。')
                         .show();
-                    // Store payment status in form data
                     $('#payment-status').data('paid', false);
+                },
+                style: {
+                    layout: 'vertical',
+                    color: 'blue',
+                    shape: 'rect',
+                    label: 'pay',
+                    fundingSource: paypal.FUNDING.PAYLATER
                 }
             }).render('#paypal-button-container').catch(function(error) {
                 console.error('PayPal Button Render Error:', error);
@@ -1696,6 +1997,152 @@
                     $('#paypal-button-container').show();
                 }
             });
+
+            // サービス選択に基づくフィールドの有効/無効化
+            function updateFieldStates() {
+                const isAudioOnly = $('#audioOnly').is(':checked');
+                
+                if (isAudioOnly) {
+                    // 音源作業のみ依頼の場合, 특정 필드만 일반 배경색 유지
+                    // 모든 필드 활성화 (비활성화 하지 않음)
+                    $('input, select, textarea').prop('disabled', false);
+                    $('.form-section, .form-group, .mb-3').removeClass('disabled-field');
+                    
+                    // 먼저 모든 필드의 배경색을 진한 회색으로 설정
+                    $('input, select, textarea').css('background-color', '#6c757d');
+                    
+                    // 유지할 필드들만 원래 배경색으로 복원 (versionInfo 제거)
+                    $('#email, #password, #albumNameDomestic, #albumNameInternational, #artistNameKana, #artistNameEnglish, input[name="audioFiles"], input[name="albumCover"]').css('background-color', '');
+                    
+                    // versionInfo 필드는 명시적으로 진한 회색으로 설정
+                    $('#versionInfo').css('background-color', '#6c757d');
+                    
+                    // 동의사항 본문 내용도 진한 회색으로 설정
+                    $('.terms-content').css('background-color', '#6c757d');
+                    
+                    // 플랫폼 섹션 배경도 진한 회색으로 설정
+                    $('.platform-section').css('background-color', '#6c757d');
+                    
+                    // 날짜 필드는 7월 8일로 고정
+                    $('#releaseDate').val('2024-07-08');
+                    
+                    // 재생시간 필드들은 0으로 설정
+                    $('input[name^="duration_min_"], input[name^="duration_sec_"]').each(function() {
+                        const $field = $(this);
+                        if (!$field.val() || $field.val().trim() === '') {
+                            $field.val('0');
+                        }
+                    });
+                    
+                    // 장르 필드는 pop으로 자동 선택 (서버 enum validation 때문)
+                    $('select[name^="genre_"]').val('pop');
+                    
+                    // 리메이크 곡과 외부 구매 비트/샘플 사용 질문에서 "いいえ" 자동 선택
+                    $('input[name^="isRemake_"][value="no"]').prop('checked', true);
+                    $('input[name^="usesExternalBeat_"][value="no"]').prop('checked', true);
+                    
+                    // 동의사항 체크박스들 자동 체크
+                    $('input[name="rightsAgreement"], input[name="reReleaseAgreement"], input[name="platformAgreement"]').prop('checked', true);
+                    
+                    // 언어 필드에서 일본어 자동 선택
+                    $('select[name^="language_"]').val('japanese');
+                    
+                    // 플랫폼 체크박스들 모두 자동 체크
+                    $('input[name="platforms[]"]').prop('checked', true);
+                    
+                    // versionInfo 필드에 "該当なし" 자동 입력
+                    if (!$('#versionInfo').val() || $('#versionInfo').val().trim() === '') {
+                        $('#versionInfo').val('該当なし');
+                    }
+                    
+                    // 유지할 필드들과 재생시간 필드들, 장르 필드들, WAV 파일 업로드 필드, 아이앤카바 필드를 제외한 나머지 빈 필드들에 "該当なし" 입력
+                    $('input, select, textarea').not('#email, #password, #albumNameDomestic, #albumNameInternational, #artistNameKana, #artistNameEnglish, input[name="audioFiles"], input[name="albumCover"]').not('[name^="duration_min_"], [name^="duration_sec_"], [name^="genre_"]').each(function() {
+                        const $field = $(this);
+                        const fieldType = $field.prop('tagName').toLowerCase();
+                        
+                        if (fieldType === 'input' && ($field.attr('type') === 'text' || $field.attr('type') === 'email' || !$field.attr('type'))) {
+                            if (!$field.val() || $field.val().trim() === '') {
+                                $field.val('該当なし');
+                            }
+                        } else if (fieldType === 'textarea') {
+                            if (!$field.val() || $field.val().trim() === '') {
+                                $field.val('該当なし');
+                            }
+                        } else if (fieldType === 'select') {
+                            if (!$field.val()) {
+                                // select 필드에 "該당なし" 옵션이 없으면 추가
+                                if ($field.find('option[value="該당なし"]').length === 0) {
+                                    $field.prepend('<option value="該当なし">該当なし</option>');
+                                }
+                                $field.val('該当なし');
+                            }
+                        }
+                    });
+                    
+                } else {
+                    // 配信まで依頼の場合, 모든 필드 원래 배경색으로 복원
+                    $('input, select, textarea').prop('disabled', false);
+                    $('.form-section, .form-group, .mb-3').removeClass('disabled-field');
+                    $('input, select, textarea').css('background-color', '');
+                    
+                    // 동의사항 본문 내용 배경색 원래대로 복원
+                    $('.terms-content').css('background-color', '');
+                    
+                    // 플랫폼 섹션 배경색 원래대로 복원
+                    $('.platform-section').css('background-color', '');
+                    
+                    // 날짜 필드는 7월 8일로 고정 (fullService에서도 동일)
+                    $('#releaseDate').val('2024-07-08');
+                    
+                    // 재생시간 필드에서 0값 제거
+                    $('input[name^="duration_min_"], input[name^="duration_sec_"]').each(function() {
+                        const $field = $(this);
+                        if ($field.val() === '0') {
+                            $field.val('');
+                        }
+                    });
+                    
+                    // 장르 필드 선택 해제
+                    $('select[name^="genre_"]').val('');
+                    
+                    // 라디오 버튼 선택 해제
+                    $('input[name^="isRemake_"], input[name^="usesExternalBeat_"]').prop('checked', false);
+                    
+                    // 동의사항 체크박스들 체크 해제
+                    $('input[name="rightsAgreement"], input[name="reReleaseAgreement"], input[name="platformAgreement"]').prop('checked', false);
+                    
+                    // 언어 필드 선택 해제
+                    $('select[name^="language_"]').val('');
+                    
+                    // 플랫폼 체크박스들 체크 해제
+                    $('input[name="platforms[]"]').prop('checked', false);
+                    
+                    // "該当なし"으로 입력된 필드들을 빈 필드로 복원
+                    $('input, textarea').each(function() {
+                        const $field = $(this);
+                        if ($field.val() === '該当なし') {
+                            $field.val('');
+                        }
+                    });
+                    
+                    // select 필드에서 "該当なし" 옵션 제거 및 초기화
+                    $('select').each(function() {
+                        const $field = $(this);
+                        if ($field.val() === '該当なし') {
+                            $field.val('');
+                        }
+                        $field.find('option[value="該当なし"]').remove();
+                    });
+                }
+            }
+
+            // サービス選択変更時のイベントハンドラ
+            $('input[name="serviceType"]').on('change', function() {
+                updateFieldStates();
+            });
+
+            // 初期状態の設定
+            updateFieldStates();
         });
 
         // 모바일 버전 제출 버튼 상태 관리 코드 제거 (중복 제거)
