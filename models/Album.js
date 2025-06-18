@@ -95,4 +95,4 @@ const albumSchema = new mongoose.Schema({
     createdAt: { type: Date, default: Date.now }
 });
 
-module.exports = mongoose.model('Album', albumSchema);
+module.exports = mongoose.model('Album', albumSchema, 'albums-jp');
