@@ -42,7 +42,7 @@ const upload = multer({
                 return cb(new Error('画像ファイルは10MB以下にしてください。'), false);
             }
         } else if (file.fieldname === 'audioFiles') {
-            if (!file.originalname.match(/\.(wav)$/)) {
+            if (!file.originalname.match(/\.(wav)$/i)) {
                 return cb(new Error('WAV 形式の音声ファイルのみアップロード可能です。'), false);
             }
             // 오디오 파일 크기 제한 (500MB)
