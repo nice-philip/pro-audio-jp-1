@@ -1745,7 +1745,7 @@
                     
                     if (isMobile) {
                         controller = new AbortController();
-                        timeoutId = setTimeout(() => controller.abort(), 30000);
+                        timeoutId = setTimeout(() => controller.abort(), 180000); // 3분
                     }
                     
                     const response = await fetch('https://pro-audio-jp-1.onrender.com/api/upload', {
