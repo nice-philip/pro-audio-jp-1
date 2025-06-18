@@ -395,23 +395,53 @@
         function renderUserReservation(data) {
             const container = document.getElementById('resultContainer');
             
-            container.innerHTML = `
-                <div class="album-details">
-                    <h3>アルバム情報</h3>
-                    <p><strong>サービスタイプ:</strong> ${getServiceTypeText(data.serviceType)}</p>
-                    <p><strong>アルバム名（日本語）:</strong> ${data.albumNameDomestic || '未入力'}</p>
-                    <p><strong>アルバム名（English）:</strong> ${data.albumNameInternational || '未入力'}</p>
-                    <p><strong>アーティスト名（カナ）:</strong> ${data.artistNameKana || '未入力'}</p>
-                    <p><strong>アーティスト名（English）:</strong> ${data.artistNameEnglish || '未入力'}</p>
-                    <p><strong>バージョン情報:</strong> ${data.versionInfo || '未入力'}</p>
-                    <p><strong>配信開始希望日:</strong> ${formatDate(data.releaseDate)}</p>
-                    <p><strong>申請日:</strong> ${formatDate(data.createdAt)}</p>
-                    <p><strong>楽曲数:</strong> ${data.songs ? data.songs.length : 0}曲</p>
-                    <p><strong>配信プラットフォーム:</strong> ${data.platforms ? data.platforms.join(', ') : '未選択'}</p>
-                    <p><strong>YouTube収益化:</strong> ${data.youtubeMonetize ? 'あり' : 'なし'}</p>
-                    <p><strong>後払い選択:</strong> ${data.payLater ? 'あり' : 'なし'}</p>
-                </div>
-            `;
+            // data가 배열인 경우 처리
+            if (Array.isArray(data) && data.length > 0) {
+                let reservationsHtml = '<h3>あなたの予約一覧</h3>';
+                
+                data.forEach((reservation, index) => {
+                    reservationsHtml += `
+                        <div class="album-details" style="margin-bottom: 20px; border: 1px solid #ddd; padding: 15px; border-radius: 5px;">
+                            <h4>予約 #${index + 1}</h4>
+                            <p><strong>サービスタイプ:</strong> ${getServiceTypeText(reservation.serviceType)}</p>
+                            <p><strong>アルバム名（日本語）:</strong> ${reservation.albumNameDomestic || '未入力'}</p>
+                            <p><strong>アルバム名（English）:</strong> ${reservation.albumNameInternational || '未入力'}</p>
+                            <p><strong>アーティスト名（カナ）:</strong> ${reservation.artistNameKana || '未入力'}</p>
+                            <p><strong>アーティスト名（English）:</strong> ${reservation.artistNameEnglish || '未入力'}</p>
+                            <p><strong>バージョン情報:</strong> ${reservation.versionInfo || '未入力'}</p>
+                            <p><strong>配信開始希望日:</strong> ${formatDate(reservation.releaseDate)}</p>
+                            <p><strong>申請日:</strong> ${formatDate(reservation.createdAt)}</p>
+                            <p><strong>楽曲数:</strong> ${reservation.songs ? reservation.songs.length : 0}曲</p>
+                            <p><strong>配信プラットフォーム:</strong> ${reservation.platforms ? reservation.platforms.join(', ') : '未選択'}</p>
+                            <p><strong>YouTube収益化:</strong> ${reservation.youtubeMonetize ? 'あり' : 'なし'}</p>
+                            <p><strong>後払い選択:</strong> ${reservation.payLater ? 'あり' : 'なし'}</p>
+                        </div>
+                    `;
+                });
+                
+                container.innerHTML = reservationsHtml;
+            } else if (Array.isArray(data) && data.length === 0) {
+                container.innerHTML = '<p>該当する予約情報が見つかりませんでした。</p>';
+            } else {
+                // 기존 단일 객체 처리 (호환성 유지)
+                container.innerHTML = `
+                    <div class="album-details">
+                        <h3>アルバム情報</h3>
+                        <p><strong>サービスタイプ:</strong> ${getServiceTypeText(data.serviceType)}</p>
+                        <p><strong>アルバム名（日本語）:</strong> ${data.albumNameDomestic || '未入力'}</p>
+                        <p><strong>アルバム名（English）:</strong> ${data.albumNameInternational || '未入力'}</p>
+                        <p><strong>アーティスト名（カナ）:</strong> ${data.artistNameKana || '未入力'}</p>
+                        <p><strong>アーティスト名（English）:</strong> ${data.artistNameEnglish || '未入力'}</p>
+                        <p><strong>バージョン情報:</strong> ${data.versionInfo || '未入力'}</p>
+                        <p><strong>配信開始希望日:</strong> ${formatDate(data.releaseDate)}</p>
+                        <p><strong>申請日:</strong> ${formatDate(data.createdAt)}</p>
+                        <p><strong>楽曲数:</strong> ${data.songs ? data.songs.length : 0}曲</p>
+                        <p><strong>配信プラットフォーム:</strong> ${data.platforms ? data.platforms.join(', ') : '未選択'}</p>
+                        <p><strong>YouTube収益化:</strong> ${data.youtubeMonetize ? 'あり' : 'なし'}</p>
+                        <p><strong>後払い選択:</strong> ${data.payLater ? 'あり' : 'なし'}</p>
+                    </div>
+                `;
+            }
             
             container.style.display = 'block';
         }

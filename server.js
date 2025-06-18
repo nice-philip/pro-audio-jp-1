@@ -114,7 +114,7 @@ app.post('/api/reservation/check', async (req, res) => {
         }
 
         // 이메일과 패스워드로 예약 정보 조회
-        const reservation = await Album.findOne({ 
+        const reservation = await Album.find({ 
             email: email.toLowerCase().trim(), 
             password: password 
         });
