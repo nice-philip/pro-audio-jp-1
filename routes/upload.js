@@ -45,15 +45,15 @@ const upload = multer({
             if (!file.originalname.match(/\.(wav)$/)) {
                 return cb(new Error('WAV 形式の音声ファイルのみアップロード可能です。'), false);
             }
-            // 오디오 파일 크기 제한 (50MB)
-            if (file.size > 50 * 1024 * 1024) {
-                return cb(new Error('音声ファイルは50MB以下にしてください。'), false);
+            // 오디오 파일 크기 제한 (500MB)
+            if (file.size > 500 * 1024 * 1024) {
+                return cb(new Error('音声ファイルは500MB以下にしてください。'), false);
             }
         }
         cb(null, true);
     },
     limits: {
-        fileSize: 50 * 1024 * 1024, // 50MB
+        fileSize: 500 * 1024 * 1024, // 500MB
         files: 10
     }
 });
