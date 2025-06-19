@@ -23,7 +23,7 @@
     <style>
         /* Pastel button styles */
         .btn-pastel {
-            padding: 12px 25px;
+            padding: 22px 50px;
             border: none;
             border-radius: 6px;
             font-weight: 600;
@@ -225,6 +225,44 @@
             margin-top: 10px;
             font-size: 1.2em;
         }
+
+        /* Google Maps 반응형 스타일 */
+        #map-canvas {
+            width: 100% !important;
+            height: 400px !important;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            border: 2px solid #ddd;
+        }
+
+        @media (max-width: 768px) {
+            #map-canvas {
+                height: 300px !important;
+                margin-bottom: 30px;
+            }
+            
+            .col-lg-6.col-md-6.col-sm-6.col-xs-12 {
+                margin-bottom: 20px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            #map-canvas {
+                height: 250px !important;
+            }
+        }
+
+        /* 지도 로딩 스타일 */
+        #map-canvas:empty::before {
+            content: "🗺️ 지도를 로딩중...";
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: #666;
+            font-size: 16px;
+            background: #f8f9fa;
+        }
     </style>
 </head>
 
@@ -306,6 +344,7 @@
         <img src="images/border.png" alt="Border" class="templatemo-border">
         <section id="albums" class="templatemo-section">
             <h2 class="text-uppercase text-center">アルバム例</h2>
+            <p class="text-center" style="margin-top: 20px; font-size: 16px; color: #666; font-weight: 500;">比較音源：文字をタップすると再生／一時停止します。</p>
             <div class="row margin-top-50 templatemo-albums-container">
                 <div class="col-lg-6 col-md-6 col-sm-6 templatemo-album">
                     <div class="templatemo-album-images">
@@ -442,7 +481,7 @@
             <h2 class="text-uppercase text-center">お問い合わせ</h2>
             <div class="margin-top-50">
                 <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
-                    <div id="map-canvas"></div>
+                    <div id="map-canvas" style="width: 100%; height: 400px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);"></div>
                 </div>
                 <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
                     <form id="contactForm" class="tm-contact-form">
@@ -929,7 +968,7 @@
 
         // Google Maps initialization
         function initMap() {
-            const location = { lat: 37.5665, lng: 126.9780 };
+            const location = { lat: 35.6762, lng: 139.6503 }; // Tokyo, Japan
             const mapStyles = [
                 {
                     "featureType": "all",
@@ -945,10 +984,13 @@
 
             const mapOptions = {
                 center: location,
-                zoom: 15,
+                zoom: 14,
                 styles: mapStyles,
-                disableDefaultUI: true,
-                zoomControl: true
+                disableDefaultUI: false,
+                zoomControl: true,
+                mapTypeControl: true,
+                streetViewControl: true,
+                fullscreenControl: true
             };
 
             const map = new google.maps.Map(document.getElementById('map-canvas'), mapOptions);
@@ -956,13 +998,15 @@
                 position: location,
                 map: map,
                 animation: google.maps.Animation.DROP,
-                title: 'Surroundio'
+                title: 'Surroundio - 東京オフィス'
             });
 
             const contentString = 
-                '<div style="padding: 15px; max-width: 200px;">' +
-                '<h4 style="margin: 0 0 10px;">Surroundio</h4>' +
-                '<p style="margin: 0;">プロフェッショナルオーディオ処理と配信サービス</p>' +
+                '<div style="padding: 20px; max-width: 280px; font-family: Arial, sans-serif;">' +
+                '<h4 style="margin: 0 0 15px; color: #333; font-size: 18px;">🎵 Surroundio</h4>' +
+                '<p style="margin: 0 0 10px; color: #666; line-height: 1.4;">プロフェッショナルオーディオ処理と配信サービス</p>' +
+                '<p style="margin: 0 0 10px; color: #666; font-size: 14px;">📍 東京都中央区</p>' +
+                '<p style="margin: 0; color: #666; font-size: 14px;">📞 お問い合わせ: kmat0@naver.com</p>' +
                 '</div>';
 
             const infowindow = new google.maps.InfoWindow({
@@ -972,6 +1016,11 @@
             marker.addListener('click', () => {
                 infowindow.open(map, marker);
             });
+
+            // 페이지 로드 시 정보창 자동 열기
+            setTimeout(() => {
+                infowindow.open(map, marker);
+            }, 1000);
         }
 
         // ページロード時地図初期化

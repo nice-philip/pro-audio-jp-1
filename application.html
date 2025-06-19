@@ -329,6 +329,15 @@
             margin: 20px auto;
         }
         
+        @media (max-width: 768px) {
+            #paypal-button-container {
+                max-width: 100%;
+                margin: 15px 0;
+                display: block !important;
+                visibility: visible !important;
+            }
+        }
+        
         .payment-status {
             margin-top: 15px;
             padding: 15px;
@@ -990,8 +999,19 @@
                         <input type="checkbox" class="form-check-input" name="rightsAgreement" required>
                         <label class="form-check-label">所有権等権利紛争に関する全ての情報に同意します。</label>
                         <div class="terms-content">
-                            <p>本有料サービスは、有料利用会員の発売履歴が存在しない、新規の純粋な創作物を対象としています。</p>
-                            <p>会員は、流通対象コンテンツに関して、当社に独占的な流通事業権を付与するために必要な適法な著作権、著作隣接権、商標権、意匠権、パブリシティ権等の権利および／または本有料サービスの契約期間中有効な関連使用権限を有していることを保証します。</p>
+                            <p>1.本有料サービスは、有料利用会員がこれまでに発売した実績のない、新規かつ純粋な創作物を対象とします。</p>
+                            
+                            <p>2.会員は、配信対象コンテンツについて、当社に独占的な配信事業の権限を付与するために必要な適法な著作権、著作隣接権、商標権、意匠権、パブリシティ権等の権利および／または本有料サービスの契約期間中に有効な関連使用権を有していることを保証し、配信対象コンテンツが第三者の著作権、著作隣接権、商標権、意匠権、パブリシティ権その他正当な法的権利または利益を侵害しないことを保証します。</p>
+                            
+                            <p>3.会員は、当社が有料利用契約に基づいて配信対象コンテンツに関して独占的な配信事業を行う上で支障または妨げとなるいかなる契約（口頭・書面を問わず）も締結しておらず、そのような契約を締結する義務も負っていないこと、また、配信対象コンテンツに関して配信事業に必要な著作隣接権を含むいかなる権利も第三者に譲渡、ライセンス、贈与、担保提供その他の処分をしておらず、そのような処分を行う義務も負っていないことを保証します。</p>
+                            
+                            <p>4.会員は、当社が有料利用契約に基づいて配信対象コンテンツを独占的に配信できるよう、契約期間中、(i)自らが当該コンテンツの配信事業を行わず、(ii)当社以外の第三者に対して当該配信権限を付与せず、(iii)当該コンテンツの全部または一部を利用・再録音して新たな原盤を制作・販売、またはそのための契約を締結せず、(iv)その他当社の独占的配信事業権を侵害するいかなる法律上・事実上の行為もしないことを確約します。</p>
+                            
+                            <p>5.有料利用会員が発売したコンテンツに関して、当社またはDSPに対して第三者が権利を主張した場合（DSPのカスタマーサポートウェブサイトを通じた間接的な主張も含む）、当社は有料利用会員に説明責任を求めることができ、その説明を根拠として、当社は有料利用会員に代わり最大2回まで当該権利を主張します。2回の主張後も正当な説明がなされず、または権利紛争が継続する場合には、当社は主張の中止または撤回を行うことができます。</p>
+                            
+                            <p>6.有料利用会員による説明にもかかわらず、上記第三者の主張による合理的な疑念が継続する場合、当社はSurroundio利用規約に基づく通知をもって、当該音源および／またはコンテンツの有料サービスを即時停止し、その収益の精算金の支払いを保留することができ、当該保留金に対して利息は発生しないものとします。ただし、当該第三者の主張に法的根拠が明白であるか、または即時の対応が必要な緊急の事情がある場合には、有料利用会員への事前通知なく当該サービスを即時停止し、精算金の支払いを保留することができます。当社は、関連する紛争が法的手続の確定または当事者間の合意等により終了した場合、その結果に従い保留していた精算金を有料利用会員に支払います。</p>
+                            
+                            <p>7.万が一、配信対象コンテンツに関して第三者との間で上記保証および確約に反する事由により紛争が発生した場合、会員は自己の責任と費用において当該紛争を解決し、当社を免責するものとし、これにより当社に費用が発生した場合には、そのすべてを補償するものとします。</p>
                         </div>
                     </div>
 
@@ -999,7 +1019,13 @@
                         <input type="checkbox" class="form-check-input" name="reReleaseAgreement" required>
                         <label class="form-check-label">他社発売音源の再発売に関する情報に同意します。</label>
                         <div class="terms-content">
-                            <p>本有料サービスでは、過去に他社にて発売または流通された経歴があるコンテンツの重複発売を許可いたしません。</p>
+                            <p>1.本有料サービスでは、過去に他社から発売または配信された実績のあるコンテンツについて、その重複発売を一切許可しません。</p>
+                            
+                            <p>2.ただし、有料利用会員の申請に基づき、既存の権利者から当社へコンテンツの配信権限を移管する旨の書面同意を、公文書またはメールの形式で受領し、アルバム発売の7日前までに当社宛（kmat0@surroundio.app）に提出した場合に限り、既発表・配信済みのコンテンツを含むアルバムの発売を承認します。期限内に書面同意資料が提出されなかった場合、当該トラックを含むアルバムの発売は却下されます。</p>
+                            
+                            <p>3.既存の権利者による書面同意手続きなしにプラットフォームにコンテンツを登録し、アルバム発売を行った後、第三者または既存権利者から権利主張がなされた場合、当社は有料利用会員の同意を得ることなく、当該アルバム全体または特定トラックの配信サービスを即時停止することができ、サービス期間中に発生した著作隣接権使用料の支払いを保留、または元の権利者に対して支払うことがあります。</p>
+                            
+                            <p>4.万が一、第三者または既存の権利者との間で、配信対象コンテンツに関して配信権限の侵害等を理由とする紛争が発生した場合、会員は自己の責任と費用において当該紛争を解決し、当社を免責するものとし、これにより当社に費用が発生した場合には、その全額を補償するものとします。</p>
                         </div>
                     </div>
 
@@ -1007,7 +1033,9 @@
                         <input type="checkbox" class="form-check-input" name="platformAgreement" required>
                         <label class="form-check-label">発売国及びプラットフォームに関する情報に同意します。</label>
                         <div class="terms-content">
-                            <p>本有料サービスは、有料利用会員が登録・発売したコンテンツを、当社とコンテンツ流通契約関係にあるすべてのDSPおよび各DSPがサービスを提供する全地域に対して流通・供給することを原則とします。</p>
+                            <p>1.本有料サービスは、有料利用会員が登録・発売したコンテンツを、当社とコンテンツ配信契約を締結しているすべてのDSPおよび各DSPがサービスを提供する全地域において配信・提供することを原則とします。</p>
+                            
+                            <p>2.ただし、有料利用会員がプラットフォーム上において、特定のDSPまたは国に対してコンテンツの配信・提供を希望しない旨を当社に明示した場合、当社は当該有料利用会員の要請または条件に従い、コンテンツを配信・提供します。</p>
                         </div>
                     </div>
                 </div>
@@ -1942,52 +1970,61 @@
                 $(this).closest('.form-check').css('border', '').css('padding', '').css('border-radius', '');
             });
 
+            let currentAmount = '20000'; // 기본 금액
+
             // PayPal button initialization
-            paypal.Buttons({
-                createOrder: function(data, actions) {
-                    return actions.order.create({
-                        purchase_units: [{
-                            amount: {
-                                value: '20000'
+            function initPayPalButton() {
+                $('#paypal-button-container').empty(); // 기존 버튼 제거
+                
+                paypal.Buttons({
+                    createOrder: function(data, actions) {
+                        return actions.order.create({
+                            purchase_units: [{
+                                amount: {
+                                    value: currentAmount
+                                }
+                            }],
+                            application_context: {
+                                shipping_preference: 'NO_SHIPPING'
                             }
-                        }],
-                        application_context: {
-                            shipping_preference: 'NO_SHIPPING'
-                        }
-                    });
-                },
-                onApprove: function(data, actions) {
-                    return actions.order.capture().then(function(details) {
-                        $('#payment-status').removeClass('error').addClass('success')
-                            .html('支払いが完了しました。')
+                        });
+                    },
+                    onApprove: function(data, actions) {
+                        return actions.order.capture().then(function(details) {
+                            $('#payment-status').removeClass('error').addClass('success')
+                                .html('支払いが完了しました。')
+                                .show();
+                            $('#payment-status').data('paid', true);
+                        });
+                    },
+                    onError: function(err) {
+                        console.error('PayPal Error:', err);
+                        $('#payment-status').removeClass('success').addClass('error')
+                            .html('支払い処理中にエラーが発生しました。')
                             .show();
-                        $('#payment-status').data('paid', true);
-                    });
-                },
-                onError: function(err) {
-                    console.error('PayPal Error:', err);
-                    $('#payment-status').removeClass('success').addClass('error')
-                        .html('支払い処理中にエラーが発生しました。')
-                        .show();
-                    $('#payment-status').data('paid', false);
-                },
-                onCancel: function() {
-                    $('#payment-status').removeClass('success').addClass('error')
-                        .html('支払いがキャンセルされました。')
-                        .show();
-                    $('#payment-status').data('paid', false);
-                },
-                style: {
-                    layout: 'vertical',
-                    color: 'blue',
-                    shape: 'rect',
-                    label: 'pay',
-                    fundingSource: paypal.FUNDING.PAYLATER
-                }
-            }).render('#paypal-button-container').catch(function(error) {
-                console.error('PayPal Button Render Error:', error);
-                $('#paypal-button-container').html('<div class="alert alert-danger">PayPalボタンの読み込みに失敗しました。ページを更新して再度お試しください。</div>');
-            });
+                        $('#payment-status').data('paid', false);
+                    },
+                    onCancel: function() {
+                        $('#payment-status').removeClass('success').addClass('error')
+                            .html('支払いがキャンセルされました。')
+                            .show();
+                        $('#payment-status').data('paid', false);
+                    },
+                    style: {
+                        layout: 'vertical',
+                        color: 'blue',
+                        shape: 'rect',
+                        label: 'pay',
+                        fundingSource: paypal.FUNDING.PAYLATER
+                    }
+                }).render('#paypal-button-container').catch(function(error) {
+                    console.error('PayPal Button Render Error:', error);
+                    $('#paypal-button-container').html('<div class="alert alert-danger">PayPalボタンの読み込みに失敗しました。ページを更新して再度お試しください。</div>');
+                });
+            }
+
+            // 초기 PayPal 버튼 렌더링
+            initPayPalButton();
 
             // Toggle PayPal button visibility based on pay later checkbox
             $('#payLater').on('change', function() {
@@ -2136,6 +2173,22 @@
                 }
             }
 
+            // 서비스 타입 변경 시 PayPal 금액 업데이트
+            $('input[name="serviceType"]').on('change', function() {
+                if ($(this).val() === 'fullService') {
+                    currentAmount = '32000'; // 배신까지 신청하기 선택 시 32,000원
+                    // 가격 텍스트도 업데이트
+                    $('.alert-info').html('<i class="fa fa-info-circle"></i> 料金: 32,000円 (税込) <span class="text-danger fw-bold">プロモーション期間中のみ</span>');
+                } else {
+                    currentAmount = '20000'; // 음향 작업만 신청 시 20,000원
+                    // 가격 텍스트를 원래대로 복원
+                    $('.alert-info').html('<i class="fa fa-info-circle"></i> 料金: 20,000円 (税込) <span class="text-danger fw-bold">プロモーション期間中のみ</span>');
+                }
+                
+                // PayPal 버튼 다시 렌더링
+                initPayPalButton();
+            });
+
             // サービス選択変更時のイベントハンドラ
             $('input[name="serviceType"]').on('change', function() {
                 updateFieldStates();
@@ -2143,6 +2196,41 @@
 
             // 初期状態の設定
             updateFieldStates();
+
+            // 폼 데이터 변경 감지 및 페이지 나가기 경고
+            let formChanged = false;
+            let formSubmitted = false;
+
+            // 폼 입력 감지
+            $('#albumForm').on('input change', 'input, select, textarea', function() {
+                formChanged = true;
+            });
+
+            // 파일 선택 감지
+            $(document).on('change', 'input[type="file"]', function() {
+                formChanged = true;
+            });
+
+            // 체크박스/라디오 버튼 변경 감지
+            $(document).on('change', 'input[type="checkbox"], input[type="radio"]', function() {
+                formChanged = true;
+            });
+
+            // 페이지 나가기 전 경고
+            $(window).on('beforeunload', function(e) {
+                if (formChanged && !formSubmitted) {
+                    const message = '入力されたデータが失われます。本当にページを離れますか？';
+                    e.returnValue = message;
+                    return message;
+                }
+            });
+
+            // 폼 제출 시 경고 비활성화
+            $('#albumForm').on('submit', function() {
+                formSubmitted = true;
+            });
+
+            // 초기상태 설정
         });
 
         // 모바일 버전 제출 버튼 상태 관리 코드 제거 (중복 제거)

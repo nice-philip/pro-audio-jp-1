@@ -419,9 +419,43 @@
                     `;
                 });
                 
+                // 닫기 버튼 추가
+                reservationsHtml += `
+                    <div class="close-button-container" style="text-align: center; margin-top: 30px;">
+                        <button type="button" class="close-results-btn" onclick="closeResults()" style="
+                            background-color: #6c757d;
+                            color: white;
+                            border: none;
+                            padding: 12px 30px;
+                            border-radius: 5px;
+                            font-size: 16px;
+                            cursor: pointer;
+                            transition: background-color 0.3s ease;
+                        " onmouseover="this.style.backgroundColor='#545b62'" onmouseout="this.style.backgroundColor='#6c757d'">
+                            <i class="fa fa-times"></i> 閉じる
+                        </button>
+                    </div>
+                `;
+                
                 container.innerHTML = reservationsHtml;
             } else if (Array.isArray(data) && data.length === 0) {
-                container.innerHTML = '<p>該当する予約情報が見つかりませんでした。</p>';
+                container.innerHTML = `
+                    <p>該当する予約情報が見つかりませんでした。</p>
+                    <div class="close-button-container" style="text-align: center; margin-top: 20px;">
+                        <button type="button" class="close-results-btn" onclick="closeResults()" style="
+                            background-color: #6c757d;
+                            color: white;
+                            border: none;
+                            padding: 12px 30px;
+                            border-radius: 5px;
+                            font-size: 16px;
+                            cursor: pointer;
+                            transition: background-color 0.3s ease;
+                        " onmouseover="this.style.backgroundColor='#545b62'" onmouseout="this.style.backgroundColor='#6c757d'">
+                            <i class="fa fa-times"></i> 閉じる
+                        </button>
+                    </div>
+                `;
             } else {
                 // 기존 단일 객체 처리 (호환성 유지)
                 container.innerHTML = `
@@ -440,6 +474,20 @@
                         <p><strong>YouTube収益化:</strong> ${data.youtubeMonetize ? 'あり' : 'なし'}</p>
                         <p><strong>後払い選択:</strong> ${data.payLater ? 'あり' : 'なし'}</p>
                     </div>
+                    <div class="close-button-container" style="text-align: center; margin-top: 30px;">
+                        <button type="button" class="close-results-btn" onclick="closeResults()" style="
+                            background-color: #6c757d;
+                            color: white;
+                            border: none;
+                            padding: 12px 30px;
+                            border-radius: 5px;
+                            font-size: 16px;
+                            cursor: pointer;
+                            transition: background-color 0.3s ease;
+                        " onmouseover="this.style.backgroundColor='#545b62'" onmouseout="this.style.backgroundColor='#6c757d'">
+                            <i class="fa fa-times"></i> 閉じる
+                        </button>
+                    </div>
                 `;
             }
             
@@ -457,6 +505,20 @@
                     <div class="admin-info">
                         <h3>管理者画面</h3>
                         <p>現在、登録された予約はありません。</p>
+                    </div>
+                    <div class="close-button-container" style="text-align: center; margin-top: 30px;">
+                        <button type="button" class="close-results-btn" onclick="closeResults()" style="
+                            background-color: #6c757d;
+                            color: white;
+                            border: none;
+                            padding: 12px 30px;
+                            border-radius: 5px;
+                            font-size: 16px;
+                            cursor: pointer;
+                            transition: background-color 0.3s ease;
+                        " onmouseover="this.style.backgroundColor='#545b62'" onmouseout="this.style.backgroundColor='#6c757d'">
+                            <i class="fa fa-times"></i> 閉じる
+                        </button>
                     </div>
                 `;
             } else {
@@ -528,10 +590,43 @@
                     <div class="reservation-list">
                         ${reservationsHtml}
                     </div>
+                    <div class="close-button-container" style="text-align: center; margin-top: 30px;">
+                        <button type="button" class="close-results-btn" onclick="closeResults()" style="
+                            background-color: #6c757d;
+                            color: white;
+                            border: none;
+                            padding: 12px 30px;
+                            border-radius: 5px;
+                            font-size: 16px;
+                            cursor: pointer;
+                            transition: background-color 0.3s ease;
+                        " onmouseover="this.style.backgroundColor='#545b62'" onmouseout="this.style.backgroundColor='#6c757d'">
+                            <i class="fa fa-times"></i> 閉じる
+                        </button>
+                    </div>
                 `;
             }
             
             container.style.display = 'block';
+        }
+
+        // 결과 닫기 함수
+        function closeResults() {
+            const resultContainer = document.getElementById('resultContainer');
+            const errorMessage = document.getElementById('errorMessage');
+            
+            // 결과 컨테이너와 에러 메시지 숨기기
+            resultContainer.style.display = 'none';
+            errorMessage.style.display = 'none';
+            
+            // 폼 초기화
+            document.getElementById('searchForm').reset();
+            
+            // 페이지 상단으로 부드럽게 스크롤
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
         }
 
         // 서비스 타입 텍스트 변환
