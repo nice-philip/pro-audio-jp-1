@@ -235,6 +235,37 @@
             border: 2px solid #ddd;
         }
 
+        /* 앨범 섹션 헤더 스타일 */
+        .album-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .album-header h2 {
+            margin: 0;
+        }
+
+        .sample-button {
+            font-size: 14px;
+            padding: 12px 20px;
+            white-space: nowrap;
+        }
+
+        /* 플레이어 텍스트 활성화 스타일 */
+        .templatemo-album-name,
+        .templatemo-album-artist {
+            transition: all 0.3s ease;
+        }
+
+        .templatemo-album-name.active,
+        .templatemo-album-artist.active {
+            color: #ff6633 !important;
+            font-weight: bold !important;
+            text-shadow: 0 0 5px rgba(255, 102, 51, 0.3);
+        }
+
         @media (max-width: 768px) {
             #map-canvas {
                 height: 300px !important;
@@ -243,6 +274,18 @@
             
             .col-lg-6.col-md-6.col-sm-6.col-xs-12 {
                 margin-bottom: 20px;
+            }
+
+            /* 모바일에서 앨범 헤더 세로 배치 */
+            .album-header {
+                flex-direction: column;
+                text-align: center;
+                gap: 15px;
+            }
+
+            .sample-button {
+                font-size: 13px;
+                padding: 10px 18px;
             }
         }
 
@@ -343,7 +386,10 @@
         </section>
         <img src="images/border.png" alt="Border" class="templatemo-border">
         <section id="albums" class="templatemo-section">
-            <h2 class="text-uppercase text-center">アルバム例</h2>
+            <div class="album-header">
+                <h2 class="text-uppercase">アルバム例</h2>
+                <a href="https://melodic-crepe-e582cd.netlify.app/" target="_blank" class="btn-pastel blue text-uppercase sample-button">🎵 もっとサンプルを聞く</a>
+            </div>
             <p class="text-center" style="margin-top: 20px; font-size: 16px; color: #666; font-weight: 500;">比較音源：文字をタップすると再生／一時停止します。</p>
             <div class="row margin-top-50 templatemo-albums-container">
                 <div class="col-lg-6 col-md-6 col-sm-6 templatemo-album">
@@ -351,8 +397,8 @@
                         <img src="images/albums/1.jpg" alt="Album 1" class="img-circle templatemo-album-img">
                         <img src="images/album-img-bg.png" alt="Album background" class="templatemo-album-img-bg">
                         <img src="images/circle_gray.png" alt="Album frame" class="templatemo-album-img-frame">
-                        <audio id="audio1" src="audio\song1.mp3"></audio>
-                        <audio id="audio2" src="audio\song2.mp3"></audio>
+                        <audio id="audio1" src="audio\song1.mp3" preload="auto"></audio>
+                        <audio id="audio2" src="audio\song2.mp3" preload="auto"></audio>
                         <div class="audio-player" id="player1" style="display: none;">
                             <div class="play-pause-btn" onclick="togglePlay(1)">
                                 <i class="fa fa-play"></i>
@@ -473,7 +519,8 @@
             <h2 class="text-uppercase text-center">予約申請</h2>
             <div class="upload-section margin-top-50">
                 <a href="application.html" class="btn-pastel pink text-uppercase">📩 アルバム制作を申請</a>
-                <a href="reservation.html" class="btn-pastel green text-uppercase" style="margin-left: 20px;">🔍 予約確認</a>
+                <a href="reservation.html" class="btn-pastel green text-uppercase" style="margin-left: 20px;">🔍 予約確認・ステータス</a>
+                <a href="service-guide.html" class="btn-pastel blue text-uppercase" style="margin-left: 20px;">📋 サービス案内及びQ&A</a>
             </div>
         </section>
         <img src="images/border.png" alt="Border" class="templatemo-border">
@@ -691,6 +738,24 @@
         let lastPlaybackTime = {};
         const players = {};
 
+        // 모바일 기기 감지 함수
+        function isMobileDevice() {
+            return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || 
+                   window.innerWidth <= 768;
+        }
+
+        // 페이지 로드 시 모바일이면 오디오 소스 변경
+        document.addEventListener('DOMContentLoaded', function() {
+            if (isMobileDevice()) {
+                for (let i = 1; i <= 8; i++) {
+                    const audio = document.getElementById(`audio${i}`);
+                    if (audio) {
+                        audio.src = `audio/mobile/song${i}.mp3`;
+                    }
+                }
+            }
+        });
+
         function updateCircularProgress(audio, albumImage) {
             if (!audio.duration) return;
             const progress = (audio.currentTime / audio.duration) * 360;
@@ -729,6 +794,13 @@
                         if (circularProgress) {
                             circularProgress.style.background = 'conic-gradient(rgba(255, 102, 51, 0.3) 0deg, transparent 0deg)';
                         }
+
+                        // 텍스트 비활성화
+                        const albumContainer = albumImage.closest('.templatemo-album');
+                        const beforeText = albumContainer.querySelector('.templatemo-album-name');
+                        const afterText = albumContainer.querySelector('.templatemo-album-artist');
+                        if (beforeText) beforeText.classList.remove('active');
+                        if (afterText) afterText.classList.remove('active');
                     }
 
                     // Reset stored playback time for this track
@@ -752,6 +824,11 @@
             const playBtn = player.querySelector('.play-pause-btn');
             const playIcon = playBtn.querySelector('i');
             const progress = document.getElementById(`progress${id}`);
+
+            // 현재 앨범의 before/after 텍스트 요소 찾기
+            const albumContainer = albumImage.closest('.templatemo-album');
+            const beforeText = albumContainer.querySelector('.templatemo-album-name');
+            const afterText = albumContainer.querySelector('.templatemo-album-artist');
 
             // Add circular progress container if not exists
             if (!albumImage.querySelector('.circular-progress-container')) {
@@ -777,6 +854,13 @@
                     oldCircularProgress.style.background = 'conic-gradient(rgba(255, 102, 51, 0.3) 0deg, transparent 0deg)';
                 }
 
+                // 이전 재생 중인 앨범의 텍스트 비활성화
+                const oldAlbumContainer = oldAlbumImage.closest('.templatemo-album');
+                const oldBeforeText = oldAlbumContainer.querySelector('.templatemo-album-name');
+                const oldAfterText = oldAlbumContainer.querySelector('.templatemo-album-artist');
+                if (oldBeforeText) oldBeforeText.classList.remove('active');
+                if (oldAfterText) oldAfterText.classList.remove('active');
+
                 if (lastPlaybackTime[audio.id]) {
                     audio.currentTime = lastPlaybackTime[audio.id];
                 }
@@ -792,6 +876,19 @@
                 currentlyPlaying = audio;
                 currentPlayer = player;
                 updateCircularProgress(audio, albumImage);
+
+                // 현재 재생 중인 트랙에 따라 텍스트 활성화
+                // 홀수 ID는 before (처리전), 짝수 ID는 after (처리후)
+                if (beforeText) beforeText.classList.remove('active');
+                if (afterText) afterText.classList.remove('active');
+                
+                if (id % 2 === 1) {
+                    // before (처리전) 재생
+                    if (beforeText) beforeText.classList.add('active');
+                } else {
+                    // after (처리후) 재생
+                    if (afterText) afterText.classList.add('active');
+                }
             } else {
                 audio.pause();
                 lastPlaybackTime[audio.id] = audio.currentTime;
@@ -802,6 +899,10 @@
                 }
                 currentlyPlaying = null;
                 currentPlayer = null;
+
+                // 일시정지 시 텍스트 비활성화
+                if (beforeText) beforeText.classList.remove('active');
+                if (afterText) afterText.classList.remove('active');
             }
 
             if (!players[id]) {
@@ -822,6 +923,10 @@
                     currentlyPlaying = null;
                     currentPlayer = null;
                     lastPlaybackTime[audio.id] = 0;
+
+                    // 재생 종료 시 텍스트 비활성화
+                    if (beforeText) beforeText.classList.remove('active');
+                    if (afterText) afterText.classList.remove('active');
                 });
             }
         }
@@ -968,63 +1073,100 @@
 
         // Google Maps initialization
         function initMap() {
-            const location = { lat: 35.6762, lng: 139.6503 }; // Tokyo, Japan
-            const mapStyles = [
-                {
-                    "featureType": "all",
-                    "elementType": "geometry",
-                    "stylers": [{"saturation": -100}, {"lightness": 50}]
-                },
-                {
-                    "featureType": "road",
-                    "elementType": "geometry",
-                    "stylers": [{"lightness": 100}]
+            try {
+                const location = { lat: 35.6762, lng: 139.6503 }; // Tokyo, Japan
+                const mapStyles = [
+                    {
+                        "featureType": "all",
+                        "elementType": "geometry",
+                        "stylers": [{"saturation": -100}, {"lightness": 50}]
+                    },
+                    {
+                        "featureType": "road",
+                        "elementType": "geometry",
+                        "stylers": [{"lightness": 100}]
+                    }
+                ];
+
+                const mapOptions = {
+                    center: location,
+                    zoom: 14,
+                    styles: mapStyles,
+                    disableDefaultUI: false,
+                    zoomControl: true,
+                    mapTypeControl: true,
+                    streetViewControl: true,
+                    fullscreenControl: true
+                };
+
+                const mapElement = document.getElementById('map-canvas');
+                if (!mapElement) {
+                    console.error('Map canvas element not found');
+                    return;
                 }
-            ];
 
-            const mapOptions = {
-                center: location,
-                zoom: 14,
-                styles: mapStyles,
-                disableDefaultUI: false,
-                zoomControl: true,
-                mapTypeControl: true,
-                streetViewControl: true,
-                fullscreenControl: true
-            };
+                const map = new google.maps.Map(mapElement, mapOptions);
+                const marker = new google.maps.Marker({
+                    position: location,
+                    map: map,
+                    animation: google.maps.Animation.DROP,
+                    title: 'Surroundio - 東京オフィス'
+                });
 
-            const map = new google.maps.Map(document.getElementById('map-canvas'), mapOptions);
-            const marker = new google.maps.Marker({
-                position: location,
-                map: map,
-                animation: google.maps.Animation.DROP,
-                title: 'Surroundio - 東京オフィス'
-            });
+                const contentString = 
+                    '<div style="padding: 20px; max-width: 280px; font-family: Arial, sans-serif;">' +
+                    '<h4 style="margin: 0 0 15px; color: #333; font-size: 18px;">🎵 Surroundio</h4>' +
+                    '<p style="margin: 0 0 10px; color: #666; line-height: 1.4;">プロフェッショナルオーディオ処理と配信サービス</p>' +
+                    '<p style="margin: 0 0 10px; color: #666; font-size: 14px;">📍 東京都中央区</p>' +
+                    '<p style="margin: 0; color: #666; font-size: 14px;">📞 お問い合わせ: kmat0@naver.com</p>' +
+                    '</div>';
 
-            const contentString = 
-                '<div style="padding: 20px; max-width: 280px; font-family: Arial, sans-serif;">' +
-                '<h4 style="margin: 0 0 15px; color: #333; font-size: 18px;">🎵 Surroundio</h4>' +
-                '<p style="margin: 0 0 10px; color: #666; line-height: 1.4;">プロフェッショナルオーディオ処理と配信サービス</p>' +
-                '<p style="margin: 0 0 10px; color: #666; font-size: 14px;">📍 東京都中央区</p>' +
-                '<p style="margin: 0; color: #666; font-size: 14px;">📞 お問い合わせ: kmat0@naver.com</p>' +
-                '</div>';
+                const infowindow = new google.maps.InfoWindow({
+                    content: contentString
+                });
 
-            const infowindow = new google.maps.InfoWindow({
-                content: contentString
-            });
+                marker.addListener('click', () => {
+                    infowindow.open(map, marker);
+                });
 
-            marker.addListener('click', () => {
-                infowindow.open(map, marker);
-            });
+                // 페이지 로드 시 정보창 자동 열기
+                setTimeout(() => {
+                    infowindow.open(map, marker);
+                }, 1000);
 
-            // 페이지 로드 시 정보창 자동 열기
-            setTimeout(() => {
-                infowindow.open(map, marker);
-            }, 1000);
+                console.log('Google Maps initialized successfully');
+            } catch (error) {
+                console.error('Error initializing Google Maps:', error);
+                // 지도 로드 실패 시 대체 메시지 표시
+                const mapElement = document.getElementById('map-canvas');
+                if (mapElement) {
+                    mapElement.innerHTML = '<div style="display: flex; align-items: center; justify-content: center; height: 100%; background: #f8f9fa; color: #666; font-size: 16px;">🗺️ 지도를 로딩중입니다...</div>';
+                }
+            }
         }
 
-        // ページロード時地図初期化
-        google.maps.event.addDomListener(window, 'load', initMap);
+        // 다양한 방법으로 지도 초기화 시도
+        function initializeMap() {
+            if (typeof google !== 'undefined' && google.maps) {
+                initMap();
+            } else {
+                console.log('Google Maps API not loaded yet, retrying...');
+                setTimeout(initializeMap, 500);
+            }
+        }
+
+        // 페이지 로드 시 지도 초기화
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeMap();
+        });
+
+        // 윈도우 로드 시에도 시도
+        window.addEventListener('load', function() {
+            initializeMap();
+        });
+
+        // Google Maps API 콜백으로도 설정
+        window.initMap = initMap;
     </script>
 </body>
 
