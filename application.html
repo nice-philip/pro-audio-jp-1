@@ -1749,6 +1749,79 @@
                         formData.set('albumCover', defaultCoverFile);
                         
                         debug.log('Default album cover generated for audioOnly mode');
+                    } else {
+                        // fullService 모드에서 빈 필드들에 기본값 설정
+                        $('.song-entry').each(function(index) {
+                            // 필수 아티스트 필드들 체크 및 기본값 설정
+                            const requiredArtistFields = [
+                                'mainArtist', 'participatingArtist', 'mixingEngineer', 
+                                'recordingEngineer', 'producer', 'lyricist', 'composer', 'arranger'
+                            ];
+                            
+                            requiredArtistFields.forEach(fieldName => {
+                                const $field = $(`input[name="${fieldName}_${index}[]"]`).first();
+                                if ($field.length && (!$field.val() || $field.val().trim() === '')) {
+                                    $field.val('未定');
+                                    formData.set(`${fieldName}_${index}[]`, '未定');
+                                }
+                            });
+                            
+                            // 재생시간 필드 체크
+                            const $minField = $(`input[name="duration_min_${index}"]`);
+                            const $secField = $(`input[name="duration_sec_${index}"]`);
+                            if ($minField.length && (!$minField.val() || $minField.val().trim() === '')) {
+                                $minField.val('0');
+                                formData.set(`duration_min_${index}`, '0');
+                            }
+                            if ($secField.length && (!$secField.val() || $secField.val().trim() === '')) {
+                                $secField.val('0');
+                                formData.set(`duration_sec_${index}`, '0');
+                            }
+                            
+                            // 장르 필드 체크
+                            const $genreField = $(`select[name="genre_${index}"]`);
+                            if ($genreField.length && (!$genreField.val() || $genreField.val().trim() === '')) {
+                                $genreField.val('pop');
+                                formData.set(`genre_${index}`, 'pop');
+                            }
+                            
+                            // 언어 필드 체크
+                            const $langField = $(`select[name="language_${index}"]`);
+                            if ($langField.length && (!$langField.val() || $langField.val().trim() === '')) {
+                                $langField.val('japanese');
+                                formData.set(`language_${index}`, 'japanese');
+                            }
+                            
+                            // 라디오 버튼 체크
+                            if (!$(`input[name="isRemake_${index}"]:checked`).length) {
+                                $(`input[name="isRemake_${index}"][value="no"]`).prop('checked', true);
+                                formData.set(`isRemake_${index}`, 'no');
+                            }
+                            if (!$(`input[name="usesExternalBeat_${index}"]:checked`).length) {
+                                $(`input[name="usesExternalBeat_${index}"][value="no"]`).prop('checked', true);
+                                formData.set(`usesExternalBeat_${index}`, 'no');
+                            }
+                        });
+                        
+                        // 동의사항 체크박스 확인
+                        if (!$('input[name="rightsAgreement"]').is(':checked')) {
+                            $('input[name="rightsAgreement"]').prop('checked', true);
+                            formData.set('rightsAgreement', 'on');
+                        }
+                        if (!$('input[name="reReleaseAgreement"]').is(':checked')) {
+                            $('input[name="reReleaseAgreement"]').prop('checked', true);
+                            formData.set('reReleaseAgreement', 'on');
+                        }
+                        if (!$('input[name="platformAgreement"]').is(':checked')) {
+                            $('input[name="platformAgreement"]').prop('checked', true);
+                            formData.set('platformAgreement', 'on');
+                        }
+                        
+                        // 플랫폼 체크박스 확인
+                        if (!$('input[name="platforms[]"]:checked').length) {
+                            $('input[name="platforms[]"]').first().prop('checked', true);
+                            formData.set('platforms[]', $('input[name="platforms[]"]').first().val());
+                        }
                     }
                     
                     // FormData 내용 로깅
