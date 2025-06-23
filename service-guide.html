@@ -1,110 +1,240 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>サービス案内及びQ&A - Surroundio</title>
-    <!-- Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Oswald&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
-    <link href="css/font-awesome.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@3.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="css/templatemo_style.css" rel="stylesheet" type="text/css">
-    <style>
-        body {
-            font-family: 'Open Sans', sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0;
-            padding: 20px;
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>サービス案内及びQ&A - Surroundio</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Oswald&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@3.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Open Sans', sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      margin: 0;
+      padding: 20px;
+    }
 
-        .container {
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 15px;
-            padding: 60px 40px;
-            text-align: center;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-            max-width: 600px;
-            width: 100%;
-        }
+    .container {
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 15px;
+      padding: 60px 40px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+      max-width: 900px;
+      margin: 0 auto 50px;
+    }
 
-        h1 {
-            color: #333;
-            margin-bottom: 30px;
-            font-size: 2.5em;
-            font-weight: 600;
-        }
+    .btn-home-top, .btn-home {
+      background: linear-gradient(45deg, #667eea, #764ba2);
+      color: white;
+      padding: 12px 30px;
+      border: none;
+      border-radius: 30px;
+      font-size: 1.1em;
+      font-weight: 600;
+      display: inline-block;
+      margin-bottom: 20px;
+      text-decoration: none;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    }
 
-        .emoji {
-            font-size: 4em;
-            margin-bottom: 20px;
-            display: block;
-        }
+    .btn-home:hover, .btn-home-top:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+      text-decoration: none;
+      color: white;
+    }
 
-        .message {
-            color: #666;
-            font-size: 1.2em;
-            margin-bottom: 40px;
-            line-height: 1.6;
-        }
+    h1, h2 {
+      color: #333;
+      margin-bottom: 30px;
+      font-weight: 600;
+      text-align: center;
+    }
 
-        .btn-home {
-            background: linear-gradient(45deg, #667eea, #764ba2);
-            color: white;
-            padding: 15px 30px;
-            border: none;
-            border-radius: 50px;
-            font-size: 1.1em;
-            font-weight: 600;
-            text-decoration: none;
-            display: inline-block;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-        }
+    table {
+      width: 100%;
+      margin-bottom: 30px;
+      border-collapse: collapse;
+    }
 
-        .btn-home:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
-            color: white;
-            text-decoration: none;
-        }
+    table, th, td {
+      border: 1px solid #ccc;
+    }
 
-        @media (max-width: 768px) {
-            .container {
-                padding: 40px 20px;
-            }
-            
-            h1 {
-                font-size: 2em;
-            }
-            
-            .emoji {
-                font-size: 3em;
-            }
-            
-            .message {
-                font-size: 1.1em;
-            }
-        }
-    </style>
+    th, td {
+      padding: 12px;
+      text-align: left;
+    }
+
+    th {
+      background-color: #f0f0f0;
+    }
+
+    .panel-group .panel {
+      border-radius: 10px;
+      overflow: hidden;
+      margin-bottom: 10px;
+    }
+
+    .panel-heading {
+      background-color: #e0e0e0;
+      color: #000 !important;
+    }
+
+    .panel-title a {
+      display: block;
+      padding: 15px;
+      color: #000;
+      font-weight: 600;
+      text-decoration: none;
+    }
+
+    .panel-title a:hover {
+      text-decoration: underline;
+    }
+
+    .panel-body {
+      background: #f9f9f9;
+      padding: 15px;
+      color: #333;
+    }
+
+    @media (max-width: 768px) {
+      .container {
+        padding: 30px 20px;
+      }
+    }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <span class="emoji">📋</span>
-        <h1>サービス案内及びQ&A</h1>
-        <p class="message">
-            こちらのページは現在準備中です。<br>
-            サービスに関する詳細情報とよくある質問は<br>
-            近日中に公開予定です。
-        </p>
-        <a href="index.html" class="btn-home">
-            🏠 ホームに戻る
-        </a>
+  <div class="container">
+    <!-- ✅ 상단 홈으로 가기 버튼 -->
+    <a href="index.html" class="btn-home-top">🏠 ホームに戻る</a>
+
+    <h1>🎧 サービス案内</h1>
+
+    <table>
+      <thead>
+        <tr>
+          <th>サービス項目</th>
+          <th>内容（全サービス合計：100,000円）</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>音源ファイル補正</td><td>曲ごと約10分作業</td></tr>
+        <tr><td>ミキシング</td><td>音量・定位・EQ 調整</td></tr>
+        <tr><td>マスタリング</td><td>最終音質仕上げ</td></tr>
+        <tr><td>サラウンドサウンド制作</td><td>3D空間効果付き</td></tr>
+        <tr><td>YouTube用マスタリング</td><td>映像投稿向け音源提供</td></tr>
+        <tr><td>無眼鏡3D映像変換</td><td>モバイル用特製3Dフィルム（10,000円以上）</td></tr>
+      </tbody>
+    </table>
+
+    <h2>📝 追加確認事項</h2>
+    <table>
+      <thead>
+        <tr><th>項目</th><th>詳細</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>価格</td><td>3曲まで 100,000円、追加1曲ごとに +30,000円</td></tr>
+        <tr><td>10分以上の曲</td><td>10分ごとに +10,000円</td></tr>
+        <tr><td>音源配信申請</td><td>+12,000円（1年間）</td></tr>
+      </tbody>
+    </table>
+
+    <h2>📌 よくある質問（Q&A）</h2>
+    <div class="panel-group" id="accordion">
+      <!-- Q1 -->
+      <div class="panel panel-default">
+        <div class="panel-heading">
+          <h4 class="panel-title"><a data-toggle="collapse" data-parent="#accordion" href="#q1">1. スマホ録音でも高音質に仕上がる？</a></h4>
+        </div>
+        <div id="q1" class="panel-collapse collapse">
+          <div class="panel-body">
+            はい、高音質に仕上げることが可能です。より良いマイクや録音環境での収録音源はさらに高音質になります。ただし、破損した音源は事前確認が必要です。
+          </div>
+        </div>
+      </div>
+
+      <!-- Q2 -->
+      <div class="panel panel-default">
+        <div class="panel-heading">
+          <h4 class="panel-title"><a data-toggle="collapse" data-parent="#accordion" href="#q2">2. 日本での配信先は？</a></h4>
+        </div>
+        <div id="q2" class="panel-collapse collapse">
+          <div class="panel-body">
+            Apple Music、Spotify、Amazon Musicなど、160媒体へ配信可能です（クラシックの場合、Apple Musicは審査が必要）。
+          </div>
+        </div>
+      </div>
+
+      <!-- Q3 -->
+      <div class="panel panel-default">
+        <div class="panel-heading">
+          <h4 class="panel-title"><a data-toggle="collapse" data-parent="#accordion" href="#q3">3. CD制作は対応していますか？</a></h4>
+        </div>
+        <div id="q3" class="panel-collapse collapse">
+          <div class="panel-body">現在は提供しておりません。</div>
+        </div>
+      </div>
+
+      <!-- Q4 -->
+      <div class="panel panel-default">
+        <div class="panel-heading">
+          <h4 class="panel-title"><a data-toggle="collapse" data-parent="#accordion" href="#q4">4. YouTube動画の音質も改善可能？</a></h4>
+        </div>
+        <div id="q4" class="panel-collapse collapse">
+          <div class="panel-body">
+            はい、サービスに含まれており、YouTube用に最適化された音源を別途提供します。
+          </div>
+        </div>
+      </div>
+
+      <!-- Q5 -->
+      <div class="panel panel-default">
+        <div class="panel-heading">
+          <h4 class="panel-title"><a data-toggle="collapse" data-parent="#accordion" href="#q5">5. ファイル形式は？</a></h4>
+        </div>
+        <div id="q5" class="panel-collapse collapse">
+          <div class="panel-body">
+            基本は 16〜24bit / 44.1〜48kHz のWAV形式、映像改善時はMP4形式です。
+          </div>
+        </div>
+      </div>
+
+      <!-- Q6 -->
+      <div class="panel panel-default">
+        <div class="panel-heading">
+          <h4 class="panel-title"><a data-toggle="collapse" data-parent="#accordion" href="#q6">6. 作業時間は？</a></h4>
+        </div>
+        <div id="q6" class="panel-collapse collapse">
+          <div class="panel-body">
+            通常1〜2日、配信申請は配信先の都合により最大3週間程度かかります。
+          </div>
+        </div>
+      </div>
+
+      <!-- Q7 -->
+      <div class="panel panel-default">
+        <div class="panel-heading">
+          <h4 class="panel-title"><a data-toggle="collapse" data-parent="#accordion" href="#q7">7. 配信申請が難しいです…</a></h4>
+        </div>
+        <div id="q7" class="panel-collapse collapse">
+          <div class="panel-body">
+            配信は全世界対応の統一フォーマットが必要なため、選択不可となっております。未記入項目があると配信拒否されることがあるため、ご了承願います。
+          </div>
+        </div>
+      </div>
     </div>
+
+    <!-- 하단 홈버튼 유지 -->
+    <a href="index.html" class="btn-home">🏠 ホームに戻る</a>
+  </div>
+
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@3.3.7/dist/js/bootstrap.min.js"></script>
 </body>
-</html> 
+</html>
