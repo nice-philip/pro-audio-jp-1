@@ -1695,10 +1695,12 @@
                 // 필수 필드 validation 수행
                 const validationResult = validateRequiredFields();
                 if (!validationResult.isValid) {
-                    // 첫 번째 문제 필드로 스크롤
-                    $('html, body').animate({
-                        scrollTop: validationResult.firstErrorField.offset().top - 100
-                    }, 500);
+                    // 첫 번째 문제 필드로 스크롤 (firstErrorField가 존재할 때만)
+                    if (validationResult.firstErrorField) {
+                        $('html, body').animate({
+                            scrollTop: validationResult.firstErrorField.offset().top - 100
+                        }, 500);
+                    }
                     return;
                 }
                 
@@ -1725,6 +1727,30 @@
                     // 1. 폼 데이터 수집 및 검증
                     const formData = new FormData(this);
                     
+                    // audioOnly 모드일 때 기본 앨범커버 생성 및 추가
+                    if ($('#audioOnly').is(':checked')) {
+                        // 기본 이미지 생성 (1x1 투명 PNG)
+                        const canvas = document.createElement('canvas');
+                        canvas.width = 3000;
+                        canvas.height = 3000;
+                        const ctx = canvas.getContext('2d');
+                        
+                        // 검은색 배경 생성
+                        ctx.fillStyle = '#000000';
+                        ctx.fillRect(0, 0, 3000, 3000);
+                        
+                        // Canvas를 Blob으로 변환
+                        const blob = await new Promise(resolve => {
+                            canvas.toBlob(resolve, 'image/png', 1.0);
+                        });
+                        
+                        // 기본 앨범커버 파일로 추가
+                        const defaultCoverFile = new File([blob], 'default-cover.png', { type: 'image/png' });
+                        formData.set('albumCover', defaultCoverFile);
+                        
+                        debug.log('Default album cover generated for audioOnly mode');
+                    }
+                    
                     // FormData 내용 로깅
                     debug.log('FormData contents:');
                     for (let pair of formData.entries()) {
@@ -1734,9 +1760,13 @@
                     // 필수 필드 값 확인 및 상세 로깅
                     const requiredFields = {
                         'artistNameKana': $('#artistNameKana').val()?.trim(),
-                        'artistNameEnglish': $('#artistNameEnglish').val()?.trim(),
-                        'versionInfo': $('#versionInfo').val()?.trim()
+                        'artistNameEnglish': $('#artistNameEnglish').val()?.trim()
                     };
+                    
+                    // audioOnly 모드가 아닌 경우에만 versionInfo 체크
+                    if (!$('#audioOnly').is(':checked')) {
+                        requiredFields['versionInfo'] = $('#versionInfo').val()?.trim();
+                    }
                     
                     debug.log('Required Fields Values:', requiredFields);
                     
