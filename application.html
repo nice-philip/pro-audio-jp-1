@@ -1871,12 +1871,12 @@
                     { selector: '#albumNameInternational', name: 'アルバム名（English）' },
                     { selector: '#artistNameKana', name: 'アーティスト名（カナ）' },
                     { selector: '#artistNameEnglish', name: 'アーティスト名（English）' },
-                    { selector: 'input[name="audioFiles"]', name: '音声ファイル' },
-                    { selector: 'input[name="albumCover"]', name: 'アルバムカバー' }
+                    { selector: 'input[name="audioFiles"]', name: '音声ファイル' }
                 ];
                 
-                // audioOnly 모드가 아닌 경우에만 versionInfo 체크
+                // audioOnly 모드가 아닌 경우에만 앨범커버와 versionInfo 체크
                 if (!$('#audioOnly').is(':checked')) {
+                    requiredFields.push({ selector: 'input[name="albumCover"]', name: 'アルバムカバー' });
                     requiredFields.push({ selector: '#versionInfo', name: 'バージョン情報' });
                 }
                 
@@ -2040,25 +2040,42 @@
                 const isAudioOnly = $('#audioOnly').is(':checked');
                 
                 if (isAudioOnly) {
-                    // 音源作業のみ依頼の場合, 특정 필드만 일반 배경색 유지
-                    // 모든 필드 활성화 (비활성화 하지 않음)
+                    // 音源作業のみ依頼の場合, 특정 필드들만 숨김
                     $('input, select, textarea').prop('disabled', false);
                     $('.form-section, .form-group, .mb-3').removeClass('disabled-field');
                     
-                    // 먼저 모든 필드의 배경색을 진한 회색으로 설정
-                    $('input, select, textarea').css('background-color', '#6c757d');
+                    // 특정 필드들만 정확히 숨김
+                    // versionInfo 필드 숨김
+                    $('#versionInfo').closest('.mb-3').hide();
                     
-                    // 유지할 필드들만 원래 배경색으로 복원 (versionInfo 제거)
-                    $('#email, #password, #albumNameDomestic, #albumNameInternational, #artistNameKana, #artistNameEnglish, input[name="audioFiles"], input[name="albumCover"]').css('background-color', '');
+                    // 작자 정보 섹션 전체 숨김
+                    $('.creator-section').hide();
                     
-                    // versionInfo 필드는 명시적으로 진한 회색으로 설정
-                    $('#versionInfo').css('background-color', '#6c757d');
+                    // 기타 정보 섹션에서 WAV 파일 업로드를 제외한 나머지 숨김
+                    $('.other-info-section .mb-3').not(':has(input[name="audioFiles"])').hide();
                     
-                    // 동의사항 본문 내용도 진한 회색으로 설정
-                    $('.terms-content').css('background-color', '#6c757d');
+                    // 동의사항 섹션 숨김
+                    $('.terms-section').hide();
                     
-                    // 플랫폼 섹션 배경도 진한 회색으로 설정
-                    $('.platform-section').css('background-color', '#6c757d');
+                    // 플랫폼 섹션 숨김
+                    $('.platform-section').hide();
+                    
+                    // 제외국 선택 섹션 숨김
+                    $('#excludedCountriesAccordion').closest('.form-section').hide();
+                    
+                    // YouTube 수익화 서비스 섹션 숨김
+                    $('.form-section').has('#youtubeMonetize').hide();
+                    
+                    // 아티스트 정보 섹션 전체 숨김
+                    $('.artist-section').hide();
+                    
+                    // 앨범커버 필드 숨김 및 필수값 해제
+                    $('#albumCover').closest('.mb-3').hide();
+                    $('#albumCover').removeAttr('required');
+                    
+                    // 아르바음 전체 정보 섹션에서 albumCover를 제외한 나머지 숨김
+                    $('.form-section:has(#albumCover) .terms-section').hide();
+                    $('.form-section:has(#albumCover) .platform-section').hide();
                     
                     // 날짜 필드는 7월 8일로 고정
                     $('#releaseDate').val('2024-07-08');
@@ -2092,41 +2109,33 @@
                         $('#versionInfo').val('該当なし');
                     }
                     
-                    // 유지할 필드들과 재생시간 필드들, 장르 필드들, WAV 파일 업로드 필드, 아이앤카바 필드를 제외한 나머지 빈 필드들에 "該当なし" 입력
-                    $('input, select, textarea').not('#email, #password, #albumNameDomestic, #albumNameInternational, #artistNameKana, #artistNameEnglish, input[name="audioFiles"], input[name="albumCover"]').not('[name^="duration_min_"], [name^="duration_sec_"], [name^="genre_"]').each(function() {
+                    // 숨겨진 필드들에 "該当なし" 자동 입력
+                    $('.creator-section input, .creator-section textarea').each(function() {
                         const $field = $(this);
-                        const fieldType = $field.prop('tagName').toLowerCase();
-                        
-                        if (fieldType === 'input' && ($field.attr('type') === 'text' || $field.attr('type') === 'email' || !$field.attr('type'))) {
-                            if (!$field.val() || $field.val().trim() === '') {
-                                $field.val('該当なし');
-                            }
-                        } else if (fieldType === 'textarea') {
-                            if (!$field.val() || $field.val().trim() === '') {
-                                $field.val('該当なし');
-                            }
-                        } else if (fieldType === 'select') {
-                            if (!$field.val()) {
-                                // select 필드에 "該당なし" 옵션이 없으면 추가
-                                if ($field.find('option[value="該당なし"]').length === 0) {
-                                    $field.prepend('<option value="該当なし">該当なし</option>');
-                                }
-                                $field.val('該当なし');
-                            }
+                        if (!$field.val() || $field.val().trim() === '') {
+                            $field.val('該当なし');
+                        }
+                    });
+                    
+                    // 기타 숨겨진 필드들에 기본값 설정
+                    $('input[name^="mainArtist_"], input[name^="participatingArtist_"], input[name^="featuring_"], input[name^="mixingEngineer_"], input[name^="recordingEngineer_"], input[name^="producer_"], input[name^="lyricist_"], input[name^="composer_"], input[name^="arranger_"], textarea[name^="lyrics_"]').each(function() {
+                        const $field = $(this);
+                        if (!$field.val() || $field.val().trim() === '') {
+                            $field.val('該当なし');
                         }
                     });
                     
                 } else {
-                    // 配信まで依頼の場合, 모든 필드 원래 배경색으로 복원
+                    // 配信まで依頼の場合, 모든 필드 원래 상태로 복원
                     $('input, select, textarea').prop('disabled', false);
                     $('.form-section, .form-group, .mb-3').removeClass('disabled-field');
-                    $('input, select, textarea').css('background-color', '');
                     
-                    // 동의사항 본문 내용 배경색 원래대로 복원
-                    $('.terms-content').css('background-color', '');
+                    // 숨겨진 모든 요소들을 다시 보이게 함
+                    $('.mb-3, .form-check, .input-group, .song-entry, .creator-section, .other-info-section, .terms-section, .platform-section, .artist-section .mb-3, .form-section').show();
                     
-                    // 플랫폼 섹션 배경색 원래대로 복원
-                    $('.platform-section').css('background-color', '');
+                    // 앨범커버 필드 다시 보이게 하고 필수값으로 복원
+                    $('#albumCover').closest('.mb-3').show();
+                    $('#albumCover').attr('required', true);
                     
                     // 날짜 필드는 7월 8일로 고정 (fullService에서도 동일)
                     $('#releaseDate').val('2024-07-08');
