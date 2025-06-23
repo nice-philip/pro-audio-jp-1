@@ -400,23 +400,46 @@
                 let reservationsHtml = '<h3>あなたの予約一覧</h3>';
                 
                 data.forEach((reservation, index) => {
-                    reservationsHtml += `
-                        <div class="album-details" style="margin-bottom: 20px; border: 1px solid #ddd; padding: 15px; border-radius: 5px;">
-                            <h4>予約 #${index + 1}</h4>
-                            <p><strong>サービスタイプ:</strong> ${getServiceTypeText(reservation.serviceType)}</p>
-                            <p><strong>アルバム名（日本語）:</strong> ${reservation.albumNameDomestic || '未入力'}</p>
-                            <p><strong>アルバム名（English）:</strong> ${reservation.albumNameInternational || '未入力'}</p>
-                            <p><strong>アーティスト名（カナ）:</strong> ${reservation.artistNameKana || '未入力'}</p>
-                            <p><strong>アーティスト名（English）:</strong> ${reservation.artistNameEnglish || '未入力'}</p>
-                            <p><strong>バージョン情報:</strong> ${reservation.versionInfo || '未入力'}</p>
-                            <p><strong>配信開始希望日:</strong> ${formatDate(reservation.releaseDate)}</p>
-                            <p><strong>申請日:</strong> ${formatDate(reservation.createdAt)}</p>
-                            <p><strong>楽曲数:</strong> ${reservation.songs ? reservation.songs.length : 0}曲</p>
-                            <p><strong>配信プラットフォーム:</strong> ${reservation.platforms ? reservation.platforms.join(', ') : '未選択'}</p>
-                            <p><strong>YouTube収益化:</strong> ${reservation.youtubeMonetize ? 'あり' : 'なし'}</p>
-                            <p><strong>後払い選択:</strong> ${reservation.payLater ? 'あり' : 'なし'}</p>
-                        </div>
-                    `;
+                    // versionInfo가 '該当なし'이면 audioOnly, 다른 값이면 fullService로 판단
+                    const serviceType = reservation.serviceType || (reservation.versionInfo === '該当なし' ? 'audioOnly' : 'fullService');
+                    console.log('Service Type:', serviceType); // 디버깅용
+                    console.log('Version Info:', reservation.versionInfo); // 디버깅용
+                    console.log('Platforms:', reservation.platforms); // 디버깅용
+                    
+                    // audioOnly 모드인 경우 제한된 정보만 표시
+                    if (serviceType === 'audioOnly') {
+                        reservationsHtml += `
+                            <div class="album-details" style="margin-bottom: 20px; border: 1px solid #ddd; padding: 15px; border-radius: 5px;">
+                                <h4>予約 #${index + 1} (音源作業のみ)</h4>
+                                <p><strong>申請者名:</strong> ${reservation.artistNameKana || '未入力'}</p>
+                                <p><strong>申請日:</strong> ${formatDate(reservation.createdAt)}</p>
+                                <div style="background-color: #f0f8ff; padding: 10px; border-radius: 5px; margin-top: 15px; border-left: 4px solid #007bff;">
+                                    <p style="color: #0066cc; font-style: italic; margin: 0;">
+                                        <i class="fa fa-info-circle"></i> 音源作業のみのサービスのため、配信関連の詳細情報は非表示になっています。
+                                    </p>
+                                </div>
+                            </div>
+                        `;
+                    } else {
+                        // fullService 모드인 경우 모든 정보 표시
+                        reservationsHtml += `
+                            <div class="album-details" style="margin-bottom: 20px; border: 1px solid #ddd; padding: 15px; border-radius: 5px;">
+                                <h4>予約 #${index + 1} (配信まで依頼)</h4>
+                                <p><strong>サービスタイプ:</strong> ${getServiceTypeText(serviceType)}</p>
+                                <p><strong>アルバム名（日本語）:</strong> ${reservation.albumNameDomestic || '未入力'}</p>
+                                <p><strong>アルバム名（English）:</strong> ${reservation.albumNameInternational || '未入力'}</p>
+                                <p><strong>アーティスト名（カナ）:</strong> ${reservation.artistNameKana || '未入力'}</p>
+                                <p><strong>アーティスト名（English）:</strong> ${reservation.artistNameEnglish || '未入力'}</p>
+                                <p><strong>バージョン情報:</strong> ${reservation.versionInfo || '未入力'}</p>
+                                <p><strong>配信開始希望日:</strong> ${formatDate(reservation.releaseDate)}</p>
+                                <p><strong>申請日:</strong> ${formatDate(reservation.createdAt)}</p>
+                                <p><strong>楽曲数:</strong> ${reservation.songs ? reservation.songs.length : 0}曲</p>
+                                <p><strong>配信プラットフォーム:</strong> ${reservation.platforms ? reservation.platforms.join(', ') : '未選択'}</p>
+                                <p><strong>YouTube収益化:</strong> ${reservation.youtubeMonetize ? 'あり' : 'なし'}</p>
+                                <p><strong>後払い選択:</strong> ${reservation.payLater ? 'あり' : 'なし'}</p>
+                            </div>
+                        `;
+                    }
                 });
                 
                 // 닫기 버튼 추가
@@ -458,22 +481,48 @@
                 `;
             } else {
                 // 기존 단일 객체 처리 (호환성 유지)
-                container.innerHTML = `
-                    <div class="album-details">
-                        <h3>アルバム情報</h3>
-                        <p><strong>サービスタイプ:</strong> ${getServiceTypeText(data.serviceType)}</p>
-                        <p><strong>アルバム名（日本語）:</strong> ${data.albumNameDomestic || '未入力'}</p>
-                        <p><strong>アルバム名（English）:</strong> ${data.albumNameInternational || '未入力'}</p>
-                        <p><strong>アーティスト名（カナ）:</strong> ${data.artistNameKana || '未入力'}</p>
-                        <p><strong>アーティスト名（English）:</strong> ${data.artistNameEnglish || '未入力'}</p>
-                        <p><strong>バージョン情報:</strong> ${data.versionInfo || '未入力'}</p>
-                        <p><strong>配信開始希望日:</strong> ${formatDate(data.releaseDate)}</p>
-                        <p><strong>申請日:</strong> ${formatDate(data.createdAt)}</p>
-                        <p><strong>楽曲数:</strong> ${data.songs ? data.songs.length : 0}曲</p>
-                        <p><strong>配信プラットフォーム:</strong> ${data.platforms ? data.platforms.join(', ') : '未選択'}</p>
-                        <p><strong>YouTube収益化:</strong> ${data.youtubeMonetize ? 'あり' : 'なし'}</p>
-                        <p><strong>後払い選択:</strong> ${data.payLater ? 'あり' : 'なし'}</p>
-                    </div>
+                const serviceType = data.serviceType || (data.versionInfo === '該当なし' ? 'audioOnly' : 'fullService');
+                console.log('Single reservation service type:', serviceType); // 디버깅용
+                console.log('Single reservation version info:', data.versionInfo); // 디버깅용
+                console.log('Single reservation platforms:', data.platforms); // 디버깅용
+                
+                let contentHtml;
+                if (serviceType === 'audioOnly') {
+                    // audioOnly 모드인 경우 제한된 정보만 표시
+                    contentHtml = `
+                        <div class="album-details">
+                            <h3>アルバム情報 (音源作業のみ)</h3>
+                            <p><strong>申請者名:</strong> ${data.artistNameKana || '未入力'}</p>
+                            <p><strong>申請日:</strong> ${formatDate(data.createdAt)}</p>
+                            <div style="background-color: #f0f8ff; padding: 15px; border-radius: 5px; margin-top: 20px; border-left: 4px solid #007bff;">
+                                <p style="color: #0066cc; font-style: italic; margin: 0;">
+                                    <i class="fa fa-info-circle"></i> 音源作業のみのサービスのため、アルバム名、配信プラットフォーム、配信日などの詳細情報は非表示になっています。
+                                </p>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    // fullService 모드인 경우 모든 정보 표시
+                    contentHtml = `
+                        <div class="album-details">
+                            <h3>アルバム情報 (配信まで依頼)</h3>
+                            <p><strong>サービスタイプ:</strong> ${getServiceTypeText(serviceType)}</p>
+                            <p><strong>アルバム名（日本語）:</strong> ${data.albumNameDomestic || '未入力'}</p>
+                            <p><strong>アルバム名（English）:</strong> ${data.albumNameInternational || '未入力'}</p>
+                            <p><strong>アーティスト名（カナ）:</strong> ${data.artistNameKana || '未入力'}</p>
+                            <p><strong>アーティスト名（English）:</strong> ${data.artistNameEnglish || '未入力'}</p>
+                            <p><strong>バージョン情報:</strong> ${data.versionInfo || '未입력'}</p>
+                            <p><strong>配信開始希望日:</strong> ${formatDate(data.releaseDate)}</p>
+                            <p><strong>申請日:</strong> ${formatDate(data.createdAt)}</p>
+                            <p><strong>楽曲数:</strong> ${data.songs ? data.songs.length : 0}曲</p>
+                            <p><strong>配信プラットフォーム:</strong> ${data.platforms ? data.platforms.join(', ') : '未選択'}</p>
+                            <p><strong>YouTube収益化:</strong> ${data.youtubeMonetize ? 'あり' : 'なし'}</p>
+                            <p><strong>後払い選択:</strong> ${data.payLater ? 'あり' : 'なし'}</p>
+                        </div>
+                    `;
+                }
+                
+                container.innerHTML = contentHtml + `
                     <div class="close-button-container" style="text-align: center; margin-top: 30px;">
                         <button type="button" class="close-results-btn" onclick="closeResults()" style="
                             background-color: #6c757d;
@@ -549,37 +598,67 @@
                     `;
                 }
 
-                const reservationsHtml = reservations.map((reservation, index) => `
-                    <div class="reservation-item">
-                        <h4>予約 #${index + 1} - ${reservation.albumNameDomestic || '未入力'}</h4>
-                        <div class="details">
-                            <div class="detail-item">
-                                <strong>メール:</strong> ${reservation.email || '未入力'}
+                const reservationsHtml = reservations.map((reservation, index) => {
+                    const serviceType = reservation.serviceType || (reservation.versionInfo === '該当なし' ? 'audioOnly' : 'fullService');
+                    
+                    // 관리자 화면에서도 audioOnly와 fullService를 구분해서 표시
+                    if (serviceType === 'audioOnly') {
+                        return `
+                            <div class="reservation-item">
+                                <h4>予約 #${index + 1} - ${reservation.artistNameKana || '未入力'} (音源作業のみ)</h4>
+                                <div class="details">
+                                    <div class="detail-item">
+                                        <strong>メール:</strong> ${reservation.email || '未入力'}
+                                    </div>
+                                    <div class="detail-item">
+                                        <strong>サービス:</strong> ${getServiceTypeText(serviceType)}
+                                    </div>
+                                    <div class="detail-item">
+                                        <strong>申請者名:</strong> ${reservation.artistNameKana || '未入力'}
+                                    </div>
+                                    <div class="detail-item">
+                                        <strong>申請日:</strong> ${formatDate(reservation.createdAt)}
+                                    </div>
+                                </div>
+                                <div style="color: #666; font-style: italic; margin-top: 10px; padding: 10px; background-color: #f8f9fa; border-radius: 5px;">
+                                    <i class="fa fa-info-circle"></i> 音源作業のみのため、詳細情報は制限されています
+                                </div>
                             </div>
-                            <div class="detail-item">
-                                <strong>サービス:</strong> ${getServiceTypeText(reservation.serviceType)}
+                        `;
+                    } else {
+                        return `
+                            <div class="reservation-item">
+                                <h4>予約 #${index + 1} - ${reservation.albumNameDomestic || '未入力'}</h4>
+                                <div class="details">
+                                    <div class="detail-item">
+                                        <strong>メール:</strong> ${reservation.email || '未入力'}
+                                    </div>
+                                    <div class="detail-item">
+                                        <strong>サービス:</strong> ${getServiceTypeText(serviceType)}
+                                    </div>
+                                    <div class="detail-item">
+                                        <strong>アーティスト:</strong> ${reservation.artistNameKana || '未入力'}
+                                    </div>
+                                    <div class="detail-item">
+                                        <strong>申請日:</strong> ${formatDate(reservation.createdAt)}
+                                    </div>
+                                    <div class="detail-item">
+                                        <strong>配信希望日:</strong> ${formatDate(reservation.releaseDate)}
+                                    </div>
+                                    <div class="detail-item">
+                                        <strong>楽曲数:</strong> ${reservation.songs ? reservation.songs.length : 0}曲
+                                    </div>
+                                    <div class="detail-item">
+                                        <strong>後払い:</strong> ${reservation.payLater ? 'あり' : 'なし'}
+                                    </div>
+                                    <div class="detail-item">
+                                        <strong>YouTube収益化:</strong> ${reservation.youtubeMonetize ? 'あり' : 'なし'}
+                                    </div>
+                                </div>
                             </div>
-                            <div class="detail-item">
-                                <strong>アーティスト:</strong> ${reservation.artistNameKana || '未入力'}
-                            </div>
-                            <div class="detail-item">
-                                <strong>申請日:</strong> ${formatDate(reservation.createdAt)}
-                            </div>
-                            <div class="detail-item">
-                                <strong>配信希望日:</strong> ${formatDate(reservation.releaseDate)}
-                            </div>
-                            <div class="detail-item">
-                                <strong>楽曲数:</strong> ${reservation.songs ? reservation.songs.length : 0}曲
-                            </div>
-                            <div class="detail-item">
-                                <strong>後払い:</strong> ${reservation.payLater ? 'あり' : 'なし'}
-                            </div>
-                            <div class="detail-item">
-                                <strong>YouTube収益化:</strong> ${reservation.youtubeMonetize ? 'あり' : 'なし'}
-                            </div>
-                        </div>
-                    </div>
-                `).join('');
+                        `;
+                    }
+                }).join('');
 
                 container.innerHTML = `
                     <div class="admin-info">
